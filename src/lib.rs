@@ -13,6 +13,7 @@ pub mod survival;
 pub mod ui;
 pub mod vehicles;
 pub mod world;
+pub mod obj_loader;
 
 pub use engine::GameState;
 pub use persistence::SaveSystem;

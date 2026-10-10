@@ -10,15 +10,33 @@ impl TerminalRenderer {
         // ANSI clear screen & cursor home
         print!("\x1B[2J\x1B[H");
 
-        // 1. Top Header Banner & Environment
+        // 1. Top Header Banner & Environment (Matching SurrounDead UE5 top bar)
         let weather_str = format!("{:?}", state.environment.current_weather);
         let time_str = state.environment.formatted_time();
         let geiger_rad = state.survival.radiation;
+        let heading_deg = (state.player_yaw as i32).rem_euclid(360);
+        let cardinal = match heading_deg {
+            23..=67 => "NE",
+            68..=112 => "E",
+            113..=157 => "SE",
+            158..=202 => "S",
+            203..=247 => "SW",
+            248..=292 => "W",
+            293..=337 => "NW",
+            _ => "N",
+        };
 
         println!("╔══════════════════════════════════════════════════════════════════════════════════════════════╗");
         println!(
-            "║  SURROUNDEAD (RUST EDITION)  |  Time: {}  |  Weather: {:<12} |  Kills: {:<4} ║",
-            time_str, weather_str, state.kills_count
+            "║ SURROUNDEAD | LVL: {} (XP: {}/100) | {}   {:>4}° [{:<2}]   TIME: {} [{:<8}]   KILLS: {:<3} ║",
+            state.progression.level,
+            state.progression.current_xp,
+            state.player_credits,
+            heading_deg,
+            cardinal,
+            time_str,
+            weather_str,
+            state.kills_count
         );
         println!("╠══════════════════════════════════════════════════════════════════════════════════════════════╣");
 
@@ -151,8 +169,8 @@ impl TerminalRenderer {
         }
 
         println!("╠══════════════════════════════════════════════════════════════════════════════════════════════╣");
-        println!("║ CONTROLS: [W/A/S/D] Move | [Space] Shoot/Melee | [R] Reload | [E] Enter Car / Loot           ║");
-        println!("║           [1] Bandage | [2] Drink Water | [3] Eat Food | [F] Flashlight | [B] Build | [Q] Quit ║");
+        println!("║ [WASD] Move/Drive | [Space] Shoot/Melee | [R] Reload | [E] Interact/Vehicle | [H] Medical    ║");
+        println!("║ [1-8] Meds | [F] Flashlight | [N] NVG | [TAB] Bag | [C] Craft | [K] Skills | [T] Trader | [Q] Quit ║");
         println!("╚══════════════════════════════════════════════════════════════════════════════════════════════╝");
 
         stdout.flush()?;

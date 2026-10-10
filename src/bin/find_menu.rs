@@ -21,7 +21,7 @@ fn extract_ascii_strings(bytes: &[u8]) -> Vec<String> {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pak_path = Path::new("/ntfs/SteamLibrary/steamapps/common/SurrounDead/SurrounDead/Content/Paks/SurrounDead-Windows.pak");
-    let mut pak = Pak::new_any(&pak_path, None)?;
+    let pak = Pak::new_any(&pak_path, None)?;
     match pak.get("SurrounDead/Content/UI/Menus/Menu/CharacterCreatorMenu.uexp") {
         Ok(bytes) => {
             let strings = extract_ascii_strings(&bytes);

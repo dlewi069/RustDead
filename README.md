@@ -217,6 +217,21 @@ Built with a high-performance Entity Component System (ECS) architecture, hardwa
 
 ## Build & Run
 
+### First-Time Asset Extraction & Setup:
+If launching for the first time or setting up authentic models:
+```bash
+cargo run --bin first_time_setup
+```
+Alternatively, run the automated setup CLI tool:
+```bash
+python scripts/run_setup_extractor.py
+```
+This utility:
+1. Detects your legal Steam installation of SurrounDead (`SurrounDead-Windows.pak`).
+2. Populates `assets/models/` with placeholder / extracted `.obj` meshes.
+3. Verifies audio (`assets/audio/*.wav`) and textures (`assets/textures/*.png`).
+4. Ensures clean, drop-in asset loading when running `cargo run --release`.
+
 ### Graphical GUI Mode (Default):
 ```bash
 cargo run --release
@@ -226,4 +241,5 @@ cargo run --release
 ```bash
 cargo test
 ```
+
 

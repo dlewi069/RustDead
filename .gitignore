@@ -1,0 +1,8 @@
+/target
+/assets
+/saves
+*.png
+*.log
+assets/SurrounDead/Content/Levels/LongdownValley.ubulk
+assets/SurrounDead/Content/Levels/LongdownValley.uexp
+assets/SurrounDead/Content/Meshes/Buildings/Mall.uexp

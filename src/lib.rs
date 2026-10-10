@@ -1,0 +1,18 @@
+pub mod ai;
+pub mod combat;
+pub mod audio;
+pub mod crafting;
+pub mod economy;
+pub mod engine;
+pub mod items;
+pub mod looting;
+pub mod math;
+pub mod persistence;
+pub mod progression;
+pub mod survival;
+pub mod ui;
+pub mod vehicles;
+pub mod world;
+
+pub use engine::GameState;
+pub use persistence::SaveSystem;

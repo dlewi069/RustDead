@@ -1,0 +1,6 @@
+
+******** PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_Rock_01 ********
+
+ERROR: UE4 LegacyVersion: unsupported value -8
+FPackageFileSummary::Serialize4 <- FPackageFileSummary<<: Ver=0/0 <- UnPackage::UnPackage: PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_Rock_01.uasset, ver=100000/0, game=ue4.0 <- UnPackage::LoadPackage(info): PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_Rock_01.uasset <- Main: umodel_build=1590
+

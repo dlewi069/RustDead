@@ -1,0 +1,3120 @@
+{
+  "player_pos": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  },
+  "player_yaw": -186.85707,
+  "player_pitch": 0.0,
+  "survival": {
+    "health": 100.0,
+    "max_health": 100.0,
+    "stamina": 100.0,
+    "max_stamina": 100.0,
+    "hunger": 99.64659,
+    "thirst": 99.41718,
+    "infection": 15.0,
+    "immunity": 100.0,
+    "radiation": 0.0,
+    "bleeding": false,
+    "bleeding_rate": 2.5
+  },
+  "medical": {
+    "active_traumas": [],
+    "pain_level": 0.0
+  },
+  "progression": {
+    "level": 1,
+    "current_xp": 0,
+    "unspent_points": 0,
+    "total_earned_xp": 0,
+    "skills": [
+      [
+        "Marksmanship",
+        0
+      ],
+      [
+        "MeleeMastery",
+        0
+      ],
+      [
+        "FastHands",
+        0
+      ],
+      [
+        "IronStomach",
+        0
+      ],
+      [
+        "Metabolism",
+        0
+      ],
+      [
+        "Immunity",
+        0
+      ],
+      [
+        "Cardio",
+        0
+      ],
+      [
+        "Sprinter",
+        0
+      ],
+      [
+        "PackMule",
+        0
+      ],
+      [
+        "LuckyLooter",
+        0
+      ],
+      [
+        "Lockpicking",
+        0
+      ],
+      [
+        "Scrapper",
+        0
+      ]
+    ]
+  },
+  "equipment": {
+    "primary_weapon": {
+      "id": "m4a1",
+      "name": "M4A1 Carbine",
+      "description": "",
+      "item_type": "WeaponPrimary",
+      "rarity": "Epic",
+      "weight_kg": 3.2,
+      "width": 2,
+      "height": 4,
+      "stack_size": 1,
+      "max_stack": 1,
+      "durability": 100.0,
+      "max_durability": 100.0,
+      "nested_container_id": null
+    },
+    "secondary_weapon": null,
+    "melee_weapon": null,
+    "helmet": null,
+    "vest": null,
+    "backpack": {
+      "id": "hiking_backpack",
+      "name": "Hiking Backpack",
+      "description": "Durable 36-slot civilian trekking bag.",
+      "item_type": "Backpack",
+      "rarity": "Uncommon",
+      "weight_kg": 2.0,
+      "width": 3,
+      "height": 3,
+      "stack_size": 1,
+      "max_stack": 1,
+      "durability": null,
+      "max_durability": null,
+      "nested_container_id": null
+    },
+    "nvg": {
+      "id": "nvg_military",
+      "name": "Military Gen 2 Tactical NVG",
+      "description": "Standard issue armed forces night vision goggles with enhanced clarity and high optical amplification.",
+      "item_type": "NVG",
+      "rarity": "Rare",
+      "weight_kg": 1.1,
+      "width": 2,
+      "height": 2,
+      "stack_size": 1,
+      "max_stack": 1,
+      "durability": 100.0,
+      "max_durability": 100.0,
+      "nested_container_id": null
+    },
+    "radio": {
+      "id": "emergency_radio",
+      "name": "Handheld Emergency Radio",
+      "description": "Portable military survival transceiver capable of tuning between 80.0 MHz and 180.0 MHz.",
+      "item_type": "Radio",
+      "rarity": "Uncommon",
+      "weight_kg": 0.6,
+      "width": 1,
+      "height": 2,
+      "stack_size": 1,
+      "max_stack": 1,
+      "durability": null,
+      "max_durability": null,
+      "nested_container_id": null
+    },
+    "pockets": {
+      "id": "pockets",
+      "name": "Pockets",
+      "width": 6,
+      "height": 4,
+      "max_weight_kg": 18.0,
+      "items": [
+        {
+          "item": {
+            "id": "bandage",
+            "name": "Sterile Bandage",
+            "description": "Halts active bleeding and provides minor health recovery.",
+            "item_type": "Medical",
+            "rarity": "Common",
+            "weight_kg": 0.1,
+            "width": 1,
+            "height": 1,
+            "stack_size": 1,
+            "max_stack": 5,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 0,
+          "y": 0
+        },
+        {
+          "item": {
+            "id": "purified_water",
+            "name": "Purified Water Bottle",
+            "description": "Clean, boiled drinking water. Quenches thirst.",
+            "item_type": "Drink",
+            "rarity": "Common",
+            "weight_kg": 0.5,
+            "width": 1,
+            "height": 2,
+            "stack_size": 1,
+            "max_stack": 4,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 1,
+          "y": 0
+        },
+        {
+          "item": {
+            "id": "canned_peaches",
+            "name": "Canned Peaches",
+            "description": "Sweet preserved fruit. Restores hunger and slight thirst.",
+            "item_type": "Food",
+            "rarity": "Common",
+            "weight_kg": 0.4,
+            "width": 1,
+            "height": 1,
+            "stack_size": 1,
+            "max_stack": 4,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 2,
+          "y": 0
+        },
+        {
+          "item": {
+            "id": "raw_venison",
+            "name": "Raw Venison Meat",
+            "description": "Fresh game meat hunted in the valley. Must be cooked before eating.",
+            "item_type": "Food",
+            "rarity": "Common",
+            "weight_kg": 0.5,
+            "width": 1,
+            "height": 1,
+            "stack_size": 1,
+            "max_stack": 5,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 3,
+          "y": 0
+        },
+        {
+          "item": {
+            "id": "forest_mushrooms",
+            "name": "Wild Forest Mushrooms",
+            "description": "Edible fungi foraged from pine trunks and moist soil.",
+            "item_type": "Food",
+            "rarity": "Common",
+            "weight_kg": 0.2,
+            "width": 1,
+            "height": 1,
+            "stack_size": 1,
+            "max_stack": 10,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 4,
+          "y": 0
+        },
+        {
+          "item": {
+            "id": "wood_plank",
+            "name": "Wood Plank",
+            "description": "Basic timber used for barricades, doors, and workbenches.",
+            "item_type": "Material",
+            "rarity": "Common",
+            "weight_kg": 1.5,
+            "width": 1,
+            "height": 3,
+            "stack_size": 1,
+            "max_stack": 20,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 5,
+          "y": 0
+        },
+        {
+          "item": {
+            "id": "lockpick",
+            "name": "Lockpick Set",
+            "description": "Tension wrench and diamond pick for bypassing locked containers.",
+            "item_type": "Material",
+            "rarity": "Common",
+            "weight_kg": 0.2,
+            "width": 1,
+            "height": 1,
+            "stack_size": 1,
+            "max_stack": 10,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 0,
+          "y": 1
+        },
+        {
+          "item": {
+            "id": "keycard_lvl1",
+            "name": "Keycard [Level 1 - Research Facility]",
+            "description": "Unlocks laboratory and research compound bulkheads.",
+            "item_type": "Keycard",
+            "rarity": "Rare",
+            "weight_kg": 0.01,
+            "width": 1,
+            "height": 1,
+            "stack_size": 1,
+            "max_stack": 1,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 2,
+          "y": 1
+        },
+        {
+          "item": {
+            "id": "optic_acog_4x",
+            "name": "ACOG 4x Combat Scope",
+            "description": "Medium-range combat optic with 4.0x magnification and 35% spread reduction.",
+            "item_type": "Attachment",
+            "rarity": "Epic",
+            "weight_kg": 0.45,
+            "width": 1,
+            "height": 2,
+            "stack_size": 1,
+            "max_stack": 1,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 3,
+          "y": 1
+        },
+        {
+          "item": {
+            "id": "muzzle_suppressor",
+            "name": "Osprey Tactical Suppressor",
+            "description": "Muzzle sound dampener. Reduces gunshot acoustic radius by 80% and vertical recoil by 10%.",
+            "item_type": "Attachment",
+            "rarity": "Epic",
+            "weight_kg": 0.4,
+            "width": 1,
+            "height": 2,
+            "stack_size": 1,
+            "max_stack": 1,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 4,
+          "y": 1
+        },
+        {
+          "item": {
+            "id": "ammo_556",
+            "name": "5.56x45mm NATO (60 rounds)",
+            "description": "High-velocity intermediate assault rifle cartridges.",
+            "item_type": "Ammo",
+            "rarity": "Rare",
+            "weight_kg": 0.9,
+            "width": 1,
+            "height": 1,
+            "stack_size": 10,
+            "max_stack": 10,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 0,
+          "y": 2
+        },
+        {
+          "item": {
+            "id": "splint",
+            "name": "Medical Fracture Splint",
+            "description": "Stabilizes broken bones and limb trauma.",
+            "item_type": "Medical",
+            "rarity": "Common",
+            "weight_kg": 0.3,
+            "width": 1,
+            "height": 2,
+            "stack_size": 1,
+            "max_stack": 3,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 1,
+          "y": 2
+        },
+        {
+          "item": {
+            "id": "painkillers",
+            "name": "Painkiller Bottle",
+            "description": "Analgesic pills that boost stamina and provide light pain relief.",
+            "item_type": "Medical",
+            "rarity": "Uncommon",
+            "weight_kg": 0.1,
+            "width": 1,
+            "height": 1,
+            "stack_size": 1,
+            "max_stack": 10,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 2,
+          "y": 2
+        },
+        {
+          "item": {
+            "id": "battery_9v",
+            "name": "9V Heavy-Duty Alkaline Battery",
+            "description": "Recharges electronic equipment including Night Vision Goggles and tactical flashlights.",
+            "item_type": "Material",
+            "rarity": "Common",
+            "weight_kg": 0.05,
+            "width": 1,
+            "height": 1,
+            "stack_size": 1,
+            "max_stack": 10,
+            "durability": null,
+            "max_durability": null,
+            "nested_container_id": null
+          },
+          "x": 0,
+          "y": 3
+        }
+      ]
+    },
+    "containers": {
+      "backpack_hiking_backpack": {
+        "id": "backpack_hiking_backpack",
+        "name": "Hiking Backpack",
+        "width": 6,
+        "height": 6,
+        "max_weight_kg": 35.0,
+        "items": []
+      }
+    }
+  },
+  "active_weapon": {
+    "weapon_id": "m4a1",
+    "name": "M4A1 Assault Rifle",
+    "caliber": "FiveFiveSix",
+    "fire_mode": "FullAuto",
+    "base_damage": 38.0,
+    "headshot_multiplier": 3.5,
+    "rounds_per_minute": 750,
+    "mag_capacity": 30,
+    "current_ammo": 30,
+    "effective_range_m": 250.0,
+    "bullet_speed_mps": 880.0,
+    "spread_rad": 0.015,
+    "recoil_v": 1.2,
+    "recoil_h": 0.4,
+    "noise_radius_m": 120.0,
+    "durability_loss_per_shot": 0.05,
+    "current_durability": 100.0,
+    "optic": null,
+    "suppressor": null,
+    "extended_mag": null,
+    "tactical": null
+  },
+  "zombies": [
+    {
+      "id": 1,
+      "zombie_type": "Walker",
+      "position": {
+        "x": -24.812351,
+        "y": 0.0,
+        "z": 62.26662
+      },
+      "yaw": 0.0,
+      "health": 70.0,
+      "max_health": 70.0,
+      "speed_walk": 1.2,
+      "speed_run": 2.5,
+      "attack_damage": 18.0,
+      "attack_range": 1.8,
+      "attack_cooldown_s": 1.4,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 2,
+      "zombie_type": "Runner",
+      "position": {
+        "x": 21.581955,
+        "y": 0.0,
+        "z": 45.703506
+      },
+      "yaw": 0.0,
+      "health": 45.0,
+      "max_health": 45.0,
+      "speed_walk": 2.0,
+      "speed_run": 5.5,
+      "attack_damage": 14.0,
+      "attack_range": 1.7,
+      "attack_cooldown_s": 1.0,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 3,
+      "zombie_type": "Walker",
+      "position": {
+        "x": 39.01558,
+        "y": 0.0,
+        "z": 73.02355
+      },
+      "yaw": 0.0,
+      "health": 70.0,
+      "max_health": 70.0,
+      "speed_walk": 1.2,
+      "speed_run": 2.5,
+      "attack_damage": 18.0,
+      "attack_range": 1.8,
+      "attack_cooldown_s": 1.4,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 4,
+      "zombie_type": "Hound",
+      "position": {
+        "x": -30.836739,
+        "y": 0.0,
+        "z": 81.65245
+      },
+      "yaw": 0.0,
+      "health": 40.0,
+      "max_health": 40.0,
+      "speed_walk": 2.5,
+      "speed_run": 6.5,
+      "attack_damage": 22.0,
+      "attack_range": 1.5,
+      "attack_cooldown_s": 0.9,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 5,
+      "zombie_type": "Walker",
+      "position": {
+        "x": -30.21526,
+        "y": 0.0,
+        "z": 72.81421
+      },
+      "yaw": 0.0,
+      "health": 70.0,
+      "max_health": 70.0,
+      "speed_walk": 1.2,
+      "speed_run": 2.5,
+      "attack_damage": 18.0,
+      "attack_range": 1.8,
+      "attack_cooldown_s": 1.4,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 6,
+      "zombie_type": "Runner",
+      "position": {
+        "x": 58.95038,
+        "y": 0.0,
+        "z": 88.796616
+      },
+      "yaw": 0.0,
+      "health": 45.0,
+      "max_health": 45.0,
+      "speed_walk": 2.0,
+      "speed_run": 5.5,
+      "attack_damage": 14.0,
+      "attack_range": 1.7,
+      "attack_cooldown_s": 1.0,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 7,
+      "zombie_type": "Walker",
+      "position": {
+        "x": 46.413963,
+        "y": 0.0,
+        "z": 57.638638
+      },
+      "yaw": 0.0,
+      "health": 70.0,
+      "max_health": 70.0,
+      "speed_walk": 1.2,
+      "speed_run": 2.5,
+      "attack_damage": 18.0,
+      "attack_range": 1.8,
+      "attack_cooldown_s": 1.4,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 8,
+      "zombie_type": "Screamer",
+      "position": {
+        "x": -36.70453,
+        "y": 0.0,
+        "z": 72.37462
+      },
+      "yaw": 0.0,
+      "health": 55.0,
+      "max_health": 55.0,
+      "speed_walk": 1.3,
+      "speed_run": 4.0,
+      "attack_damage": 12.0,
+      "attack_range": 1.6,
+      "attack_cooldown_s": 1.2,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 9,
+      "zombie_type": "Walker",
+      "position": {
+        "x": -24.194363,
+        "y": 0.0,
+        "z": 74.117744
+      },
+      "yaw": 0.0,
+      "health": 70.0,
+      "max_health": 70.0,
+      "speed_walk": 1.2,
+      "speed_run": 2.5,
+      "attack_damage": 18.0,
+      "attack_range": 1.8,
+      "attack_cooldown_s": 1.4,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 10,
+      "zombie_type": "Spitter",
+      "position": {
+        "x": 43.543022,
+        "y": 0.0,
+        "z": 66.90209
+      },
+      "yaw": 0.0,
+      "health": 85.0,
+      "max_health": 85.0,
+      "speed_walk": 1.0,
+      "speed_run": 3.0,
+      "attack_damage": 25.0,
+      "attack_range": 14.0,
+      "attack_cooldown_s": 2.5,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 11,
+      "zombie_type": "Walker",
+      "position": {
+        "x": 9.6046295,
+        "y": 0.0,
+        "z": 66.75166
+      },
+      "yaw": 0.0,
+      "health": 70.0,
+      "max_health": 70.0,
+      "speed_walk": 1.2,
+      "speed_run": 2.5,
+      "attack_damage": 18.0,
+      "attack_range": 1.8,
+      "attack_cooldown_s": 1.4,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 12,
+      "zombie_type": "Bloater",
+      "position": {
+        "x": 3.6279678,
+        "y": 0.0,
+        "z": 21.419693
+      },
+      "yaw": 0.0,
+      "health": 160.0,
+      "max_health": 160.0,
+      "speed_walk": 0.9,
+      "speed_run": 2.0,
+      "attack_damage": 45.0,
+      "attack_range": 2.5,
+      "attack_cooldown_s": 2.0,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 13,
+      "zombie_type": "Walker",
+      "position": {
+        "x": 68.50098,
+        "y": 0.0,
+        "z": 37.122723
+      },
+      "yaw": 0.0,
+      "health": 70.0,
+      "max_health": 70.0,
+      "speed_walk": 1.2,
+      "speed_run": 2.5,
+      "attack_damage": 18.0,
+      "attack_range": 1.8,
+      "attack_cooldown_s": 1.4,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    },
+    {
+      "id": 14,
+      "zombie_type": "Juggernaut",
+      "position": {
+        "x": 17.351631,
+        "y": 0.0,
+        "z": 56.25042
+      },
+      "yaw": 0.0,
+      "health": 450.0,
+      "max_health": 450.0,
+      "speed_walk": 1.5,
+      "speed_run": 4.2,
+      "attack_damage": 55.0,
+      "attack_range": 2.2,
+      "attack_cooldown_s": 1.8,
+      "attack_timer": 0.0,
+      "state": "Idle",
+      "state_timer": 0.23333408,
+      "target_position": null,
+      "target_entity_id": null,
+      "stagger_timer": 0.0
+    }
+  ],
+  "bandits": [
+    {
+      "id": 101,
+      "name": "Bandit Raider",
+      "position": {
+        "x": -45.0,
+        "y": 0.0,
+        "z": 75.0
+      },
+      "patrol_origin": {
+        "x": -45.0,
+        "y": 0.0,
+        "z": 75.0
+      },
+      "yaw": 149.03624,
+      "health": 100.0,
+      "max_health": 100.0,
+      "weapon": {
+        "weapon_id": "ak47",
+        "name": "AK-47 Tactical",
+        "caliber": "SevenSixTwo",
+        "fire_mode": "FullAuto",
+        "base_damage": 48.0,
+        "headshot_multiplier": 3.5,
+        "rounds_per_minute": 600,
+        "mag_capacity": 30,
+        "current_ammo": 30,
+        "effective_range_m": 200.0,
+        "bullet_speed_mps": 715.0,
+        "spread_rad": 0.022,
+        "recoil_v": 1.8,
+        "recoil_h": 0.7,
+        "noise_radius_m": 140.0,
+        "durability_loss_per_shot": 0.04,
+        "current_durability": 100.0,
+        "optic": null,
+        "suppressor": null,
+        "extended_mag": null,
+        "tactical": null
+      },
+      "state": "Patrol",
+      "state_timer": 1.233335,
+      "shoot_cooldown": 1.2,
+      "shoot_timer": 0.0,
+      "detection_radius": 45.0,
+      "in_cover": false,
+      "shout": null,
+      "is_sniper": false,
+      "laser_aiming_timer": 0.0
+    },
+    {
+      "id": 102,
+      "name": "Renegade Scout",
+      "position": {
+        "x": -52.0,
+        "y": 0.0,
+        "z": 82.0
+      },
+      "patrol_origin": {
+        "x": -52.0,
+        "y": 0.0,
+        "z": 82.0
+      },
+      "yaw": 147.61932,
+      "health": 100.0,
+      "max_health": 100.0,
+      "weapon": {
+        "weapon_id": "glock17",
+        "name": "Glock 17 9mm",
+        "caliber": "NineMm",
+        "fire_mode": "SemiAuto",
+        "base_damage": 26.0,
+        "headshot_multiplier": 3.5,
+        "rounds_per_minute": 450,
+        "mag_capacity": 17,
+        "current_ammo": 17,
+        "effective_range_m": 50.0,
+        "bullet_speed_mps": 375.0,
+        "spread_rad": 0.025,
+        "recoil_v": 0.8,
+        "recoil_h": 0.2,
+        "noise_radius_m": 75.0,
+        "durability_loss_per_shot": 0.03,
+        "current_durability": 100.0,
+        "optic": null,
+        "suppressor": null,
+        "extended_mag": null,
+        "tactical": null
+      },
+      "state": "Patrol",
+      "state_timer": 1.233335,
+      "shoot_cooldown": 1.2,
+      "shoot_timer": 0.0,
+      "detection_radius": 45.0,
+      "in_cover": false,
+      "shout": null,
+      "is_sniper": false,
+      "laser_aiming_timer": 0.0
+    },
+    {
+      "id": 103,
+      "name": "Outpost Enforcer",
+      "position": {
+        "x": -38.0,
+        "y": 0.0,
+        "z": 88.0
+      },
+      "patrol_origin": {
+        "x": -38.0,
+        "y": 0.0,
+        "z": 88.0
+      },
+      "yaw": 156.64444,
+      "health": 100.0,
+      "max_health": 100.0,
+      "weapon": {
+        "weapon_id": "remington870",
+        "name": "Remington 870 Shotgun",
+        "caliber": "TwelveGauge",
+        "fire_mode": "PumpAction",
+        "base_damage": 120.0,
+        "headshot_multiplier": 2.5,
+        "rounds_per_minute": 70,
+        "mag_capacity": 6,
+        "current_ammo": 6,
+        "effective_range_m": 30.0,
+        "bullet_speed_mps": 410.0,
+        "spread_rad": 0.08,
+        "recoil_v": 3.5,
+        "recoil_h": 0.5,
+        "noise_radius_m": 150.0,
+        "durability_loss_per_shot": 0.1,
+        "current_durability": 100.0,
+        "optic": null,
+        "suppressor": null,
+        "extended_mag": null,
+        "tactical": null
+      },
+      "state": "Patrol",
+      "state_timer": 1.233335,
+      "shoot_cooldown": 1.2,
+      "shoot_timer": 0.0,
+      "detection_radius": 45.0,
+      "in_cover": false,
+      "shout": null,
+      "is_sniper": false,
+      "laser_aiming_timer": 0.0
+    },
+    {
+      "id": 104,
+      "name": "Watchtower Marksman",
+      "position": {
+        "x": -13.0,
+        "y": 6.4,
+        "z": -36.0
+      },
+      "patrol_origin": {
+        "x": -13.0,
+        "y": 6.4,
+        "z": -36.0
+      },
+      "yaw": 19.855215,
+      "health": 120.0,
+      "max_health": 120.0,
+      "weapon": {
+        "weapon_id": "hunting_rifle",
+        "name": "Remington 700 .308 Sniper",
+        "caliber": "ThreeZeroEight",
+        "fire_mode": "BoltAction",
+        "base_damage": 135.0,
+        "headshot_multiplier": 4.0,
+        "rounds_per_minute": 45,
+        "mag_capacity": 5,
+        "current_ammo": 4,
+        "effective_range_m": 600.0,
+        "bullet_speed_mps": 850.0,
+        "spread_rad": 0.003,
+        "recoil_v": 2.8,
+        "recoil_h": 0.3,
+        "noise_radius_m": 160.0,
+        "durability_loss_per_shot": 0.15,
+        "current_durability": 99.85,
+        "optic": "scope_8x",
+        "suppressor": null,
+        "extended_mag": null,
+        "tactical": null
+      },
+      "state": "EngagePlayer",
+      "state_timer": -3.7252903e-8,
+      "shoot_cooldown": 2.5,
+      "shoot_timer": 2.5,
+      "detection_radius": 75.0,
+      "in_cover": false,
+      "shout": {
+        "text": "Lining up headshot!",
+        "timer": 0.7500009,
+        "is_combat": true
+      },
+      "is_sniper": true,
+      "laser_aiming_timer": 0.0
+    }
+  ],
+  "wildlife": [
+    {
+      "id": 1,
+      "wildlife_type": "WhiteTailedDeer",
+      "name": "White-Tailed Deer",
+      "position": {
+        "x": -60.0,
+        "y": 0.0,
+        "z": -60.0
+      },
+      "home_origin": {
+        "x": -60.0,
+        "y": 0.0,
+        "z": -60.0
+      },
+      "yaw": 0.0,
+      "health": 45.0,
+      "max_health": 45.0,
+      "is_fleeing": false,
+      "flee_timer": 0.0,
+      "wander_timer": 1.233335
+    },
+    {
+      "id": 2,
+      "wildlife_type": "WhiteTailedDeer",
+      "name": "White-Tailed Deer",
+      "position": {
+        "x": -75.0,
+        "y": 0.0,
+        "z": -45.0
+      },
+      "home_origin": {
+        "x": -75.0,
+        "y": 0.0,
+        "z": -45.0
+      },
+      "yaw": 0.0,
+      "health": 45.0,
+      "max_health": 45.0,
+      "is_fleeing": false,
+      "flee_timer": 0.0,
+      "wander_timer": 1.233335
+    },
+    {
+      "id": 3,
+      "wildlife_type": "ForestRabbit",
+      "name": "Forest Hare",
+      "position": {
+        "x": 45.0,
+        "y": 0.0,
+        "z": -15.0
+      },
+      "home_origin": {
+        "x": 45.0,
+        "y": 0.0,
+        "z": -15.0
+      },
+      "yaw": 0.0,
+      "health": 15.0,
+      "max_health": 15.0,
+      "is_fleeing": false,
+      "flee_timer": 0.0,
+      "wander_timer": 1.233335
+    },
+    {
+      "id": 4,
+      "wildlife_type": "ForestRabbit",
+      "name": "Forest Hare",
+      "position": {
+        "x": 55.0,
+        "y": 0.0,
+        "z": -25.0
+      },
+      "home_origin": {
+        "x": 55.0,
+        "y": 0.0,
+        "z": -25.0
+      },
+      "yaw": 0.0,
+      "health": 15.0,
+      "max_health": 15.0,
+      "is_fleeing": false,
+      "flee_timer": 0.0,
+      "wander_timer": 1.233335
+    },
+    {
+      "id": 5,
+      "wildlife_type": "WildBoar",
+      "name": "Wild Boar",
+      "position": {
+        "x": 95.0,
+        "y": 0.0,
+        "z": 45.0
+      },
+      "home_origin": {
+        "x": 95.0,
+        "y": 0.0,
+        "z": 45.0
+      },
+      "yaw": 0.0,
+      "health": 65.0,
+      "max_health": 65.0,
+      "is_fleeing": false,
+      "flee_timer": 0.0,
+      "wander_timer": 1.233335
+    }
+  ],
+  "vehicles": [
+    {
+      "id": 1,
+      "vehicle_type": "Sedan",
+      "name": "Olds 88 Sedan",
+      "position": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": 38.0
+      },
+      "yaw": 0.0,
+      "speed_kmh": 0.0,
+      "max_speed_kmh": 110.0,
+      "fuel_liters": 22.5,
+      "max_fuel_liters": 50.0,
+      "fuel_consumption_per_km": 0.12,
+      "battery_pct": 85.0,
+      "engine_health": 100.0,
+      "max_engine_health": 100.0,
+      "trunk": {
+        "id": "vehicle_trunk_1",
+        "name": "Olds 88 Sedan Trunk",
+        "width": 6,
+        "height": 4,
+        "max_weight_kg": 60.0,
+        "items": []
+      },
+      "is_engine_running": false,
+      "headlights_on": false
+    },
+    {
+      "id": 2,
+      "vehicle_type": "PickupTruck",
+      "name": "D-150 Pickup Truck",
+      "position": {
+        "x": -55.0,
+        "y": 0.0,
+        "z": -25.0
+      },
+      "yaw": 0.0,
+      "speed_kmh": 0.0,
+      "max_speed_kmh": 95.0,
+      "fuel_liters": 29.25,
+      "max_fuel_liters": 65.0,
+      "fuel_consumption_per_km": 0.18,
+      "battery_pct": 85.0,
+      "engine_health": 100.0,
+      "max_engine_health": 100.0,
+      "trunk": {
+        "id": "vehicle_trunk_2",
+        "name": "D-150 Pickup Truck Trunk",
+        "width": 6,
+        "height": 8,
+        "max_weight_kg": 120.0,
+        "items": []
+      },
+      "is_engine_running": false,
+      "headlights_on": false
+    }
+  ],
+  "containers": [
+    {
+      "id": 1,
+      "name": "Red Rocket Tool Cabinet",
+      "position": {
+        "x": 2.0,
+        "y": 0.0,
+        "z": 48.0
+      },
+      "interaction_radius_m": 2.5,
+      "storage": {
+        "id": "container_1",
+        "name": "Red Rocket Tool Cabinet",
+        "width": 5,
+        "height": 4,
+        "max_weight_kg": 80.0,
+        "items": [
+          {
+            "item": {
+              "id": "wood_plank",
+              "name": "Wood Plank",
+              "description": "Basic timber used for barricades, doors, and workbenches.",
+              "item_type": "Material",
+              "rarity": "Common",
+              "weight_kg": 1.5,
+              "width": 1,
+              "height": 3,
+              "stack_size": 3,
+              "max_stack": 20,
+              "durability": null,
+              "max_durability": null,
+              "nested_container_id": null
+            },
+            "x": 0,
+            "y": 0
+          }
+        ]
+      },
+      "is_searched": false,
+      "lock": null
+    },
+    {
+      "id": 2,
+      "name": "Abandoned Police Cruiser Trunk",
+      "position": {
+        "x": 12.0,
+        "y": 0.0,
+        "z": 40.0
+      },
+      "interaction_radius_m": 2.5,
+      "storage": {
+        "id": "container_2",
+        "name": "Abandoned Police Cruiser Trunk",
+        "width": 6,
+        "height": 4,
+        "max_weight_kg": 80.0,
+        "items": [
+          {
+            "item": {
+              "id": "glock17",
+              "name": "Glock 17 9mm",
+              "description": "",
+              "item_type": "WeaponSecondary",
+              "rarity": "Uncommon",
+              "weight_kg": 1.1,
+              "width": 2,
+              "height": 2,
+              "stack_size": 1,
+              "max_stack": 1,
+              "durability": 100.0,
+              "max_durability": 100.0,
+              "nested_container_id": null
+            },
+            "x": 0,
+            "y": 0
+          },
+          {
+            "item": {
+              "id": "ar45",
+              "name": "AR-45 Tactical SMG",
+              "description": "",
+              "item_type": "WeaponPrimary",
+              "rarity": "Rare",
+              "weight_kg": 2.8,
+              "width": 2,
+              "height": 3,
+              "stack_size": 1,
+              "max_stack": 1,
+              "durability": 100.0,
+              "max_durability": 100.0,
+              "nested_container_id": null
+            },
+            "x": 2,
+            "y": 0
+          },
+          {
+            "item": {
+              "id": "remington870",
+              "name": "Remington 870 Shotgun",
+              "description": "",
+              "item_type": "WeaponPrimary",
+              "rarity": "Rare",
+              "weight_kg": 3.2,
+              "width": 1,
+              "height": 4,
+              "stack_size": 1,
+              "max_stack": 1,
+              "durability": 100.0,
+              "max_durability": 100.0,
+              "nested_container_id": null
+            },
+            "x": 4,
+            "y": 0
+          }
+        ]
+      },
+      "is_searched": false,
+      "lock": {
+        "difficulty": "Novice",
+        "is_locked": true,
+        "target_angle_deg": 25.740849,
+        "current_pick_angle": 90.0,
+        "current_cylinder_rotation": 0.0,
+        "pick_durability": 100.0
+      }
+    },
+    {
+      "id": 3,
+      "name": "Field Hospital Medical Locker",
+      "position": {
+        "x": -105.0,
+        "y": 0.0,
+        "z": 112.0
+      },
+      "interaction_radius_m": 2.5,
+      "storage": {
+        "id": "container_3",
+        "name": "Field Hospital Medical Locker",
+        "width": 5,
+        "height": 5,
+        "max_weight_kg": 80.0,
+        "items": [
+          {
+            "item": {
+              "id": "bandage",
+              "name": "Sterile Bandage",
+              "description": "Halts active bleeding and provides minor health recovery.",
+              "item_type": "Medical",
+              "rarity": "Common",
+              "weight_kg": 0.1,
+              "width": 1,
+              "height": 1,
+              "stack_size": 2,
+              "max_stack": 5,
+              "durability": null,
+              "max_durability": null,
+              "nested_container_id": null
+            },
+            "x": 0,
+            "y": 0
+          },
+          {
+            "item": {
+              "id": "painkillers",
+              "name": "Painkiller Bottle",
+              "description": "Analgesic pills that boost stamina and provide light pain relief.",
+              "item_type": "Medical",
+              "rarity": "Uncommon",
+              "weight_kg": 0.1,
+              "width": 1,
+              "height": 1,
+              "stack_size": 1,
+              "max_stack": 10,
+              "durability": null,
+              "max_durability": null,
+              "nested_container_id": null
+            },
+            "x": 1,
+            "y": 0
+          }
+        ]
+      },
+      "is_searched": false,
+      "lock": null
+    },
+    {
+      "id": 4,
+      "name": "FOB Bravo Munitions Crate",
+      "position": {
+        "x": 125.0,
+        "y": 0.0,
+        "z": -88.0
+      },
+      "interaction_radius_m": 2.5,
+      "storage": {
+        "id": "container_4",
+        "name": "FOB Bravo Munitions Crate",
+        "width": 6,
+        "height": 6,
+        "max_weight_kg": 80.0,
+        "items": [
+          {
+            "item": {
+              "id": "military_rucksack",
+              "name": "Military Tactical Rucksack",
+              "description": "Heavy-duty 48-slot tactical pack with MOLLE webbing.",
+              "item_type": "Backpack",
+              "rarity": "Epic",
+              "weight_kg": 3.5,
+              "width": 3,
+              "height": 4,
+              "stack_size": 1,
+              "max_stack": 1,
+              "durability": null,
+              "max_durability": null,
+              "nested_container_id": null
+            },
+            "x": 0,
+            "y": 0
+          },
+          {
+            "item": {
+              "id": "ammo_762",
+              "name": "7.62x39mm Ammo (60 rounds)",
+              "description": "",
+              "item_type": "Ammo",
+              "rarity": "Rare",
+              "weight_kg": 1.1,
+              "width": 1,
+              "height": 1,
+              "stack_size": 10,
+              "max_stack": 10,
+              "durability": null,
+              "max_durability": null,
+              "nested_container_id": null
+            },
+            "x": 3,
+            "y": 0
+          }
+        ]
+      },
+      "is_searched": false,
+      "lock": {
+        "difficulty": "Adept",
+        "is_locked": true,
+        "target_angle_deg": 131.48665,
+        "current_pick_angle": 90.0,
+        "current_cylinder_rotation": 0.0,
+        "pick_durability": 100.0
+      }
+    },
+    {
+      "id": 5,
+      "name": "Lab Alpha Biohazard Safe",
+      "position": {
+        "x": -118.0,
+        "y": 0.0,
+        "z": 118.0
+      },
+      "interaction_radius_m": 2.5,
+      "storage": {
+        "id": "container_5",
+        "name": "Lab Alpha Biohazard Safe",
+        "width": 6,
+        "height": 6,
+        "max_weight_kg": 80.0,
+        "items": [
+          {
+            "item": {
+              "id": "bandage",
+              "name": "Sterile Bandage",
+              "description": "Halts active bleeding and provides minor health recovery.",
+              "item_type": "Medical",
+              "rarity": "Common",
+              "weight_kg": 0.1,
+              "width": 1,
+              "height": 1,
+              "stack_size": 2,
+              "max_stack": 5,
+              "durability": null,
+              "max_durability": null,
+              "nested_container_id": null
+            },
+            "x": 0,
+            "y": 0
+          }
+        ]
+      },
+      "is_searched": false,
+      "lock": null
+    },
+    {
+      "id": 6,
+      "name": "FOB Bravo Underground Weapons Vault",
+      "position": {
+        "x": 132.0,
+        "y": 0.0,
+        "z": -95.0
+      },
+      "interaction_radius_m": 2.5,
+      "storage": {
+        "id": "container_6",
+        "name": "FOB Bravo Underground Weapons Vault",
+        "width": 7,
+        "height": 6,
+        "max_weight_kg": 80.0,
+        "items": [
+          {
+            "item": {
+              "id": "deagle",
+              "name": "Desert Eagle .50 Handgun",
+              "description": "",
+              "item_type": "WeaponSecondary",
+              "rarity": "Rare",
+              "weight_kg": 2.0,
+              "width": 2,
+              "height": 2,
+              "stack_size": 1,
+              "max_stack": 1,
+              "durability": 100.0,
+              "max_durability": 100.0,
+              "nested_container_id": null
+            },
+            "x": 0,
+            "y": 0
+          },
+          {
+            "item": {
+              "id": "coyote_backpack",
+              "name": "Coyote Assault Pack",
+              "description": "40-slot military deployment bag.",
+              "item_type": "Backpack",
+              "rarity": "Rare",
+              "weight_kg": 2.8,
+              "width": 3,
+              "height": 3,
+              "stack_size": 1,
+              "max_stack": 1,
+              "durability": null,
+              "max_durability": null,
+              "nested_container_id": null
+            },
+            "x": 2,
+            "y": 0
+          }
+        ]
+      },
+      "is_searched": false,
+      "lock": null
+    },
+    {
+      "id": 7,
+      "name": "Black Site Prototype Vault",
+      "position": {
+        "x": 189.0,
+        "y": 0.0,
+        "z": 158.0
+      },
+      "interaction_radius_m": 2.5,
+      "storage": {
+        "id": "container_7",
+        "name": "Black Site Prototype Vault",
+        "width": 8,
+        "height": 6,
+        "max_weight_kg": 80.0,
+        "items": [
+          {
+            "item": {
+              "id": "benelli_m4",
+              "name": "Benelli M4 Tactical Shotgun",
+              "description": "",
+              "item_type": "WeaponPrimary",
+              "rarity": "Epic",
+              "weight_kg": 3.8,
+              "width": 1,
+              "height": 5,
+              "stack_size": 1,
+              "max_stack": 1,
+              "durability": 100.0,
+              "max_durability": 100.0,
+              "nested_container_id": null
+            },
+            "x": 0,
+            "y": 0
+          },
+          {
+            "item": {
+              "id": "alice_backpack",
+              "name": "ALICE Field Backpack",
+              "description": "Massive 64-slot high-capacity expedition rucksack.",
+              "item_type": "Backpack",
+              "rarity": "Legendary",
+              "weight_kg": 4.0,
+              "width": 4,
+              "height": 4,
+              "stack_size": 1,
+              "max_stack": 1,
+              "durability": null,
+              "max_durability": null,
+              "nested_container_id": null
+            },
+            "x": 1,
+            "y": 0
+          },
+          {
+            "item": {
+              "id": "benelli_m4",
+              "name": "Benelli M4 Tactical Shotgun",
+              "description": "",
+              "item_type": "WeaponPrimary",
+              "rarity": "Epic",
+              "weight_kg": 3.8,
+              "width": 1,
+              "height": 5,
+              "stack_size": 1,
+              "max_stack": 1,
+              "durability": 100.0,
+              "max_durability": 100.0,
+              "nested_container_id": null
+            },
+            "x": 5,
+            "y": 0
+          }
+        ]
+      },
+      "is_searched": false,
+      "lock": null
+    }
+  ],
+  "structures": [],
+  "bunker_doors": [
+    {
+      "id": 1,
+      "name": "Valley Research Lab Alpha — Air Lock Bulkhead",
+      "position": {
+        "x": -115.0,
+        "y": 0.0,
+        "z": 115.0
+      },
+      "required_tier": "Level1",
+      "is_unlocked": false,
+      "is_open": false,
+      "interaction_radius_m": 3.5,
+      "card_reader_pos": {
+        "x": -113.0,
+        "y": 0.0,
+        "z": 115.0
+      }
+    },
+    {
+      "id": 2,
+      "name": "FOB Bravo Underground Armory — Vault Blast Door",
+      "position": {
+        "x": 128.0,
+        "y": 0.0,
+        "z": -92.0
+      },
+      "required_tier": "Level2",
+      "is_unlocked": false,
+      "is_open": false,
+      "interaction_radius_m": 3.5,
+      "card_reader_pos": {
+        "x": 130.0,
+        "y": 0.0,
+        "z": -92.0
+      }
+    },
+    {
+      "id": 3,
+      "name": "Black Site Omega — Classified Command Chamber",
+      "position": {
+        "x": 185.0,
+        "y": 0.0,
+        "z": 155.0
+      },
+      "required_tier": "Level3",
+      "is_unlocked": false,
+      "is_open": false,
+      "interaction_radius_m": 3.5,
+      "card_reader_pos": {
+        "x": 187.0,
+        "y": 0.0,
+        "z": 155.0
+      }
+    }
+  ],
+  "active_bunker": null,
+  "world_map": {
+    "width_m": 500.0,
+    "depth_m": 500.0,
+    "pois": [
+      {
+        "name": "Abandoned Red Rocket Gas Station",
+        "poi_type": "AbandonedGasStation",
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 45.0
+        },
+        "radius_m": 35.0,
+        "danger_level": 1,
+        "ambient_radiation": 0.0
+      },
+      {
+        "name": "Camp Timber Survior Outpost",
+        "poi_type": "SurvivalCampsite",
+        "position": {
+          "x": -70.0,
+          "y": 0.0,
+          "z": -30.0
+        },
+        "radius_m": 25.0,
+        "danger_level": 1,
+        "ambient_radiation": 0.0
+      },
+      {
+        "name": "FOB Bravo Military Checkpoint",
+        "poi_type": "MilitaryOutpost",
+        "position": {
+          "x": 120.0,
+          "y": 0.0,
+          "z": -90.0
+        },
+        "radius_m": 50.0,
+        "danger_level": 4,
+        "ambient_radiation": 5.0
+      },
+      {
+        "name": "St. Jude Emergency Field Hospital",
+        "poi_type": "FieldHospital",
+        "position": {
+          "x": -110.0,
+          "y": 0.0,
+          "z": 110.0
+        },
+        "radius_m": 40.0,
+        "danger_level": 3,
+        "ambient_radiation": 15.0
+      },
+      {
+        "name": "Hazmat Containment Zone",
+        "poi_type": "RadioactiveCanyon",
+        "position": {
+          "x": 180.0,
+          "y": 0.0,
+          "z": 150.0
+        },
+        "radius_m": 65.0,
+        "danger_level": 5,
+        "ambient_radiation": 75.0
+      }
+    ],
+    "obstacles": [
+      {
+        "id": 1,
+        "name": "Pine Tree",
+        "position": {
+          "x": -170.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 2,
+        "name": "Pine Tree",
+        "position": {
+          "x": -170.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 3,
+        "name": "Pine Tree",
+        "position": {
+          "x": -170.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 4,
+        "name": "Pine Tree",
+        "position": {
+          "x": -135.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 5,
+        "name": "Pine Tree",
+        "position": {
+          "x": -135.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 6,
+        "name": "Pine Tree",
+        "position": {
+          "x": -135.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 7,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": -179.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 8,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": -144.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 9,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 10,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": -74.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 11,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": -39.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 12,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 13,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": 31.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 14,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": 66.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 15,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 16,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": 136.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 17,
+        "name": "Pine Tree",
+        "position": {
+          "x": -100.0,
+          "y": 0.0,
+          "z": 171.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 18,
+        "name": "Pine Tree",
+        "position": {
+          "x": -65.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 19,
+        "name": "Pine Tree",
+        "position": {
+          "x": -65.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 20,
+        "name": "Pine Tree",
+        "position": {
+          "x": -65.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 21,
+        "name": "Pine Tree",
+        "position": {
+          "x": -30.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 22,
+        "name": "Pine Tree",
+        "position": {
+          "x": -30.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 23,
+        "name": "Pine Tree",
+        "position": {
+          "x": -30.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 24,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": -179.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 25,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": -144.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 26,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 27,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": -74.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 28,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": -39.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 29,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 30,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": 31.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 31,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": 66.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 32,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 33,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": 136.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 34,
+        "name": "Pine Tree",
+        "position": {
+          "x": 5.0,
+          "y": 0.0,
+          "z": 171.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 35,
+        "name": "Pine Tree",
+        "position": {
+          "x": 40.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 36,
+        "name": "Pine Tree",
+        "position": {
+          "x": 40.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 37,
+        "name": "Pine Tree",
+        "position": {
+          "x": 40.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 38,
+        "name": "Pine Tree",
+        "position": {
+          "x": 75.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 39,
+        "name": "Pine Tree",
+        "position": {
+          "x": 75.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 40,
+        "name": "Pine Tree",
+        "position": {
+          "x": 75.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 41,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": -179.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 42,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": -144.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 43,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 44,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": -74.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 45,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": -39.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 46,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 47,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": 31.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 48,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": 66.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 49,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 50,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": 136.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 51,
+        "name": "Pine Tree",
+        "position": {
+          "x": 110.0,
+          "y": 0.0,
+          "z": 171.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 52,
+        "name": "Pine Tree",
+        "position": {
+          "x": 145.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 53,
+        "name": "Pine Tree",
+        "position": {
+          "x": 145.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 54,
+        "name": "Pine Tree",
+        "position": {
+          "x": 145.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 55,
+        "name": "Pine Tree",
+        "position": {
+          "x": 180.0,
+          "y": 0.0,
+          "z": -109.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 56,
+        "name": "Pine Tree",
+        "position": {
+          "x": 180.0,
+          "y": 0.0,
+          "z": -4.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      },
+      {
+        "id": 57,
+        "name": "Pine Tree",
+        "position": {
+          "x": 180.0,
+          "y": 0.0,
+          "z": 101.0
+        },
+        "radius_m": 1.2,
+        "blocks_los": true
+      }
+    ],
+    "waypoint": null
+  },
+  "trader": {
+    "id": 1,
+    "name": "Hank the Quartermaster",
+    "title": "Outpost Trader",
+    "position": {
+      "x": -15.0,
+      "y": 0.0,
+      "z": 15.0
+    },
+    "credits": 2500,
+    "offers": [
+      {
+        "item": {
+          "id": "medkit",
+          "name": "Military First Aid Kit",
+          "description": "Comprehensive emergency trauma kit. Restores significant health.",
+          "item_type": "Medical",
+          "rarity": "Rare",
+          "weight_kg": 1.2,
+          "width": 2,
+          "height": 2,
+          "stack_size": 1,
+          "max_stack": 2,
+          "durability": null,
+          "max_durability": null,
+          "nested_container_id": null
+        },
+        "price_credits": 120
+      },
+      {
+        "item": {
+          "id": "antibiotics",
+          "name": "Broad-Spectrum Antibiotics",
+          "description": "Clears viral infection and halts zombie sickness progression.",
+          "item_type": "Medical",
+          "rarity": "Uncommon",
+          "weight_kg": 0.05,
+          "width": 1,
+          "height": 1,
+          "stack_size": 1,
+          "max_stack": 10,
+          "durability": null,
+          "max_durability": null,
+          "nested_container_id": null
+        },
+        "price_credits": 85
+      },
+      {
+        "item": {
+          "id": "bandage",
+          "name": "Sterile Bandage",
+          "description": "Halts active bleeding and provides minor health recovery.",
+          "item_type": "Medical",
+          "rarity": "Common",
+          "weight_kg": 0.1,
+          "width": 1,
+          "height": 1,
+          "stack_size": 1,
+          "max_stack": 5,
+          "durability": null,
+          "max_durability": null,
+          "nested_container_id": null
+        },
+        "price_credits": 25
+      },
+      {
+        "item": {
+          "id": "ammo_9mm",
+          "name": "9mm Ammo Box (50 rounds)",
+          "description": "",
+          "item_type": "Ammo",
+          "rarity": "Uncommon",
+          "weight_kg": 0.6,
+          "width": 1,
+          "height": 1,
+          "stack_size": 10,
+          "max_stack": 10,
+          "durability": null,
+          "max_durability": null,
+          "nested_container_id": null
+        },
+        "price_credits": 60
+      },
+      {
+        "item": {
+          "id": "ammo_556",
+          "name": "5.56 NATO Ammo (60 rounds)",
+          "description": "",
+          "item_type": "Ammo",
+          "rarity": "Rare",
+          "weight_kg": 0.9,
+          "width": 1,
+          "height": 1,
+          "stack_size": 10,
+          "max_stack": 10,
+          "durability": null,
+          "max_durability": null,
+          "nested_container_id": null
+        },
+        "price_credits": 140
+      },
+      {
+        "item": {
+          "id": "ak47",
+          "name": "AK-47 Tactical",
+          "description": "",
+          "item_type": "WeaponPrimary",
+          "rarity": "Epic",
+          "weight_kg": 3.8,
+          "width": 2,
+          "height": 4,
+          "stack_size": 1,
+          "max_stack": 1,
+          "durability": 100.0,
+          "max_durability": 100.0,
+          "nested_container_id": null
+        },
+        "price_credits": 450
+      },
+      {
+        "item": {
+          "id": "remington870",
+          "name": "Remington 870 Shotgun",
+          "description": "",
+          "item_type": "WeaponPrimary",
+          "rarity": "Rare",
+          "weight_kg": 3.2,
+          "width": 1,
+          "height": 4,
+          "stack_size": 1,
+          "max_stack": 1,
+          "durability": 100.0,
+          "max_durability": 100.0,
+          "nested_container_id": null
+        },
+        "price_credits": 280
+      },
+      {
+        "item": {
+          "id": "canned_peaches",
+          "name": "Canned Peaches",
+          "description": "Sweet preserved fruit. Restores hunger and slight thirst.",
+          "item_type": "Food",
+          "rarity": "Common",
+          "weight_kg": 0.4,
+          "width": 1,
+          "height": 1,
+          "stack_size": 1,
+          "max_stack": 4,
+          "durability": null,
+          "max_durability": null,
+          "nested_container_id": null
+        },
+        "price_credits": 30
+      },
+      {
+        "item": {
+          "id": "purified_water",
+          "name": "Purified Water Bottle",
+          "description": "Clean, boiled drinking water. Quenches thirst.",
+          "item_type": "Drink",
+          "rarity": "Common",
+          "weight_kg": 0.5,
+          "width": 1,
+          "height": 2,
+          "stack_size": 1,
+          "max_stack": 4,
+          "durability": null,
+          "max_durability": null,
+          "nested_container_id": null
+        },
+        "price_credits": 20
+      },
+      {
+        "item": {
+          "id": "military_rucksack",
+          "name": "Military Tactical Rucksack",
+          "description": "Heavy-duty 48-slot tactical pack with MOLLE webbing.",
+          "item_type": "Backpack",
+          "rarity": "Epic",
+          "weight_kg": 3.5,
+          "width": 3,
+          "height": 4,
+          "stack_size": 1,
+          "max_stack": 1,
+          "durability": null,
+          "max_durability": null,
+          "nested_container_id": null
+        },
+        "price_credits": 350
+      },
+      {
+        "item": {
+          "id": "lockpick",
+          "name": "Lockpick Set",
+          "description": "Tension wrench and diamond pick for bypassing locked containers.",
+          "item_type": "Material",
+          "rarity": "Common",
+          "weight_kg": 0.2,
+          "width": 1,
+          "height": 1,
+          "stack_size": 1,
+          "max_stack": 10,
+          "durability": null,
+          "max_durability": null,
+          "nested_container_id": null
+        },
+        "price_credits": 40
+      },
+      {
+        "item": {
+          "id": "gas_can",
+          "name": "Full Jerrycan (Fuel)",
+          "description": "Contains 20 liters of refined gasoline for vehicle tanks and generators.",
+          "item_type": "Material",
+          "rarity": "Uncommon",
+          "weight_kg": 5.0,
+          "width": 2,
+          "height": 2,
+          "stack_size": 1,
+          "max_stack": 2,
+          "durability": null,
+          "max_durability": null,
+          "nested_container_id": null
+        },
+        "price_credits": 90
+      }
+    ]
+  },
+  "quests": [
+    {
+      "id": 1,
+      "title": "Cull the Herd",
+      "description": "Eliminate 8 roaming infected walkers in the valley.",
+      "quest_type": "KillZombies",
+      "target_count": 8,
+      "current_progress": 0,
+      "reward_credits": 200,
+      "reward_xp": 80,
+      "is_completed": false,
+      "is_claimed": false
+    },
+    {
+      "id": 2,
+      "title": "Rogue Bounty",
+      "description": "Eliminate 2 hostile bandits terrorizing the trade route.",
+      "quest_type": "KillBandits",
+      "target_count": 2,
+      "current_progress": 0,
+      "reward_credits": 450,
+      "reward_xp": 150,
+      "is_completed": false,
+      "is_claimed": false
+    },
+    {
+      "id": 3,
+      "title": "Safecracker Operation",
+      "description": "Pick the lock of 1 secure safe or military cache.",
+      "quest_type": "LockpickSafes",
+      "target_count": 1,
+      "current_progress": 0,
+      "reward_credits": 300,
+      "reward_xp": 100,
+      "is_completed": false,
+      "is_claimed": false
+    }
+  ],
+  "world_events": {
+    "active_airdrop": null,
+    "airdrop_timer_s": 178.23323,
+    "horde_surge_timer_s": 298.23376,
+    "next_container_id": 1000
+  },
+  "campfire": {
+    "position": {
+      "x": -10.0,
+      "y": 0.0,
+      "z": 12.0
+    },
+    "is_lit": true,
+    "fuel_remaining_s": 298.23376,
+    "active_cooking": null
+  },
+  "horde_spawner": {
+    "horde_timer_s": 1.766666,
+    "next_horde_in_s": 240.0,
+    "next_entity_id": 1000,
+    "next_horde_id": 1,
+    "active_hordes": [],
+    "total_hordes_spawned": 0
+  },
+  "player_credits": 150,
+  "environment": {
+    "time_of_day_hours": 8.011794,
+    "time_scale": 24.0,
+    "current_weather": "ClearSky",
+    "weather_timer_s": 1.766666,
+    "temperature_c": 20.0
+  },
+  "harvest_nodes": [
+    {
+      "id": 1,
+      "node_type": "PineTree",
+      "position": {
+        "x": -12.0,
+        "y": 0.0,
+        "z": 16.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 2,
+      "node_type": "PineTree",
+      "position": {
+        "x": -16.0,
+        "y": 0.0,
+        "z": 22.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 3,
+      "node_type": "PineTree",
+      "position": {
+        "x": -8.0,
+        "y": 0.0,
+        "z": 28.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 4,
+      "node_type": "PineTree",
+      "position": {
+        "x": 18.0,
+        "y": 0.0,
+        "z": 12.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 5,
+      "node_type": "PineTree",
+      "position": {
+        "x": 22.0,
+        "y": 0.0,
+        "z": 18.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 6,
+      "node_type": "PineTree",
+      "position": {
+        "x": 26.0,
+        "y": 0.0,
+        "z": 32.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 7,
+      "node_type": "PineTree",
+      "position": {
+        "x": -25.0,
+        "y": 0.0,
+        "z": 50.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 8,
+      "node_type": "PineTree",
+      "position": {
+        "x": -32.0,
+        "y": 0.0,
+        "z": 62.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 9,
+      "node_type": "PineTree",
+      "position": {
+        "x": 14.0,
+        "y": 0.0,
+        "z": 65.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 10,
+      "node_type": "PineTree",
+      "position": {
+        "x": 20.0,
+        "y": 0.0,
+        "z": 80.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 11,
+      "node_type": "PineTree",
+      "position": {
+        "x": -18.0,
+        "y": 0.0,
+        "z": -22.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 12,
+      "node_type": "PineTree",
+      "position": {
+        "x": -28.0,
+        "y": 0.0,
+        "z": -35.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 13,
+      "node_type": "PineTree",
+      "position": {
+        "x": 15.0,
+        "y": 0.0,
+        "z": -25.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 14,
+      "node_type": "PineTree",
+      "position": {
+        "x": 24.0,
+        "y": 0.0,
+        "z": -42.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 15,
+      "node_type": "PineTree",
+      "position": {
+        "x": -35.0,
+        "y": 0.0,
+        "z": 15.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 16,
+      "node_type": "PineTree",
+      "position": {
+        "x": 35.0,
+        "y": 0.0,
+        "z": -15.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 17,
+      "node_type": "PineTree",
+      "position": {
+        "x": -40.0,
+        "y": 0.0,
+        "z": -60.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 18,
+      "node_type": "PineTree",
+      "position": {
+        "x": 42.0,
+        "y": 0.0,
+        "z": 55.0
+      },
+      "health": 75.0,
+      "max_health": 75.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 19,
+      "node_type": "RockBoulder",
+      "position": {
+        "x": -22.0,
+        "y": 0.0,
+        "z": 30.0
+      },
+      "health": 100.0,
+      "max_health": 100.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 20,
+      "node_type": "RockBoulder",
+      "position": {
+        "x": 25.0,
+        "y": 0.0,
+        "z": 28.0
+      },
+      "health": 100.0,
+      "max_health": 100.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 21,
+      "node_type": "RockBoulder",
+      "position": {
+        "x": -14.0,
+        "y": 0.0,
+        "z": 48.0
+      },
+      "health": 100.0,
+      "max_health": 100.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 22,
+      "node_type": "RockBoulder",
+      "position": {
+        "x": 32.0,
+        "y": 0.0,
+        "z": 45.0
+      },
+      "health": 100.0,
+      "max_health": 100.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 23,
+      "node_type": "RockBoulder",
+      "position": {
+        "x": -30.0,
+        "y": 0.0,
+        "z": -18.0
+      },
+      "health": 100.0,
+      "max_health": 100.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 24,
+      "node_type": "RockBoulder",
+      "position": {
+        "x": 28.0,
+        "y": 0.0,
+        "z": -28.0
+      },
+      "health": 100.0,
+      "max_health": 100.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 25,
+      "node_type": "RockBoulder",
+      "position": {
+        "x": -45.0,
+        "y": 0.0,
+        "z": 40.0
+      },
+      "health": 100.0,
+      "max_health": 100.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 26,
+      "node_type": "RockBoulder",
+      "position": {
+        "x": 45.0,
+        "y": 0.0,
+        "z": -45.0
+      },
+      "health": 100.0,
+      "max_health": 100.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 27,
+      "node_type": "RockBoulder",
+      "position": {
+        "x": -10.0,
+        "y": 0.0,
+        "z": 75.0
+      },
+      "health": 100.0,
+      "max_health": 100.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    },
+    {
+      "id": 28,
+      "node_type": "RockBoulder",
+      "position": {
+        "x": 12.0,
+        "y": 0.0,
+        "z": 92.0
+      },
+      "health": 100.0,
+      "max_health": 100.0,
+      "is_depleted": false,
+      "respawn_timer_s": 0.0
+    }
+  ],
+  "difficulty": {
+    "level": "Standard",
+    "player_damage_taken_mult": 1.0,
+    "zombie_health_mult": 1.0,
+    "zombie_damage_mult": 1.0,
+    "zombie_sprint_chance": 0.25,
+    "hunger_thirst_drain_mult": 1.0,
+    "infection_rate_mult": 1.0,
+    "loot_quantity_mult": 1.0,
+    "hostile_bandits": true
+  },
+  "night_vision": {
+    "is_active": false,
+    "equipped_gen": "Military",
+    "battery_charge": 100.0,
+    "max_battery": 100.0
+  },
+  "radio_system": {
+    "stations": [
+      {
+        "id": "coyote_call",
+        "name": "Coyote Outpost Relay",
+        "frequency_mhz": 91.5,
+        "bandwidth_mhz": 0.4,
+        "broadcast_title": "CoyoteCall — Safezone Coordinates & Merchant Trade",
+        "messages": [
+          "This is Coyote Outpost on 91.5 FM. Camp Timber remains a secure safezone.",
+          "Quartermaster Hank has restocked military ammo tins and medical splints.",
+          "Hostile bandits spotted near the highway checkpoint. Keep your safeties off."
+        ],
+        "transmission_location": {
+          "x": 50.0,
+          "y": 0.0,
+          "z": 50.0
+        }
+      },
+      {
+        "id": "fire_in_the_city",
+        "name": "Urban Disaster Evacuation",
+        "frequency_mhz": 104.2,
+        "bandwidth_mhz": 0.4,
+        "broadcast_title": "FireInTheCity — Evacuation Alarm & Metro Hazard",
+        "messages": [
+          "EMERGENCY BROADCAST: Downtown district is engulfed in structural fires.",
+          "Biohazard infection levels have reached critical threshold. Runner hordes in streets.",
+          "Avoid central transit hub. High radiated bloater presence confirmed."
+        ],
+        "transmission_location": {
+          "x": -120.0,
+          "y": 0.0,
+          "z": 80.0
+        }
+      },
+      {
+        "id": "military_reinforcements",
+        "name": "FOB Bravo Command Frequency",
+        "frequency_mhz": 128.7,
+        "bandwidth_mhz": 0.5,
+        "broadcast_title": "MilitaryReinforcements — Tactical Airdrop Logistics",
+        "messages": [
+          "Command to any surviving regional operatives on tactical frequency 128.7.",
+          "C-130 Hercules cargo flights are operating on intermittent schedule.",
+          "Authorize emergency supply drop at your GPS coordinates if credits available."
+        ],
+        "transmission_location": {
+          "x": 200.0,
+          "y": 0.0,
+          "z": -150.0
+        }
+      },
+      {
+        "id": "the_subway",
+        "name": "Bunker Subterranean Quarantine",
+        "frequency_mhz": 142.0,
+        "bandwidth_mhz": 0.4,
+        "broadcast_title": "TheSubway — Underground Radiation & Armory Keycards",
+        "messages": [
+          "Subterranean Research Complex Alpha quarantine alert.",
+          "Radiation leakage detected in sector lower levels. Anti-rad injectors recommended.",
+          "Armory bulkhead requires Level 2 keycard clearance. Keycards located in command office."
+        ],
+        "transmission_location": {
+          "x": 0.0,
+          "y": -15.0,
+          "z": 0.0
+        }
+      },
+      {
+        "id": "force_from_afar",
+        "name": "Distant Carrier SOS",
+        "frequency_mhz": 160.0,
+        "bandwidth_mhz": 0.5,
+        "broadcast_title": "ForceFromAfar — Long-Range Naval Relay",
+        "messages": [
+          "MAYDAY... MAYDAY... This is automated beacon on carrier frequency 160.0.",
+          "Offshore support fleet standing by. Maintain survivor beacons across the mainland.",
+          "Stay alive, survivor. Help is coming."
+        ],
+        "transmission_location": {
+          "x": -350.0,
+          "y": 0.0,
+          "z": -400.0
+        }
+      }
+    ],
+    "current_frequency_mhz": 91.5,
+    "is_powered": true,
+    "volume": 0.8
+  },
+  "radio_frequency_mhz": 89.5,
+  "active_vehicle_id": null,
+  "flashlight_on": false,
+  "is_sprinting": false,
+  "recent_noises": [],
+  "recent_vehicle_crash": false,
+  "combat_log": [
+    "=====================================================",
+    "SURROUNDEAD ENGINE ACTIVE — Systems Fully Synchronized",
+    "Scavenge loot, level skills, trade at outposts, survive the wasteland.",
+    "INCOMING FIRE! Bandit bullet struck you for 202.5 damage!"
+  ],
+  "tick_count": 36,
+  "kills_count": 0
+}

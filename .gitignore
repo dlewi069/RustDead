@@ -13,3 +13,8 @@
 *.pyc
 __pycache__/
 assets/SurrounDead/
+/assets/game/
+/extractor/bin/
+/extractor/obj/
+/extractor/mappings/
+/extractor/natives/

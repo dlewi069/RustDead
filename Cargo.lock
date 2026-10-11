@@ -5432,6 +5432,7 @@ dependencies = [
  "crossterm",
  "env_logger",
  "glam 0.34.1",
+ "image",
  "log",
  "rand 0.8.8",
  "serde",

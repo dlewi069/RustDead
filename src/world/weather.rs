@@ -12,6 +12,9 @@ pub enum WeatherType {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnvironmentSystem {
     pub time_of_day_hours: f32, // 0.0 to 24.0
+    /// Whole days since the game started (the clock's date counts from 9 July 2027).
+    #[serde(default)]
+    pub days: u32,
     pub time_scale: f32,        // 60x means 1 real second = 1 game minute
     pub current_weather: WeatherType,
     pub weather_timer_s: f32,
@@ -21,7 +24,9 @@ pub struct EnvironmentSystem {
 impl Default for EnvironmentSystem {
     fn default() -> Self {
         Self {
-            time_of_day_hours: 8.0, // 8:00 AM morning
+            // LongdownValley's Ultra_Dynamic_Sky starts at Time of Day 900.
+            time_of_day_hours: 9.0,
+            days: 0,
             time_scale: 24.0,       // 1 hour game time = 2.5 real minutes
             current_weather: WeatherType::ClearSky,
             weather_timer_s: 0.0,

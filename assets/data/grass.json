@@ -1,0 +1,1502 @@
+{
+ "Birch_LayerInfo": [
+  {
+   "align": true,
+   "cull": [
+    70.0,
+    80.0
+   ],
+   "density": 40.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": "Mat_Grass_Card_Birch",
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_GrassMeshPatch_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.5
+    ],
+    [
+     1.0,
+     1.5
+    ],
+    [
+     1.0,
+     1.5
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  },
+  {
+   "align": true,
+   "cull": [
+    85.0,
+    95.0
+   ],
+   "density": 0.5,
+   "grid": true,
+   "jitter": 1.0,
+   "material": "Mat_Grass_Card_Birch",
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_Plant_Bush_Leaves_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.5
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 1.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Generic/SM_Generic_Small_Rocks_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": false,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_GroundLeaves_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    45.0,
+    50.0
+   ],
+   "density": 0.05,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Prop_Mushroom_Group_04",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": false,
+   "cull": [
+    45.0,
+    50.0
+   ],
+   "density": 0.05,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Env_Sunflower_01",
+   "random_rotation": true,
+   "scale": [
+    [
+     0.5,
+     0.5
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": true
+  }
+ ],
+ "Concrete_LayerInfo": [
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Generic/SM_Generic_Small_Rocks_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_GroundLeaves_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_GroundLeaves_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  }
+ ],
+ "Grass_LayerInfo": [
+  {
+   "align": true,
+   "cull": [
+    70.0,
+    80.0
+   ],
+   "density": 40.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_GrassMeshPatch_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     2.0
+    ],
+    [
+     1.0,
+     2.0
+    ],
+    [
+     0.5,
+     1.5
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  },
+  {
+   "align": true,
+   "cull": [
+    85.0,
+    95.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_Plant_Bush_Leaves_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.5
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Generic/SM_Generic_Small_Rocks_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": false,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_GroundLeaves_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    60.0,
+    65.0
+   ],
+   "density": 0.075,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_Plant_PurpleFlower_01",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.25,
+     1.75
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    60.0,
+    65.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_Plant_Fern_Leaves_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.25,
+     1.75
+    ],
+    [
+     1.25,
+     1.75
+    ],
+    [
+     1.25,
+     1.75
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  },
+  {
+   "align": true,
+   "cull": [
+    45.0,
+    50.0
+   ],
+   "density": 0.4,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Env_Wildflowers_01",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    45.0,
+    50.0
+   ],
+   "density": 0.4,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Env_Wildflowers_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    45.0,
+    50.0
+   ],
+   "density": 0.4,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Env_Wildflowers_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    45.0,
+    50.0
+   ],
+   "density": 0.05,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Prop_Mushroom_Group_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  }
+ ],
+ "Meadow_LayerInfo": [
+  {
+   "align": true,
+   "cull": [
+    70.0,
+    80.0
+   ],
+   "density": 30.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": "Mat_Grass_Card_Meadow",
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_GrassMeshPatch_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.25,
+     2.5
+    ],
+    [
+     1.25,
+     2.5
+    ],
+    [
+     1.25,
+     2.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.5,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Generic/SM_Generic_Small_Rocks_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    60.0,
+    65.0
+   ],
+   "density": 0.2,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_Plant_PurpleFlower_01",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.25,
+     1.75
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    75.0,
+    80.0
+   ],
+   "density": 10.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Env_Wildflowers_01",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    75.0,
+    80.0
+   ],
+   "density": 10.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Env_Wildflowers_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    75.0,
+    80.0
+   ],
+   "density": 10.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Env_Wildflowers_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": false,
+   "cull": [
+    45.0,
+    50.0
+   ],
+   "density": 0.2,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Env_Sunflower_01",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": true
+  }
+ ],
+ "Mud_LayerInfo": [
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Generic/SM_Generic_Small_Rocks_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_GroundLeaves_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  }
+ ],
+ "Pine_LayerInfo": [
+  {
+   "align": true,
+   "cull": [
+    70.0,
+    80.0
+   ],
+   "density": 30.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": "Mat_Grass_Card_Pine",
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_GrassMeshPatch_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.25,
+     1.75
+    ],
+    [
+     1.25,
+     1.75
+    ],
+    [
+     0.75,
+     1.25
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 5.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Generic/SM_Generic_Small_Rocks_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 5.0,
+   "grid": false,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_GroundLeaves_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    60.0,
+    65.0
+   ],
+   "density": 5.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": "Mat_Plant_Fern_Inst1",
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_Plant_Fern_Leaves_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     0.75,
+     1.5
+    ],
+    [
+     0.75,
+     1.5
+    ],
+    [
+     0.75,
+     1.5
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  },
+  {
+   "align": true,
+   "cull": [
+    60.0,
+    65.0
+   ],
+   "density": 1.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Rocks/SM_Rock_Small_01",
+   "random_rotation": true,
+   "scale": [
+    [
+     0.75,
+     1.25
+    ],
+    [
+     0.75,
+     1.25
+    ],
+    [
+     0.75,
+     1.25
+    ]
+   ],
+   "shadows": false,
+   "uniform": false
+  }
+ ],
+ "RadArea_LayerInfo": [
+  {
+   "align": true,
+   "cull": [
+    75.0,
+    85.0
+   ],
+   "density": 25.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": "Mat_Grass_Card_RadArea",
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_GrassMeshPatch_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.5,
+     2.0
+    ],
+    [
+     1.5,
+     2.0
+    ],
+    [
+     0.6,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Generic/SM_Generic_Small_Rocks_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_GroundLeaves_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    35.0,
+    40.0
+   ],
+   "density": 0.5,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_GrassMesh_Wheat_01",
+   "random_rotation": true,
+   "scale": [
+    [
+     0.75,
+     1.25
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    85.0,
+    95.0
+   ],
+   "density": 0.2,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Swamp/PNB_Swamp_Marshland/Models/SM_Env_Bush_Bramble_01",
+   "random_rotation": true,
+   "scale": [
+    [
+     0.75,
+     1.25
+    ],
+    [
+     0.75,
+     1.25
+    ],
+    [
+     0.75,
+     1.25
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  },
+  {
+   "align": true,
+   "cull": [
+    85.0,
+    95.0
+   ],
+   "density": 0.2,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Swamp/PNB_Swamp_Marshland/Models/SM_Env_Bush_Bramble_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     0.75,
+     1.25
+    ],
+    [
+     0.75,
+     1.25
+    ],
+    [
+     0.75,
+     1.25
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  }
+ ],
+ "Rock_LayerInfo": [],
+ "Sand_LayerInfo": [
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 1.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Generic/SM_Generic_Small_Rocks_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  }
+ ],
+ "Tropical_LayerInfo": [
+  {
+   "align": true,
+   "cull": [
+    70.0,
+    80.0
+   ],
+   "density": 15.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": "Mat_Grass_Card_Tropical",
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_GrassMeshPatch_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     2.5,
+     3.0
+    ],
+    [
+     2.5,
+     3.0
+    ],
+    [
+     1.5,
+     2.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 1.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Generic/SM_Generic_Small_Rocks_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 1.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Jungle/Models/Environment/SM_Env_Fern_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 1.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Jungle/Models/Environment/SM_Env_Fern_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 1.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Jungle/Models/Environment/SM_Env_Fern_Part_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": true
+  }
+ ],
+ "Wetland_LayerInfo": [
+  {
+   "align": true,
+   "cull": [
+    60.0,
+    70.0
+   ],
+   "density": 20.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": "Mat_Grass_Card_Wetland",
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Plants/SM_GrassMeshPatch_03",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     2.0
+    ],
+    [
+     1.0,
+     2.0
+    ],
+    [
+     0.5,
+     1.5
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Generic/SM_Generic_Small_Rocks_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    30.0,
+    35.0
+   ],
+   "density": 0.1,
+   "grid": false,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Environments/SM_Env_GroundLeaves_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    45.0,
+    50.0
+   ],
+   "density": 0.05,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Prop_Mushroom_Group_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    45.0,
+    50.0
+   ],
+   "density": 0.05,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Meadow/PNB_Meadow_Forest/Models/SM_Prop_Mushroom_Group_04",
+   "random_rotation": true,
+   "scale": [
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "shadows": false,
+   "uniform": true
+  },
+  {
+   "align": true,
+   "cull": [
+    85.0,
+    95.0
+   ],
+   "density": 1.0,
+   "grid": true,
+   "jitter": 1.0,
+   "material": null,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNatureBiomes_Jungle/Models/Environment/SM_Env_Bush_02",
+   "random_rotation": true,
+   "scale": [
+    [
+     0.5,
+     1.0
+    ],
+    [
+     1.0,
+     1.0
+    ],
+    [
+     0.5,
+     1.0
+    ]
+   ],
+   "shadows": true,
+   "uniform": false
+  }
+ ]
+}

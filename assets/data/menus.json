@@ -1,0 +1,2782 @@
+{
+ "settings": [
+  {
+   "name": "Video",
+   "rows": [
+    {
+     "label": "RESOLUTION",
+     "kind": "choice",
+     "options": [
+      "1280x720",
+      "1600x900",
+      "1920x1080",
+      "2560x1440",
+      "3840x2160"
+     ],
+     "cvar": "r.SetRes",
+     "inferred": true
+    },
+    {
+     "label": "WINDOW MODE",
+     "kind": "choice",
+     "options": [
+      "WINDOWED",
+      "BORDERLESS",
+      "FULLSCREEN"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "VERTICAL SYNC",
+     "kind": "check"
+    },
+    {
+     "label": "ANTI-ALIASING TYPE",
+     "kind": "choice",
+     "options": [
+      "DISABLED",
+      "FXAA",
+      "MSAA",
+      "TAA",
+      "TSR"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "MSAA SAMPLE COUNT",
+     "kind": "choice",
+     "options": [
+      "2X",
+      "4X",
+      "8X"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "MOTION BLUR",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "BLOOM",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "LIGHTING SATURATION",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 2.0,
+     "digits": 2,
+     "multiplier": 1.0,
+     "cvar": "Game.Saturation"
+    },
+    {
+     "label": "DEPTH OF FIELD",
+     "kind": "check"
+    },
+    {
+     "label": "VOLUMETRIC FOG",
+     "kind": "check"
+    },
+    {
+     "label": "LIGHT SHAFTS",
+     "kind": "check"
+    },
+    {
+     "label": "THIRD PERSON FIELD OF VIEW",
+     "kind": "slider",
+     "min": 70.0,
+     "max": 105.0,
+     "digits": 0,
+     "multiplier": 1.0,
+     "cvar": "Character.FieldOfView"
+    },
+    {
+     "label": "FIRST PERSON FIELD OF VIEW",
+     "kind": "slider",
+     "min": 80.0,
+     "max": 105.0,
+     "digits": 0,
+     "multiplier": 1.0,
+     "cvar": "Character.FieldOfViewFP"
+    },
+    {
+     "label": "GAMMA",
+     "kind": "slider",
+     "min": 1.0,
+     "max": 3.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "r.TonemapperGamma"
+    },
+    {
+     "label": "MAX FPS",
+     "kind": "slider",
+     "min": 15.0,
+     "max": 360.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "t.MaxFps"
+    },
+    {
+     "section": "GRAPHICS"
+    },
+    {
+     "label": "RESOLUTION SCALE",
+     "kind": "slider",
+     "min": 10.0,
+     "max": 100.0,
+     "digits": 0,
+     "multiplier": 1.0,
+     "cvar": "r.ScreenPercentage"
+    },
+    {
+     "label": "ANTI-ALIASING",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "TEXTURES",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "POST-PROCESSING",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "EFFECTS",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "SHADOWS",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "FOLIAGE",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "VIEW DISTANCE",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "SHADING",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "DEPTH OF FIELD QUALITY",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    },
+    {
+     "section": "UPSCALING & FRAME GENERATION"
+    },
+    {
+     "label": "UPSCALING METHOD",
+     "kind": "choice",
+     "options": [
+      "Off",
+      "NVIDIA DLSS",
+      "AMD FSR"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "UPSCALING QUALITY",
+     "kind": "choice",
+     "options": [
+      "Quality",
+      "Balanced",
+      "Performance",
+      "Ultra Performance"
+     ],
+     "inferred": true
+    },
+    {
+     "label": "FSR 3 FRAME GENERATION",
+     "kind": "check"
+    },
+    {
+     "section": "OTHER"
+    },
+    {
+     "label": "BUILDABLE LIGHTS CAST SHADOWS?",
+     "kind": "check"
+    },
+    {
+     "label": "BLOOD SPLATTER EFFECT ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "INCREASE BLOOD SPLATTER EFFECT LIFETIME? (MAY EFFECT PERFORMANCE)",
+     "kind": "check"
+    },
+    {
+     "label": "PLAYER CAN INTERACT WITH GRASS?",
+     "kind": "check"
+    },
+    {
+     "label": "INVENTORY ITEM PICTURE QUALITY",
+     "kind": "choice",
+     "options": [
+      "LOW",
+      "MEDIUM",
+      "HIGH",
+      "ULTRA",
+      "CINEMATIC"
+     ],
+     "inferred": true
+    }
+   ]
+  },
+  {
+   "name": "Audio",
+   "rows": [
+    {
+     "label": "AMBIENT",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 1.0,
+     "digits": 0,
+     "multiplier": 100.0,
+     "cvar": "GameAudio.Ambient"
+    },
+    {
+     "label": "MUSIC",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 1.0,
+     "digits": 0,
+     "multiplier": 100.0,
+     "cvar": "GameAudio.Music"
+    },
+    {
+     "label": "EFFECTS",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 1.0,
+     "digits": 0,
+     "multiplier": 100.0,
+     "cvar": "GameAudio.Effects"
+    },
+    {
+     "label": "UI",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 1.0,
+     "digits": 0,
+     "multiplier": 100.0,
+     "cvar": "GameAudio.UI"
+    },
+    {
+     "label": "RADIO",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 1.0,
+     "digits": 0,
+     "multiplier": 100.0,
+     "cvar": "GameAudio.RadioMusic"
+    },
+    {
+     "section": "SETTINGS"
+    },
+    {
+     "label": "COMBAT MUSIC ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "ICE CREAM VENDOR SOUNDS ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "MASTER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 1.0,
+     "digits": 0,
+     "multiplier": 100.0,
+     "cvar": "GameAudio.Master"
+    }
+   ]
+  },
+  {
+   "name": "Controls",
+   "rows": [
+    {
+     "label": "SENSITIVITY MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 10.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Input.Sensitivity"
+    },
+    {
+     "label": "AIMING SENSITIVITY MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 10.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Input.AimingSensitivity"
+    },
+    {
+     "label": "SCOPE SENSITIVITY MULTIPLIER",
+     "kind": "slider",
+     "min": 0.01,
+     "max": 5.0,
+     "digits": 2,
+     "multiplier": 1.0,
+     "cvar": "Input.ScopeSensitivity"
+    },
+    {
+     "label": "ENABLE WEAPON SCROLL",
+     "kind": "check"
+    },
+    {
+     "label": "INVERT MOUSE Y",
+     "kind": "check"
+    },
+    {
+     "label": "CROUCH TOGGLE",
+     "kind": "check"
+    },
+    {
+     "label": "SPRINT TOGGLE",
+     "kind": "check"
+    },
+    {
+     "label": "AIMING TOGGLE",
+     "kind": "check"
+    },
+    {
+     "label": "LEANING TOGGLE",
+     "kind": "check"
+    },
+    {
+     "label": "MELEE AIMING TOGGLE",
+     "kind": "check"
+    },
+    {
+     "label": "ALTERNATE MELEE CONTROLS? (NO HOLDING AIM)",
+     "kind": "check"
+    },
+    {
+     "label": "PRESS TO LOOT CONTAINERS? (NO HOLDING THE INTERACT KEY)",
+     "kind": "check"
+    },
+    {
+     "label": "ROLL DIRECTION FOLLOWS PLAYER DIRECTION? (IF FALSE FOLLOWS CAMERA DIRECTION)",
+     "kind": "check"
+    },
+    {
+     "section": "KEY BINDINGS"
+    },
+    {
+     "label": "MOVE FORWARD",
+     "kind": "key",
+     "keys": [
+      "W",
+      "Up"
+     ]
+    },
+    {
+     "label": "MOVE BACKWARDS",
+     "kind": "key",
+     "keys": [
+      "S",
+      "Down"
+     ]
+    },
+    {
+     "label": "MOVE LEFT",
+     "kind": "key",
+     "keys": [
+      "A",
+      "Left"
+     ]
+    },
+    {
+     "label": "MOVE RIGHT",
+     "kind": "key",
+     "keys": [
+      "D",
+      "Right"
+     ]
+    },
+    {
+     "label": "JUMP / VAULT",
+     "kind": "key",
+     "keys": [
+      "SpaceBar"
+     ]
+    },
+    {
+     "label": "SPRINT",
+     "kind": "key",
+     "keys": [
+      "LeftShift"
+     ]
+    },
+    {
+     "label": "CROUCH",
+     "kind": "key",
+     "keys": [
+      "LeftControl"
+     ]
+    },
+    {
+     "label": "ROLL",
+     "kind": "key",
+     "keys": [
+      "C"
+     ]
+    },
+    {
+     "label": "AUTO WALK/SPRINT",
+     "kind": "key",
+     "keys": [
+      "Equals"
+     ]
+    },
+    {
+     "label": "FLOAT UPWARDS WHILE SWIMMING UNDERWATER",
+     "kind": "key",
+     "keys": [
+      "SpaceBar"
+     ]
+    },
+    {
+     "label": "PRIMARY ACTION",
+     "kind": "key",
+     "keys": [
+      "LeftMouseButton"
+     ]
+    },
+    {
+     "label": "AIM",
+     "kind": "key",
+     "keys": [
+      "RightMouseButton"
+     ]
+    },
+    {
+     "label": "SCOPE ZOOM",
+     "kind": "key",
+     "keys": [
+      "MiddleMouseButton"
+     ]
+    },
+    {
+     "label": "HOLD BREATH WHILE SCOPED",
+     "kind": "key",
+     "keys": [
+      "LeftShift"
+     ]
+    },
+    {
+     "label": "RELOAD",
+     "kind": "key",
+     "keys": [
+      "R"
+     ]
+    },
+    {
+     "label": "SHOVE / STOMP",
+     "kind": "key",
+     "keys": [
+      "V"
+     ]
+    },
+    {
+     "label": "THROWABLE",
+     "kind": "key",
+     "keys": [
+      "G"
+     ]
+    },
+    {
+     "label": "DISTRACT / WHISTLE",
+     "kind": "key",
+     "keys": [
+      "O"
+     ]
+    },
+    {
+     "label": "ADS SWITCH CAMERA [LEFT]",
+     "kind": "key",
+     "keys": [
+      "Q"
+     ]
+    },
+    {
+     "label": "ADS SWITCH CAMERA [RIGHT]",
+     "kind": "key",
+     "keys": [
+      "E"
+     ]
+    },
+    {
+     "label": "INTERACT",
+     "kind": "key",
+     "keys": [
+      "F"
+     ]
+    },
+    {
+     "label": "INVENTORY VISIBILITY",
+     "kind": "key",
+     "keys": [
+      "Tab"
+     ]
+    },
+    {
+     "label": "QUICK SEARCH",
+     "kind": "key",
+     "keys": [
+      "LeftShift"
+     ]
+    },
+    {
+     "label": "EQUIP PRIMARY",
+     "kind": "key",
+     "keys": [
+      "One"
+     ]
+    },
+    {
+     "label": "EQUIP SECONDARY",
+     "kind": "key",
+     "keys": [
+      "Two"
+     ]
+    },
+    {
+     "label": "EQUIP SIDEARM",
+     "kind": "key",
+     "keys": [
+      "Three"
+     ]
+    },
+    {
+     "label": "EQUIP MELEE",
+     "kind": "key",
+     "keys": [
+      "Four"
+     ]
+    },
+    {
+     "label": "USE HOTBAR [6]",
+     "kind": "key",
+     "keys": [
+      "Six"
+     ]
+    },
+    {
+     "label": "USE HOTBAR [7]",
+     "kind": "key",
+     "keys": [
+      "Seven"
+     ]
+    },
+    {
+     "label": "USE HOTBAR [8]",
+     "kind": "key",
+     "keys": [
+      "Eight"
+     ]
+    },
+    {
+     "label": "USE HOTBAR [FISHING ROD]",
+     "kind": "key",
+     "keys": [
+      "Nine"
+     ]
+    },
+    {
+     "label": "UNEQUIP",
+     "kind": "key",
+     "keys": [
+      "Backslash"
+     ]
+    },
+    {
+     "label": "LOOT ALL ITEMS IN CONTAINER",
+     "kind": "key",
+     "keys": [
+      "E"
+     ]
+    },
+    {
+     "label": "CHANGE FIRING MODE",
+     "kind": "key",
+     "keys": [
+      "X"
+     ]
+    },
+    {
+     "label": "TOGGLE TACTICAL WEAPON ATTACHMENT",
+     "kind": "key",
+     "keys": [
+      "K"
+     ]
+    },
+    {
+     "label": "JOURNAL VISIBILITY",
+     "kind": "key",
+     "keys": [
+      "J"
+     ]
+    },
+    {
+     "label": "MAP VISIBILITY",
+     "kind": "key",
+     "keys": [
+      "M"
+     ]
+    },
+    {
+     "label": "ZOOM PLAYER CAMERA",
+     "kind": "key",
+     "keys": [
+      "MiddleMouseButton"
+     ]
+    },
+    {
+     "label": "FLASHLIGHT / VEHICLE LIGHTS",
+     "kind": "key",
+     "keys": [
+      "L"
+     ]
+    },
+    {
+     "label": "TURN ON/OFF NIGHT VISION",
+     "kind": "key",
+     "keys": [
+      "N"
+     ]
+    },
+    {
+     "label": "USE BINOCULARS",
+     "kind": "key",
+     "keys": [
+      "B"
+     ]
+    },
+    {
+     "label": "SIT DOWN / REST",
+     "kind": "key",
+     "keys": [
+      "Hyphen"
+     ]
+    },
+    {
+     "label": "FREE LOOK",
+     "kind": "key",
+     "keys": [
+      "LeftAlt"
+     ]
+    },
+    {
+     "label": "RADIAL MENU",
+     "kind": "key",
+     "keys": [
+      "Z"
+     ]
+    },
+    {
+     "label": "VEHICLE FORWARD",
+     "kind": "key",
+     "keys": [
+      "W",
+      "Up"
+     ]
+    },
+    {
+     "label": "VEHICLE BACKWARDS",
+     "kind": "key",
+     "keys": [
+      "S",
+      "Down"
+     ]
+    },
+    {
+     "label": "VEHICLE LEFT",
+     "kind": "key",
+     "keys": [
+      "A",
+      "Left"
+     ]
+    },
+    {
+     "label": "VEHICLE RIGHT",
+     "kind": "key",
+     "keys": [
+      "D",
+      "Right"
+     ]
+    },
+    {
+     "label": "VEHICLE HANDBRAKE",
+     "kind": "key",
+     "keys": [
+      "SpaceBar"
+     ]
+    },
+    {
+     "label": "VEHICLE HORN",
+     "kind": "key",
+     "keys": [
+      "H"
+     ]
+    },
+    {
+     "label": "VEHICLE FLIP",
+     "kind": "key",
+     "keys": [
+      "K"
+     ]
+    },
+    {
+     "label": "VEHICLE RADIO",
+     "kind": "key",
+     "keys": [
+      "R"
+     ]
+    },
+    {
+     "label": "PAUSE MENU",
+     "kind": "key",
+     "keys": [
+      "Escape"
+     ]
+    },
+    {
+     "label": "PHOTO MODE",
+     "kind": "key",
+     "keys": [
+      "Semicolon"
+     ]
+    },
+    {
+     "label": "SCREENSHOT",
+     "kind": "key",
+     "keys": []
+    },
+    {
+     "label": "CHANGE CAMERA PERSPECTIVE",
+     "kind": "key",
+     "keys": [
+      "T"
+     ]
+    },
+    {
+     "label": "RESET CAMERA POSITION",
+     "kind": "key",
+     "keys": [
+      "Hyphen"
+     ]
+    },
+    {
+     "label": "HIDE UI",
+     "kind": "key",
+     "keys": [
+      "Y"
+     ]
+    },
+    {
+     "label": "QUICK SAVE",
+     "kind": "key",
+     "keys": [
+      "F5"
+     ]
+    },
+    {
+     "label": "DEBUG MENU",
+     "kind": "key",
+     "keys": [
+      "#"
+     ]
+    },
+    {
+     "label": "SPLIT ITEM STACK",
+     "kind": "key",
+     "keys": [
+      "HOLD LEFT SHIFT"
+     ]
+    },
+    {
+     "label": "CAMERA ZOOM IN+OUT",
+     "kind": "key",
+     "keys": [
+      "HOLD LEFT ALT [WEAPON SCROLLING ENABLED]"
+     ]
+    },
+    {
+     "label": "QUICK MOVE ITEM",
+     "kind": "key",
+     "keys": [
+      "HOLD LEFT CTRL"
+     ]
+    },
+    {
+     "label": "QUICK DROP ITEM",
+     "kind": "key",
+     "keys": [
+      "HOLD LEFT SHIFT + PRESS RIGHT CLICK"
+     ]
+    },
+    {
+     "label": "QUICK EQUIP ITEM",
+     "kind": "key",
+     "keys": [
+      "HOLD LEFT ALT + PRESS LEFT CLICK"
+     ]
+    },
+    {
+     "label": "RESET INPUT MAPPINGS",
+     "kind": "button",
+     "text": "RESET INPUT MAPPINGS"
+    }
+   ]
+  },
+  {
+   "name": "Gameplay",
+   "rows": [
+    {
+     "section": "GENERAL"
+    },
+    {
+     "label": "DEBUG MENU ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "VEHICLE SPEED IN KPH?",
+     "kind": "check"
+    },
+    {
+     "label": "AUTO SAVE ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "PLAYER JOURNAL STATS RESET ON DEATH?",
+     "kind": "check"
+    },
+    {
+     "label": "AUTOMATICALLY USE SCOPE WHEN AIMING?",
+     "kind": "check"
+    },
+    {
+     "label": "DISABLE ZOMBIE EYES?",
+     "kind": "check"
+    },
+    {
+     "label": "PLAYER BULLET TRAIL ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "AI BULLET TRAIL ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "HIDE PLAYER HEADWEAR?",
+     "kind": "check"
+    },
+    {
+     "label": "CONTAINER SEARCH ICON WHEN CLOSE TO?",
+     "kind": "check"
+    },
+    {
+     "label": "IN GAME MARKER WHEN NEAR TO DEATH LOCATION? (RESTART REQUIRED)",
+     "kind": "check"
+    },
+    {
+     "label": "GEIGER SOUND WHEN TAKING RADIATION DAMAGE?",
+     "kind": "check"
+    },
+    {
+     "label": "MISOPHONIA MODE ACTIVATED?",
+     "kind": "check"
+    },
+    {
+     "section": "CAMERA"
+    },
+    {
+     "label": "THIRD PERSON HORIZONTAL CAMERA OFFSET",
+     "kind": "slider",
+     "min": 35.0,
+     "max": 140.0,
+     "digits": 0,
+     "multiplier": 1.0,
+     "cvar": "Character.CameraOffset"
+    },
+    {
+     "label": "THIRD PERSON VERTICAL CAMERA OFFSET",
+     "kind": "slider",
+     "min": -50.0,
+     "max": 50.0,
+     "digits": 0,
+     "multiplier": 1.0,
+     "cvar": "Character.CameraOffsetVertical"
+    },
+    {
+     "label": "CAMERA SHAKE INTENSITY",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 2.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Character.CameraShakeIntensity"
+    },
+    {
+     "label": "CAMERA LAG ENABLED?",
+     "kind": "check"
+    },
+    {
+     "section": "USER INTERFACE"
+    },
+    {
+     "label": "CROSSHAIR SCALE",
+     "kind": "slider",
+     "min": 0.6,
+     "max": 4.0,
+     "digits": 2,
+     "multiplier": 1.0,
+     "cvar": "Game.CrosshairScale"
+    },
+    {
+     "label": "AI HEALTH BARS ENABLED? (RESTART REQUIRED)",
+     "kind": "check"
+    },
+    {
+     "label": "HITMARKERS ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "DAMAGE NUMBERS ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "OUTLINE OBJECTS ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "SATURATION DECREASE ON LOW HEALTH? (RESTART REQUIRED IF IN EFFECT)",
+     "kind": "check"
+    },
+    {
+     "label": "ACTION BAR ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "ACTION BAR SHOWS INPUT KEYS?",
+     "kind": "check"
+    },
+    {
+     "label": "CLOCK UI STAYS OPENED?",
+     "kind": "check"
+    },
+    {
+     "label": "OPENING MENUS SLOWS DOWN TIME?",
+     "kind": "check"
+    },
+    {
+     "label": "XP POP UP ENABLED?",
+     "kind": "check"
+    },
+    {
+     "label": "AIRDROP NOTIFICATION ENABLED?",
+     "kind": "check"
+    }
+   ]
+  }
+ ],
+ "difficulty": [
+  {
+   "name": "General",
+   "rows": [
+    {
+     "label": "AIRDROPS ENABLED?",
+     "kind": "check",
+     "default": 1.0
+    },
+    {
+     "label": "TRADERS HAVE A SET AMOUNT OF CURRENCY ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "MELEE MULTI HIT ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "HEADSHOT MODE ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "BLOCK BUILDING AT MAJOR POIs?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "XP MULTIPLIER",
+     "kind": "slider",
+     "min": 0.01,
+     "max": 10.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.XPMultiplier",
+     "default": 1.0
+    },
+    {
+     "label": "WEAPON DURABILITY ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "ARMOR DURABILITY ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "MUZZLE ATTACHMENT DURABILITY ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "OTHER ITEMS DURABILITY ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "FIREARM MALFUNCTION ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "MELEE DAMAGE DEGRADATION ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "WEAPON DURABILITY MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.WeaponDurabilityMultiplier"
+    },
+    {
+     "label": "ARMOR DURABILITY MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ArmorDurabilityMultiplier"
+    },
+    {
+     "label": "MUZZLE ATTACHMENT DURABILITY MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.MuzzleAttachmentDurabilityMultiplier"
+    },
+    {
+     "label": "OTHER ITEMS DURABILITY MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.OtherItemsDurabilityMultiplier"
+    },
+    {
+     "label": "BATTERY DEPLETION MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.BatteryDepletionMultiplier"
+    },
+    {
+     "label": "RADIATION FILTER DEPLETION MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.RadFilterDepletionMultiplier"
+    },
+    {
+     "label": "PRIMARY INFESTATIONS ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "RANDOM INFESTATIONS ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "RANDOM INFESTATIONS SPAWN CHANCE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.RandomInfestationsMultiplier"
+    },
+    {
+     "label": "INFESTATIONS HEALTH MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.InfestationsHealth",
+     "default": 1.0
+    },
+    {
+     "label": "RANDOM EVENTS HAVE A MARKER?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "RANDOM EVENT SPAWN CHANCE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.RandomEventMultiplier",
+     "default": 1.0
+    },
+    {
+     "label": "LEVEL SCALING ENABLED?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "HEALTH SCALING MULTIPLIER DIFFICULTY",
+     "kind": "choice",
+     "options": [
+      "Easy",
+      "Normal",
+      "Hard",
+      "Nightmare"
+     ],
+     "values": [
+      "0.9",
+      "1.1",
+      "1.25",
+      "1.35"
+     ],
+     "cvar": "Difficulty.ScalingHealth"
+    },
+    {
+     "label": "DAMAGE SCALING MULTIPLIER DIFFICULTY",
+     "kind": "choice",
+     "options": [
+      "Easy",
+      "Normal",
+      "Hard",
+      "Nightmare"
+     ],
+     "values": [
+      "0.075",
+      "0.2",
+      "0.25",
+      "0.4"
+     ],
+     "cvar": "Difficulty.ScalingDamage"
+    },
+    {
+     "label": "RADIATION SEVERITY MULTIPLIER (LEVEL 1)",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.RadSeverityLvl1"
+    },
+    {
+     "label": "RADIATION SEVERITY MULTIPLIER (LEVEL 2)",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.RadSeverityLvl2"
+    },
+    {
+     "label": "RADIATION SEVERITY MULTIPLIER (LEVEL 3)",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.RadSeverityLvl3"
+    },
+    {
+     "label": "DAY LENGTH",
+     "kind": "slider",
+     "min": 1.0,
+     "max": 60.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.DayLength",
+     "default": 30.0
+    },
+    {
+     "label": "NIGHT LENGTH",
+     "kind": "slider",
+     "min": 1.0,
+     "max": 60.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.NightLength",
+     "default": 15.0
+    },
+    {
+     "label": "NIGHT BRIGHTNESS",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 1.5,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.NightBrightness",
+     "default": 1.0
+    }
+   ]
+  },
+  {
+   "name": "AI",
+   "rows": [
+    {
+     "label": "AI RESPAWN TIMER (SECONDS)",
+     "kind": "slider",
+     "min": 60.0,
+     "max": 7200.0,
+     "digits": 0,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.AIRespawnTimer",
+     "default": 1500.0
+    },
+    {
+     "label": "ZOMBIE SPAWN AMOUNT MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 10.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ZombieAmount",
+     "default": 1.0
+    },
+    {
+     "label": "ZOMBIE BOSS SPAWN AMOUNT MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ZombieBossAmount",
+     "default": 1.0
+    },
+    {
+     "label": "ZOMBIE HOUND SPAWN AMOUNT MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ZombieHoundAmount"
+    },
+    {
+     "label": "ZOMBIE HEALTH MULTIPLIER",
+     "kind": "slider",
+     "min": 0.5,
+     "max": 3.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ZombieHealth",
+     "default": 1.0
+    },
+    {
+     "label": "ZOMBIE SPEED MULTIPLIER",
+     "kind": "slider",
+     "min": 0.25,
+     "max": 3.0,
+     "digits": 2,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ZombieSpeed",
+     "default": 1.0
+    },
+    {
+     "label": "ZOMBIE DAMAGE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.5,
+     "max": 6.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ZombieDamage",
+     "default": 1.0
+    },
+    {
+     "label": "'SPRINTER' SPECIAL ARCHETYPE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 2.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ArchetypeSprinter"
+    },
+    {
+     "label": "'TOUGHENED CRAWLER' SPECIAL ARCHETYPE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 2.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ArchetypeToughenedCrawler"
+    },
+    {
+     "label": "'ULTRA-RADIATED' SPECIAL ARCHETYPE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 2.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ArchetypeUltraRadiated"
+    },
+    {
+     "label": "'ACIDIC' SPECIAL ARCHETYPE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 2.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ArchetypeAcidic"
+    },
+    {
+     "label": "'ARMORED FERAL HOUND' SPECIAL ARCHETYPE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 2.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ArchetypeArmoredHound"
+    },
+    {
+     "label": "BANDIT HEALTH MULTIPLIER",
+     "kind": "slider",
+     "min": 0.5,
+     "max": 3.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.BanditHealth",
+     "default": 1.0
+    },
+    {
+     "label": "BANDIT CAMP SPAWN CHANCE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 4.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.BanditsCampMultiplier"
+    },
+    {
+     "label": "MILITARY HEALTH MULTIPLIER",
+     "kind": "slider",
+     "min": 0.5,
+     "max": 3.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.MilitaryHealth",
+     "default": 1.0
+    },
+    {
+     "label": "MILITARY CAMP SPAWN CHANCE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 4.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.MilitaryCampMultiplier",
+     "default": 1.0
+    },
+    {
+     "label": "SCAVENGER / TRADER HEALTH MULTIPLIER",
+     "kind": "slider",
+     "min": 0.5,
+     "max": 3.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ScavengerHealth",
+     "default": 1.0
+    },
+    {
+     "label": "SCAVENGER CAMP SPAWN CHANCE MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 4.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ScavengersCampMultiplier"
+    },
+    {
+     "label": "ANIMAL SPAWN AMOUNT MULTIPLIER",
+     "kind": "slider",
+     "min": 0.25,
+     "max": 3.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.AnimalAmount",
+     "default": 1.0
+    }
+   ]
+  },
+  {
+   "name": "Loot / Environment",
+   "rows": [
+    {
+     "label": "DISABLE BACKPACK IN BACKPACK? (RESTART RECOMMENDED)",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "LOOT REGENERATION DISABLED ON LOAD?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "LOOT DEGREDATION AS DAYS SURVIVED INCREASES?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "LOOT REFILL TIMER (MINUTES)",
+     "kind": "slider",
+     "min": 1.0,
+     "max": 1440.0,
+     "digits": 0,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.RefillTime",
+     "default": 30.0
+    },
+    {
+     "label": "SEARCH TIME MULTIPLIER",
+     "kind": "slider",
+     "min": 0.01,
+     "max": 2.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.SearchTime"
+    },
+    {
+     "label": "GENERAL ITEMS RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.General"
+    },
+    {
+     "label": "MELEE WEAPONS RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.Melee"
+    },
+    {
+     "label": "RANGED WEAPONS RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.Ranged"
+    },
+    {
+     "label": "FOOD & DRINK RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.Food&Drink"
+    },
+    {
+     "label": "MEDICAL ITEMS RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.Medical"
+    },
+    {
+     "label": "CRAFTING ITEMS RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.Crafting"
+    },
+    {
+     "label": "EQUIPMENT RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.Equipment"
+    },
+    {
+     "label": "CLOTHING RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.Clothing"
+    },
+    {
+     "label": "ATTACHMENTS RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.Attachments"
+    },
+    {
+     "label": "AMMO RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.Ammo"
+    },
+    {
+     "label": "KEYCARDS RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.Keycards"
+    },
+    {
+     "label": "LEGENDARY WEAPONS RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.LegendaryWeapons"
+    },
+    {
+     "label": "LEGENDARY EQUIPMENT RARITY",
+     "kind": "choice",
+     "options": [
+      "None (Not Recommended)",
+      "Insanely Rare",
+      "Extremely Rare",
+      "Rare",
+      "Normal",
+      "Common",
+      "Abundant",
+      "Everywhere"
+     ],
+     "values": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "1",
+      "1.5",
+      "3",
+      "8"
+     ],
+     "cvar": "Loot.LegendaryGear"
+    }
+   ]
+  },
+  {
+   "name": "Player",
+   "rows": [
+    {
+     "label": "KEEP INVENTORY ON DEATH?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "RESET PASSIVE SKILLS ON DEATH?",
+     "kind": "check",
+     "default": 0.0
+    },
+    {
+     "label": "HEALTH REGENERATION MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.RegenMultiplier"
+    },
+    {
+     "label": "HUNGER DEPLETION MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 50.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.HungerMultiplier",
+     "default": 1.0
+    },
+    {
+     "label": "THIRST DEPLETION MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 50.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.ThirstMultiplier",
+     "default": 1.0
+    },
+    {
+     "label": "STAMINA DEPLETION MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 50.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.StaminaMultiplier",
+     "default": 1.0
+    },
+    {
+     "label": "STAMINA RECOVERY MULTIPLIER",
+     "kind": "slider",
+     "min": 0.1,
+     "max": 50.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.StaminaRecoveryMultiplier",
+     "default": 1.0
+    }
+   ]
+  },
+  {
+   "name": "Vehicles",
+   "rows": [
+    {
+     "label": "FUEL DEPLETION MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.FuelMultiplier",
+     "default": 1.0
+    },
+    {
+     "label": "DAMAGE DEPLETION MULTIPLIER",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 5.0,
+     "digits": 1,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.DamageMultiplier",
+     "default": 1.0
+    },
+    {
+     "label": "VEHICLE SPAWN CHANCE %",
+     "kind": "slider",
+     "min": 0.0,
+     "max": 100.0,
+     "digits": 0,
+     "multiplier": 1.0,
+     "cvar": "Difficulty.VehicleChance"
+    },
+    {
+     "label": "RESET VEHICLE SPAWNS?",
+     "kind": "button",
+     "text": "RESET VEHICLES"
+    }
+   ]
+  }
+ ],
+ "creator": {
+  "default_forename": "John",
+  "default_surname": "Doe",
+  "occupations": [
+   "Police Officer",
+   "Soldier",
+   "Pizza Deliverer",
+   "Lawyer",
+   "Student",
+   "Mechanic",
+   "Fire Officer",
+   "Medic",
+   "Priest",
+   "Teacher",
+   "Retired",
+   "Unemployed",
+   "Other"
+  ],
+  "body": [
+   {
+    "label": "Sex:",
+    "options": [
+     "Male",
+     "Female"
+    ],
+    "default": "Male"
+   },
+   {
+    "label": "Skin Color:",
+    "options": [
+     "Skin Color 1",
+     "Skin Color 2",
+     "Skin Color 3"
+    ],
+    "default": "Skin Color 1"
+   },
+   {
+    "label": "Hair Type:",
+    "options": [
+     "Bald",
+     "Male Hair 1",
+     "Male Hair 2",
+     "Male Hair 3",
+     "Male Hair 4",
+     "Male Hair 5",
+     "Male Hair 6",
+     "Male Hair 7",
+     "Male Hair 8",
+     "Female Hair 1",
+     "Female Hair 2",
+     "Female Hair 3",
+     "Female Hair 4",
+     "Female Hair 5",
+     "Female Hair 6",
+     "Female Hair 7"
+    ],
+    "default": "Bald"
+   },
+   {
+    "label": "Hair Color:",
+    "options": [
+     "Brown",
+     "Light Brown",
+     "Dark Brown",
+     "Blonde",
+     "Light Blonde",
+     "Black",
+     "Gray",
+     "White",
+     "Pink",
+     "Purple",
+     "Blue",
+     "Red",
+     "Ginger"
+    ],
+    "default": "Brown"
+   },
+   {
+    "label": "Mouth:",
+    "options": [
+     "Mouth 1",
+     "Mouth 2",
+     "Mouth 3",
+     "Mouth 4",
+     "None"
+    ],
+    "default": "Mouth 1"
+   },
+   {
+    "label": "Beard:",
+    "options": [
+     "None",
+     "Beard 1",
+     "Beard 2",
+     "Beard 3",
+     "Beard 4",
+     "Goatee 1",
+     "Goatee 2",
+     "Moustache 1",
+     "Moustache 2",
+     "Moustache 3"
+    ],
+    "default": "None"
+   },
+   {
+    "label": "Beard Color:",
+    "options": [
+     "Brown",
+     "Light Brown",
+     "Dark Brown",
+     "Blonde",
+     "Light Blonde",
+     "Black",
+     "Gray",
+     "White",
+     "Pink",
+     "Purple",
+     "Blue",
+     "Red",
+     "Ginger"
+    ],
+    "default": "Brown"
+   },
+   {
+    "label": "Eyebrows:",
+    "options": [
+     "Eyebrows 1",
+     "Eyebrows 2",
+     "Eyebrows 3",
+     "Eyebrows 4",
+     "None"
+    ],
+    "default": "Eyebrows 1"
+   },
+   {
+    "label": "Accessory 1:",
+    "options": [
+     "None",
+     "Eyebags",
+     "Freckles",
+     "Nose Bandage",
+     "Nose Piercing",
+     "Scar 1",
+     "Scar 2",
+     "Scar 3",
+     "Tattoo 1",
+     "Tattoo 2",
+     "Tattoo 3",
+     "War Paint 1",
+     "War Paint 2",
+     "War Paint 3"
+    ],
+    "default": "None"
+   },
+   {
+    "label": "Accessory 2:",
+    "options": [
+     "None",
+     "Eyebags",
+     "Freckles",
+     "Nose Bandage",
+     "Nose Piercing",
+     "Scar 1",
+     "Scar 2",
+     "Scar 3",
+     "Tattoo 1",
+     "Tattoo 2",
+     "Tattoo 3",
+     "War Paint 1",
+     "War Paint 2",
+     "War Paint 3"
+    ],
+    "default": "None"
+   },
+   {
+    "label": "Accessory 3:",
+    "options": [
+     "None",
+     "Eyebags",
+     "Freckles",
+     "Nose Bandage",
+     "Nose Piercing",
+     "Scar 1",
+     "Scar 2",
+     "Scar 3",
+     "Tattoo 1",
+     "Tattoo 2",
+     "Tattoo 3",
+     "War Paint 1",
+     "War Paint 2",
+     "War Paint 3"
+    ],
+    "default": "None"
+   }
+  ]
+ },
+ "new_game_rows": [
+  {
+   "label": "PERMADEATH?",
+   "kind": "check"
+  },
+  {
+   "label": "ALLOW DIFFICULTY CHANGES WHILE IN-GAME?",
+   "kind": "check"
+  }
+ ],
+ "difficulty_presets": [
+  {
+   "name": "Peaceful",
+   "values": [
+    {
+     "page": "General",
+     "label": "XP MULTIPLIER",
+     "value": 2.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE SPAWN AMOUNT MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE BOSS SPAWN AMOUNT MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE HOUND SPAWN AMOUNT MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE HEALTH MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE SPEED MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE DAMAGE MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "AI",
+     "label": "BANDIT HEALTH MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "AI",
+     "label": "MILITARY HEALTH MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "AI",
+     "label": "SCAVENGER / TRADER HEALTH MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ANIMAL SPAWN AMOUNT MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "General",
+     "label": "RANDOM EVENT SPAWN CHANCE MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "BANDIT CAMP SPAWN CHANCE MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "AI",
+     "label": "MILITARY CAMP SPAWN CHANCE MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "General",
+     "label": "RANDOM INFESTATIONS SPAWN CHANCE MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "General",
+     "label": "INFESTATIONS HEALTH MULTIPLIER",
+     "value": 0.0
+    },
+    {
+     "page": "Player",
+     "label": "KEEP INVENTORY ON DEATH?",
+     "value": 1.0
+    },
+    {
+     "page": "Player",
+     "label": "RESET PASSIVE SKILLS ON DEATH?",
+     "value": 0.0
+    },
+    {
+     "page": "Player",
+     "label": "HUNGER DEPLETION MULTIPLIER",
+     "value": 0.25
+    },
+    {
+     "page": "Player",
+     "label": "THIRST DEPLETION MULTIPLIER",
+     "value": 0.25
+    },
+    {
+     "page": "Vehicles",
+     "label": "FUEL DEPLETION MULTIPLIER",
+     "value": 0.25
+    },
+    {
+     "page": "Vehicles",
+     "label": "DAMAGE DEPLETION MULTIPLIER",
+     "value": 0.25
+    }
+   ]
+  },
+  {
+   "name": "Easy",
+   "values": [
+    {
+     "page": "General",
+     "label": "XP MULTIPLIER",
+     "value": 2.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE SPAWN AMOUNT MULTIPLIER",
+     "value": 0.5
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE BOSS SPAWN AMOUNT MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE HOUND SPAWN AMOUNT MULTIPLIER",
+     "value": 0.3
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE HEALTH MULTIPLIER",
+     "value": 0.5
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE SPEED MULTIPLIER",
+     "value": 0.75
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE DAMAGE MULTIPLIER",
+     "value": 0.5
+    },
+    {
+     "page": "AI",
+     "label": "BANDIT HEALTH MULTIPLIER",
+     "value": 0.75
+    },
+    {
+     "page": "AI",
+     "label": "MILITARY HEALTH MULTIPLIER",
+     "value": 0.75
+    },
+    {
+     "page": "AI",
+     "label": "SCAVENGER / TRADER HEALTH MULTIPLIER",
+     "value": 0.75
+    },
+    {
+     "page": "AI",
+     "label": "ANIMAL SPAWN AMOUNT MULTIPLIER",
+     "value": 0.75
+    },
+    {
+     "page": "General",
+     "label": "RANDOM EVENT SPAWN CHANCE MULTIPLIER",
+     "value": 0.75
+    },
+    {
+     "page": "AI",
+     "label": "BANDIT CAMP SPAWN CHANCE MULTIPLIER",
+     "value": 0.75
+    },
+    {
+     "page": "AI",
+     "label": "MILITARY CAMP SPAWN CHANCE MULTIPLIER",
+     "value": 0.5
+    },
+    {
+     "page": "General",
+     "label": "RANDOM INFESTATIONS SPAWN CHANCE MULTIPLIER",
+     "value": 0.5
+    },
+    {
+     "page": "General",
+     "label": "INFESTATIONS HEALTH MULTIPLIER",
+     "value": 0.5
+    },
+    {
+     "page": "Player",
+     "label": "KEEP INVENTORY ON DEATH?",
+     "value": 0.0
+    },
+    {
+     "page": "Player",
+     "label": "RESET PASSIVE SKILLS ON DEATH?",
+     "value": 0.0
+    },
+    {
+     "page": "Player",
+     "label": "HUNGER DEPLETION MULTIPLIER",
+     "value": 0.75
+    },
+    {
+     "page": "Player",
+     "label": "THIRST DEPLETION MULTIPLIER",
+     "value": 0.75
+    },
+    {
+     "page": "Vehicles",
+     "label": "FUEL DEPLETION MULTIPLIER",
+     "value": 0.75
+    },
+    {
+     "page": "Vehicles",
+     "label": "DAMAGE DEPLETION MULTIPLIER",
+     "value": 0.5
+    }
+   ]
+  },
+  {
+   "name": "Standard",
+   "values": [
+    {
+     "page": "General",
+     "label": "XP MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE SPAWN AMOUNT MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE BOSS SPAWN AMOUNT MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE HOUND SPAWN AMOUNT MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE HEALTH MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE SPEED MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE DAMAGE MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "BANDIT HEALTH MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "MILITARY HEALTH MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "SCAVENGER / TRADER HEALTH MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ANIMAL SPAWN AMOUNT MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "General",
+     "label": "RANDOM EVENT SPAWN CHANCE MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "BANDIT CAMP SPAWN CHANCE MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "MILITARY CAMP SPAWN CHANCE MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "General",
+     "label": "RANDOM INFESTATIONS SPAWN CHANCE MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "General",
+     "label": "INFESTATIONS HEALTH MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "Player",
+     "label": "KEEP INVENTORY ON DEATH?",
+     "value": 0.0
+    },
+    {
+     "page": "Player",
+     "label": "RESET PASSIVE SKILLS ON DEATH?",
+     "value": 0.0
+    },
+    {
+     "page": "Player",
+     "label": "HUNGER DEPLETION MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "Player",
+     "label": "THIRST DEPLETION MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "Vehicles",
+     "label": "FUEL DEPLETION MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "Vehicles",
+     "label": "DAMAGE DEPLETION MULTIPLIER",
+     "value": 1.0
+    }
+   ]
+  },
+  {
+   "name": "Hardened",
+   "values": [
+    {
+     "page": "General",
+     "label": "XP MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE SPAWN AMOUNT MULTIPLIER",
+     "value": 1.25
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE BOSS SPAWN AMOUNT MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE HOUND SPAWN AMOUNT MULTIPLIER",
+     "value": 1.25
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE HEALTH MULTIPLIER",
+     "value": 1.25
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE SPEED MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE DAMAGE MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "AI",
+     "label": "BANDIT HEALTH MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "AI",
+     "label": "MILITARY HEALTH MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "AI",
+     "label": "SCAVENGER / TRADER HEALTH MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "AI",
+     "label": "ANIMAL SPAWN AMOUNT MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "General",
+     "label": "RANDOM EVENT SPAWN CHANCE MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "AI",
+     "label": "BANDIT CAMP SPAWN CHANCE MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "AI",
+     "label": "MILITARY CAMP SPAWN CHANCE MULTIPLIER",
+     "value": 1.25
+    },
+    {
+     "page": "General",
+     "label": "RANDOM INFESTATIONS SPAWN CHANCE MULTIPLIER",
+     "value": 1.25
+    },
+    {
+     "page": "General",
+     "label": "INFESTATIONS HEALTH MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "Player",
+     "label": "KEEP INVENTORY ON DEATH?",
+     "value": 0.0
+    },
+    {
+     "page": "Player",
+     "label": "RESET PASSIVE SKILLS ON DEATH?",
+     "value": 0.0
+    },
+    {
+     "page": "Player",
+     "label": "HUNGER DEPLETION MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "Player",
+     "label": "THIRST DEPLETION MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "Vehicles",
+     "label": "FUEL DEPLETION MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "Vehicles",
+     "label": "DAMAGE DEPLETION MULTIPLIER",
+     "value": 1.5
+    }
+   ]
+  },
+  {
+   "name": "Nightmare",
+   "values": [
+    {
+     "page": "General",
+     "label": "XP MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE SPAWN AMOUNT MULTIPLIER",
+     "value": 2.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE BOSS SPAWN AMOUNT MULTIPLIER",
+     "value": 1.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE HOUND SPAWN AMOUNT MULTIPLIER",
+     "value": 2.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE HEALTH MULTIPLIER",
+     "value": 1.75
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE SPEED MULTIPLIER",
+     "value": 2.0
+    },
+    {
+     "page": "AI",
+     "label": "ZOMBIE DAMAGE MULTIPLIER",
+     "value": 2.0
+    },
+    {
+     "page": "AI",
+     "label": "BANDIT HEALTH MULTIPLIER",
+     "value": 1.75
+    },
+    {
+     "page": "AI",
+     "label": "MILITARY HEALTH MULTIPLIER",
+     "value": 1.75
+    },
+    {
+     "page": "AI",
+     "label": "SCAVENGER / TRADER HEALTH MULTIPLIER",
+     "value": 1.75
+    },
+    {
+     "page": "AI",
+     "label": "ANIMAL SPAWN AMOUNT MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "General",
+     "label": "RANDOM EVENT SPAWN CHANCE MULTIPLIER",
+     "value": 2.0
+    },
+    {
+     "page": "AI",
+     "label": "BANDIT CAMP SPAWN CHANCE MULTIPLIER",
+     "value": 2.0
+    },
+    {
+     "page": "AI",
+     "label": "MILITARY CAMP SPAWN CHANCE MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "General",
+     "label": "RANDOM INFESTATIONS SPAWN CHANCE MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "General",
+     "label": "INFESTATIONS HEALTH MULTIPLIER",
+     "value": 1.5
+    },
+    {
+     "page": "Player",
+     "label": "KEEP INVENTORY ON DEATH?",
+     "value": 0.0
+    },
+    {
+     "page": "Player",
+     "label": "RESET PASSIVE SKILLS ON DEATH?",
+     "value": 1.0
+    },
+    {
+     "page": "Player",
+     "label": "HUNGER DEPLETION MULTIPLIER",
+     "value": 1.25
+    },
+    {
+     "page": "Player",
+     "label": "THIRST DEPLETION MULTIPLIER",
+     "value": 1.25
+    },
+    {
+     "page": "Vehicles",
+     "label": "FUEL DEPLETION MULTIPLIER",
+     "value": 2.0
+    },
+    {
+     "page": "Vehicles",
+     "label": "DAMAGE DEPLETION MULTIPLIER",
+     "value": 2.0
+    }
+   ]
+  }
+ ]
+}

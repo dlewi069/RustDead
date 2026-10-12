@@ -55,10 +55,7 @@ impl SurvivalStats {
             self.health = (self.health - 2.5 * dt).max(0.0);
         }
 
-        // 3. Bleeding effect
-        if self.bleeding {
-            self.health = (self.health - self.bleeding_rate * dt).max(0.0);
-        }
+        // 3. Bleeding and 5. radiation damage are gameplay::medical (the game's MedicalComponent).
 
         // 4. Infection progression
         if self.infection > 0.0 {
@@ -70,11 +67,6 @@ impl SurvivalStats {
             }
         }
 
-        // 5. Radiation sickness
-        if self.radiation > 25.0 {
-            let rad_factor = (self.radiation - 25.0) / 75.0;
-            self.health = (self.health - (2.0 * rad_factor) * dt).max(0.0);
-        }
 
         // 6. Stamina recovery / drain
         if is_sprinting {

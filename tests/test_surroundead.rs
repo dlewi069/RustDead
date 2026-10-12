@@ -20,9 +20,9 @@ fn test_survival_stats_and_tick() {
     assert!(stats.thirst < 100.0);
     assert!(stats.stamina < 100.0);
 
-    // Inflict bleeding
+    // Bleeding damage over time is gameplay::medical's (MedicalComponent); take a hit and bleed.
+    stats.take_damage(10.0, false, 0.0);
     stats.bleeding = true;
-    stats.tick(5.0, false);
     assert!(stats.health < 100.0);
 
     // Apply bandage

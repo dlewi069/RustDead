@@ -1,0 +1,618 @@
+{
+ "classes": {
+  "BP_Zombie_Crawler_C": {
+   "alert_speed": 1.0,
+   "attack_interval": [
+    1.65,
+    2.05
+   ],
+   "bleed": 0.1,
+   "broken_bone": 0.25,
+   "capsule_half_height": 0.4,
+   "capsule_radius": 0.3,
+   "container": "Dead Zombie",
+   "damage": 14.0,
+   "health": 75.0,
+   "health_deviation": 10.0,
+   "heavy_bleed": 0.0,
+   "locomotion": [
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_ground-idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_ground-move_inplace",
+     0.5
+    ]
+   ],
+   "loot_table": "Zombie",
+   "materials": [
+    "Mat_PolygonCityZombies_01_A_Inst",
+    "Mat_PolygonCityZombies_01_B_Inst",
+    "Mat_PolygonCityZombies_01_C_Inst",
+    "Mat_PolygonCityZombies_02_A_Inst",
+    "Mat_PolygonCityZombies_02_B_Inst",
+    "Mat_PolygonCityZombies_02_C_Inst",
+    "Mat_PolygonCityZombies_03_A_Inst",
+    "Mat_PolygonCityZombies_03_B_Inst",
+    "Mat_PolygonCityZombies_03_C_Inst",
+    "Mat_PolygonCityZombies_04_A_Inst",
+    "Mat_PolygonCityZombies_04_B_Inst",
+    "Mat_PolygonCityZombies_04_C_Inst"
+   ],
+   "meshes": [
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Biker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Business_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Businessman_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_BusinessShirt_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Coat_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Daughter_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_FastfoodWorker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Father_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Father_Male_02",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_GamerGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Gangster_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Grandma_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Grandpa_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hipster_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hipster_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hoodie_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hobo_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jacket_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jacket_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jock_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Mother_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Mother_Female_02",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Paramedic_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Prisoner_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Punk_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Punk_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Roadworker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SchoolBoy_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SchoolGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_ShopKeeper_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Son_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Tourist_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Underwear_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Underwear_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_Firefighter_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Military_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Female_01"
+   ],
+   "name": "Undead Crawler",
+   "rad_chance": 0.05,
+   "rad_damage": 2.0,
+   "roam_speed": 0.3,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  },
+  "BP_Zombie_Dog_C": {
+   "alert_speed": 7.0,
+   "attack_interval": [
+    1.15,
+    1.65
+   ],
+   "bleed": 0.15,
+   "broken_bone": 0.02,
+   "capsule_half_height": 0.4,
+   "capsule_radius": 0.35,
+   "container": "Dead Zombie Hound",
+   "damage": 12.0,
+   "health": 125.0,
+   "health_deviation": 25.0,
+   "heavy_bleed": 0.05,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieAnims/Zombie_Idle_01",
+     0.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_walk1_inplace",
+     1.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_run1_inplace",
+     4.0
+    ]
+   ],
+   "loot_table": "ZombieHound",
+   "materials": [
+    "M_Zombie_Doberman_Inst",
+    "M_Zombie_GermanShepherd_Inst"
+   ],
+   "meshes": [
+    "PolygonFiles/PolygonDog/Meshes/SK_Animal_Dog_Zombie_GermanShepherd"
+   ],
+   "name": "Undead Feral Hound",
+   "rad_chance": 1.0,
+   "rad_damage": 6.0,
+   "roam_speed": 1.0,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  },
+  "BP_Zombie_Infected_C": {
+   "alert_speed": 2.5,
+   "attack_interval": [
+    1.25,
+    1.75
+   ],
+   "bleed": 0.2,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.75,
+   "capsule_radius": 0.3,
+   "container": "Dead Zombie",
+   "damage": 20.0,
+   "health": 200.0,
+   "health_deviation": 25.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/Regular/A_Enemy_Zombie_Idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_walk3_inplace",
+     1.0
+    ],
+    [
+     "Animations/Zombie/Regular/Other/Other/Zombie_Run",
+     2.5
+    ],
+    [
+     "Animations/Zombie/Regular/Other/Other/Zombie_Run",
+     3.5
+    ],
+    [
+     "Animations/Zombie/Regular/Other/Other/Zombie_Run",
+     6.0
+    ]
+   ],
+   "loot_table": "ZombieInfected",
+   "materials": [
+    "Mat_PolygonCityInfected_01_A_Inst",
+    "Mat_PolygonCityInfected_01_B_Inst",
+    "Mat_PolygonCityInfected_01_C_Inst",
+    "Mat_PolygonCityInfected_02_A_Inst",
+    "Mat_PolygonCityInfected_02_B_Inst",
+    "Mat_PolygonCityInfected_02_C_Inst",
+    "Mat_PolygonCityInfected_03_A_Inst",
+    "Mat_PolygonCityInfected_03_B_Inst",
+    "Mat_PolygonCityInfected_03_C_Inst",
+    "Mat_PolygonCityInfected_04_A_Inst",
+    "Mat_PolygonCityInfected_04_B_Inst",
+    "Mat_PolygonCityInfected_04_C_Inst"
+   ],
+   "meshes": [
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Biker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Business_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Businessman_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_BusinessShirt_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Coat_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Daughter_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_FastfoodWorker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Father_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Father_Male_02",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_GamerGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Gangster_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Grandma_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Grandpa_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hipster_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hipster_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hoodie_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hobo_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jacket_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jacket_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jock_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Mother_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Mother_Female_02",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Paramedic_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Prisoner_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Punk_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Punk_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Roadworker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SchoolBoy_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SchoolGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_ShopKeeper_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Son_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Tourist_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Underwear_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Underwear_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_Firefighter_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Military_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Female_01"
+   ],
+   "name": "Infected Undead",
+   "rad_chance": 0.5,
+   "rad_damage": 8.0,
+   "roam_speed": 1.0,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  },
+  "BP_Zombie_Infected_Horde_C": {
+   "alert_speed": 5.75,
+   "attack_interval": [
+    1.25,
+    1.75
+   ],
+   "bleed": 0.15,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.75,
+   "capsule_radius": 0.3,
+   "container": "Dead Zombie",
+   "damage": 20.0,
+   "health": 100.0,
+   "health_deviation": 25.0,
+   "heavy_bleed": 0.05,
+   "locomotion": [
+    [
+     "Animations/Zombie/Regular/A_Enemy_Zombie_Idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_walk3_inplace",
+     1.0
+    ],
+    [
+     "Animations/Zombie/Regular/Other/Other/Zombie_Run",
+     2.5
+    ],
+    [
+     "Animations/Zombie/Regular/Other/Other/Zombie_Run",
+     3.5
+    ],
+    [
+     "Animations/Zombie/Regular/Other/Other/Zombie_Run",
+     6.0
+    ]
+   ],
+   "loot_table": "ZombieInfected",
+   "materials": [
+    "Mat_PolygonCityInfected_01_A_Inst",
+    "Mat_PolygonCityInfected_01_B_Inst",
+    "Mat_PolygonCityInfected_01_C_Inst",
+    "Mat_PolygonCityInfected_02_A_Inst",
+    "Mat_PolygonCityInfected_02_B_Inst",
+    "Mat_PolygonCityInfected_02_C_Inst",
+    "Mat_PolygonCityInfected_03_A_Inst",
+    "Mat_PolygonCityInfected_03_B_Inst",
+    "Mat_PolygonCityInfected_03_C_Inst",
+    "Mat_PolygonCityInfected_04_A_Inst",
+    "Mat_PolygonCityInfected_04_B_Inst",
+    "Mat_PolygonCityInfected_04_C_Inst"
+   ],
+   "meshes": [
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Bellboy_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Biker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Bride_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Business_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Businessman_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_BusinessShirt_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Coat_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Daughter_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Diver_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_FastfoodWorker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Father_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Father_Male_02",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_GamerGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Gangster_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Grandma_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Grandpa_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hipster_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hipster_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hoodie_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hobo_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jacket_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jacket_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jock_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Mother_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Mother_Female_02",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Paramedic_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Prisoner_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Punk_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Punk_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Roadworker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SchoolBoy_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SchoolGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_ShopKeeper_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_ShopKeeper_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Son_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SummerGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Tourist_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Underwear_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Underwear_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_Firefighter_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_Clown_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Military_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_BioHazardSuit_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Military_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_RiotCop_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_Patient_Female_01"
+   ],
+   "name": "Infected Undead",
+   "rad_chance": 0.5,
+   "rad_damage": 8.0,
+   "roam_speed": 1.0,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  },
+  "BP_Zombie_Radiated_C": {
+   "alert_speed": 2.5,
+   "attack_interval": [
+    1.45,
+    1.75
+   ],
+   "bleed": 0.2,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.75,
+   "capsule_radius": 0.3,
+   "container": "Dead Zombie",
+   "damage": 18.0,
+   "health": 200.0,
+   "health_deviation": 15.0,
+   "heavy_bleed": 0.06,
+   "locomotion": [
+    [
+     "Animations/Zombie/Regular/A_Enemy_Zombie_Idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_walk2_inplace",
+     1.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_run2_inplace",
+     3.5
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_run2_inplace",
+     6.0
+    ]
+   ],
+   "loot_table": "ZombieRadiated",
+   "materials": [
+    "Mat_PolygonCityZombiesRadiated_01_A_Inst",
+    "Mat_PolygonCityZombiesRadiated_01_B_Inst",
+    "Mat_PolygonCityZombiesRadiated_01_C_Inst",
+    "Mat_PolygonCityZombiesRadiated_02_A_Inst",
+    "Mat_PolygonCityZombiesRadiated_02_B_Inst",
+    "Mat_PolygonCityZombiesRadiated_02_C_Inst",
+    "Mat_PolygonCityZombiesRadiated_03_A_Inst",
+    "Mat_PolygonCityZombiesRadiated_03_B_Inst",
+    "Mat_PolygonCityZombiesRadiated_03_C_Inst",
+    "Mat_PolygonCityZombiesRadiated_04_A_Inst",
+    "Mat_PolygonCityZombiesRadiated_04_B_Inst",
+    "Mat_PolygonCityZombiesRadiated_04_C_Inst"
+   ],
+   "meshes": [
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_Patient_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_BioHazardSuit_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Military_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Coat_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Businessman_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_BusinessShirt_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_Firefighter_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_RiotCop_Male_01"
+   ],
+   "name": "Radiated Undead",
+   "rad_chance": 1.0,
+   "rad_damage": 8.0,
+   "roam_speed": 1.0,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  },
+  "BP_Zombie_Roamer_C": {
+   "alert_speed": 2.5,
+   "attack_interval": [
+    1.45,
+    2.05
+   ],
+   "bleed": 0.12,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.75,
+   "capsule_radius": 0.3,
+   "container": "Dead Zombie",
+   "damage": 14.0,
+   "health": 100.0,
+   "health_deviation": 10.0,
+   "heavy_bleed": 0.02,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieAnims/Zombie_Idle_01",
+     0.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_walk1_inplace",
+     1.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_run1_inplace",
+     4.0
+    ]
+   ],
+   "loot_table": "Zombie",
+   "materials": [
+    "Mat_PolygonCityZombies_01_A_Inst",
+    "Mat_PolygonCityZombies_01_B_Inst",
+    "Mat_PolygonCityZombies_01_C_Inst",
+    "Mat_PolygonCityZombies_02_A_Inst",
+    "Mat_PolygonCityZombies_02_B_Inst",
+    "Mat_PolygonCityZombies_02_C_Inst",
+    "Mat_PolygonCityZombies_03_A_Inst",
+    "Mat_PolygonCityZombies_03_B_Inst",
+    "Mat_PolygonCityZombies_03_C_Inst",
+    "Mat_PolygonCityZombies_04_A_Inst",
+    "Mat_PolygonCityZombies_04_B_Inst",
+    "Mat_PolygonCityZombies_04_C_Inst"
+   ],
+   "meshes": [
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Biker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Business_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Businessman_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_BusinessShirt_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Coat_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Daughter_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_FastfoodWorker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Father_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Father_Male_02",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_GamerGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Gangster_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Grandma_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Grandpa_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hipster_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hipster_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hoodie_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hobo_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jacket_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jacket_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jock_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Mother_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Mother_Female_02",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Paramedic_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Prisoner_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Punk_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Punk_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Roadworker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SchoolBoy_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SchoolGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_ShopKeeper_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Son_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Tourist_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Underwear_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Underwear_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_Firefighter_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Military_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Female_01"
+   ],
+   "name": "Undead Shambler",
+   "rad_chance": 0.05,
+   "rad_damage": 2.0,
+   "roam_speed": 1.0,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  },
+  "BP_Zombie_Roamer_Tutorial_C": {
+   "alert_speed": 2.5,
+   "attack_interval": [
+    1.45,
+    2.05
+   ],
+   "bleed": 0.12,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.75,
+   "capsule_radius": 0.3,
+   "container": "Dead Zombie",
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 10.0,
+   "heavy_bleed": 0.02,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieAnims/Zombie_Idle_01",
+     0.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_walk1_inplace",
+     1.0
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ],
+    [
+     "Animations/Zombie/Regular/Locomotion/Anim_Zombie_run1_inplace",
+     4.0
+    ]
+   ],
+   "loot_table": "Zombie",
+   "materials": [
+    "Mat_PolygonCityZombies_01_A_Inst",
+    "Mat_PolygonCityZombies_01_B_Inst",
+    "Mat_PolygonCityZombies_01_C_Inst",
+    "Mat_PolygonCityZombies_02_A_Inst",
+    "Mat_PolygonCityZombies_02_B_Inst",
+    "Mat_PolygonCityZombies_02_C_Inst",
+    "Mat_PolygonCityZombies_03_A_Inst",
+    "Mat_PolygonCityZombies_03_B_Inst",
+    "Mat_PolygonCityZombies_03_C_Inst",
+    "Mat_PolygonCityZombies_04_A_Inst",
+    "Mat_PolygonCityZombies_04_B_Inst",
+    "Mat_PolygonCityZombies_04_C_Inst"
+   ],
+   "meshes": [
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Biker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Business_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Businessman_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_BusinessShirt_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Coat_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Daughter_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_FastfoodWorker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Father_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Father_Male_02",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_GamerGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Gangster_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Grandma_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Grandpa_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hipster_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hipster_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hoodie_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Hobo_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jacket_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jacket_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Jock_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Mother_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Mother_Female_02",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Paramedic_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Prisoner_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Punk_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Punk_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Roadworker_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SchoolBoy_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_SchoolGirl_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_ShopKeeper_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Son_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Tourist_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Underwear_Female_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Underwear_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/SK_Zombie_Firefighter_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Military_Male_01",
+    "PolygonFiles/PolygonCityZombies/Meshes/Characters/Normal/SK_Zombie_Police_Female_01"
+   ],
+   "name": "Undead Shambler",
+   "rad_chance": 0.05,
+   "rad_damage": 2.0,
+   "roam_speed": 1.0,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  }
+ }
+}

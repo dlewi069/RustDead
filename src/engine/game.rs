@@ -26,6 +26,12 @@ pub struct GameState {
     pub player_pitch: f32,
     pub survival: SurvivalStats,
     pub medical: MedicalSystem,
+    /// MedicalComponent's effects (bleeds, broken bone, radiation sickness).
+    #[serde(default)]
+    pub effects: crate::gameplay::medical::MedicalEffects,
+    /// Ultra_Dynamic_Weather's current preset and transition.
+    #[serde(default)]
+    pub weather: crate::gameplay::weather::WeatherSave,
     pub progression: ProgressionSystem,
     pub equipment: Equipment,
     pub active_weapon: Option<WeaponStats>,
@@ -192,6 +198,8 @@ impl GameState {
             player_pitch: 0.0,
             survival: SurvivalStats::new(),
             medical: MedicalSystem::new(),
+            effects: Default::default(),
+            weather: Default::default(),
             progression: ProgressionSystem::new(),
             equipment,
             active_weapon: create_weapon_preset("m4a1"),

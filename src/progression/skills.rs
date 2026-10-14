@@ -87,10 +87,24 @@ impl SkillType {
     }
 }
 
+/// LevellingComponent's defaults.
+pub const FIRST_MAX_XP: u64 = 500;
+pub const LEVEL_CAP: u32 = 50;
+
+fn first_max_xp() -> u64 {
+    FIRST_MAX_XP
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProgressionSystem {
     pub level: u32,
     pub current_xp: u64,
+    /// LevellingComponent's CurrentMaxXP: 500 at level 1, x 1.325 (rounded up) per level.
+    #[serde(default = "first_max_xp")]
+    pub max_xp: u64,
+    /// Level-ups not yet announced ("Level up! You're now level {lvl}!", "+1 skill point").
+    #[serde(skip)]
+    pub level_ups: Vec<u32>,
     pub unspent_points: u32,
     pub total_earned_xp: u64,
     pub skills: Vec<(SkillType, u32)>, // skill and current level (0..=5)
@@ -108,36 +122,39 @@ impl ProgressionSystem {
         Self {
             level: 1,
             current_xp: 0,
+            max_xp: FIRST_MAX_XP,
+            level_ups: Vec::new(),
             unspent_points: 0,
             total_earned_xp: 0,
             skills,
         }
     }
 
-    /// XP required to advance from current level to level + 1
+    /// XP required to advance from current level to level + 1 (CurrentMaxXP).
     pub fn xp_for_next_level(&self) -> u64 {
-        Self::calculate_xp_for_level(self.level)
+        self.max_xp.max(1)
     }
 
-    pub fn calculate_xp_for_level(lvl: u32) -> u64 {
-        // Level 1 -> 2: 100 XP
-        // Level 2 -> 3: 250 XP
-        // Level 3 -> 4: 500 XP
-        // Level N -> N+1: 100 * (lvl)^1.5 rounded
-        (100.0 * (lvl as f64).powf(1.45)).round() as u64
-    }
-
-    /// Adds XP and checks for level-ups. Returns Some(new_level) if leveled up.
+    /// LevellingComponent.AddXP + LevelUp: the remainder carries over; each level gives a skill
+    /// point (TechTreeComponent's Add Skill Points); at LevelCap 50 the bar stays full.
+    /// Returns Some(new_level) if it levelled up.
     pub fn add_xp(&mut self, amount: u64) -> Option<u32> {
         self.current_xp += amount;
         self.total_earned_xp += amount;
 
         let mut leveled_up = false;
         while self.current_xp >= self.xp_for_next_level() {
+            if self.level >= LEVEL_CAP {
+                self.current_xp = self.max_xp;
+                break;
+            }
             let needed = self.xp_for_next_level();
             self.current_xp -= needed;
             self.level += 1;
             self.unspent_points += 1;
+            // CalculateMaxXP: ceil(x 1.325), at most 200000.
+            self.max_xp = ((self.max_xp as f64 * 1.325).ceil() as u64).min(200_000);
+            self.level_ups.push(self.level);
             leveled_up = true;
         }
 
@@ -145,6 +162,16 @@ impl ProgressionSystem {
             Some(self.level)
         } else {
             None
+        }
+    }
+
+    /// LevellingComponent.XPDeath (Pause > Suicide): a level lower, the bar empty, and
+    /// CurrentMaxXP = round(CurrentMaxXP / 2.65 x 2).
+    pub fn xp_death(&mut self) {
+        if self.level > 1 {
+            self.level -= 1;
+            self.current_xp = 0;
+            self.max_xp = (self.max_xp as f64 / 2.65 * 2.0).round() as u64;
         }
     }
 
@@ -260,5 +287,37 @@ impl ProgressionSystem {
     pub fn scrap_yield_multiplier(&self) -> f32 {
         let lvl = self.get_skill_level(SkillType::Scrapper);
         1.0 + (lvl as f32 * 0.25)
+    }
+}
+
+#[cfg(test)]
+mod levelling_tests {
+    use super::*;
+
+    #[test]
+    fn levels_follow_the_levelling_component() {
+        let mut p = ProgressionSystem::new();
+        assert_eq!(p.xp_for_next_level(), 500);
+        assert_eq!(p.add_xp(499), None);
+        assert_eq!(p.add_xp(10), Some(2));
+        assert_eq!((p.level, p.current_xp, p.max_xp, p.unspent_points), (2, 9, 663, 1), "ceil(500 x 1.325)");
+        // Two levels at once carry the remainder.
+        p.add_xp(663 + 879);
+        assert_eq!((p.level, p.current_xp, p.max_xp), (4, 9, 1165));
+        assert_eq!(p.level_ups, vec![2, 3, 4]);
+        p.xp_death();
+        assert_eq!((p.level, p.current_xp, p.max_xp), (3, 0, 879), "round(1165 / 2.65 x 2)");
+    }
+
+    #[test]
+    fn level_50_is_the_cap() {
+        let mut p = ProgressionSystem::new();
+        for _ in 0..80 {
+            p.add_xp(p.max_xp);
+        }
+        assert_eq!(p.level, LEVEL_CAP);
+        assert_eq!(p.current_xp, p.max_xp);
+        assert!(p.max_xp <= 200_000);
+        assert_eq!(p.unspent_points, 49);
     }
 }

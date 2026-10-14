@@ -48,6 +48,11 @@ fi
 "$SDX" tex "$OUT" SurrounDead/Content/UI/Textures/ | grep -c '^ok' | xargs echo "ui textures:"
 # Lockpicking minigame (UI/Lockpick/LockpickUI, LockWidget).
 "$SDX" tex "$OUT" SurrounDead/Content/UI/Lockpick/Textures/ >/dev/null
+# The note paper (LetterUI: BP_KeypadNote's code).
+"$SDX" tex "$OUT" SurrounDead/Content/UI/Widgets/Journal/Quests/QuestPageBlank >/dev/null
+# The journal's Skills page (gameplay/journal.rs).
+"$SDX" tex "$OUT" SurrounDead/Content/UI/Widgets/Journal/Skills/ SurrounDead/Content/UI/Widgets/Journal/Markers/ >/dev/null
+"$SDX" raw "$OUT" SurrounDead/Content/Blueprints/PluginsAndAssets/Font/F_ESRPG__RU_EN_.ufont >/dev/null
 # Crafting amount arrows (W_PlayerCraftingUI).
 "$SDX" tex "$OUT" SurrounDead/Content/UI/CleanFlatIcons/Textures/png_128/icon/icon_arrow/icon_arrow_13 \
     SurrounDead/Content/UI/CleanFlatIcons/Textures/png_128/icon/icon_arrow/icon_arrow_14 >/dev/null
@@ -109,7 +114,7 @@ if has --anims; then
     CLIPS=(
         Anims/No_Rifle/ThirdPersonIdle Anims/No_Rifle/ThirdPersonWalk Anims/No_Rifle/ThirdPersonRun
         Anims/No_Rifle/ThirdPersonSprint Anims/No_Rifle/A_JumpAir Player/Anims/Random/Anim_Regular_death1
-        Anims/No_Rifle/ThirdPersonIdleMelee
+        Anims/No_Rifle/ThirdPersonIdleMelee Anims/Other/Anim_Regular_ladder_up-inplace Anims/Other/Anim_Regular_ladder_idle
         Anims/Rifle_Standing/Rifle_Idle Anims/Rifle_Standing/A_AR_Walk Anims/Rifle_Standing/A_AR_Run
         Anims/Rifle_Standing/Idle_Rifle_Ironsights Anims/Rifle_Standing/Walk_Fwd_Rifle_Ironsights
         Anims/Rifle_Standing/Walk_Bwd_Rifle_Ironsights Anims/Rifle_Standing/Walk_Lt_Rifle_Ironsights
@@ -118,6 +123,16 @@ if has --anims; then
         Anims/Pistol_Standing/A_HG_Aim_Stand Anims/Pistol_Standing/A_AimWalk_0 Anims/Pistol_Standing/A_AimWalk_180
         Anims/Pistol_Standing/A_AimWalk_-90 Anims/Pistol_Standing/A_AimWalk_90
         Player/1Handed/Walk_F_Seq Player/1Handed/Walk_B_Seq Player/1Handed/Walk_L_Seq Player/1Handed/Walk_R_Seq
+        Anims/No_Rifle/A_Crouch_Idle Anims/No_Rifle/A_Crouch_Walk Player/Anims/Actions/SittingPlayer_Anim
+        Anims/Rifle_Crouch/A_AR_Crouch_Idle Anims/Rifle_Crouch/A_AR_Crouch_Walk
+        Anims/Rifle_Crouch/Crouch_Idle_Rifle_Ironsights Anims/Rifle_Crouch/Crouch_Walk_Fwd_Rifle_Ironsights
+        Anims/Rifle_Crouch/Crouch_Walk_BwdRifle_Ironsights Anims/Rifle_Crouch/Crouch_Walk_Lt_Rifle_Ironsights
+        Anims/Rifle_Crouch/Crouch_Walk_Rt_Rifle_Ironsights
+        Anims/Pistol_Crouch/A_HG_Crouch_Idle Anims/Pistol_Crouch/A_HG_Crouch_Walk Anims/Pistol_Crouch/W1_Crouch_Aim_Idle_IPC
+        Anims/Pistol_Crouch/W1_CrouchWalk_Aim_F_Loop_IPC Anims/Pistol_Crouch/W1_CrouchWalk_Aim_B_Loop_IPC
+        Anims/Pistol_Crouch/W1_CrouchWalk_Aim_L_Loop_IPC Anims/Pistol_Crouch/W1_CrouchWalk_Aim_R_Loop_IPC
+        Anims/MeleeCrouch/Crouch_Idle_Axe Anims/MeleeCrouch/Crouch_Fwd_Axe Anims/MeleeCrouch/Crouch_Bwd_Axe
+        Anims/MeleeCrouch/Crouch_Lt_Axe Anims/MeleeCrouch/Crouch_Rt_Axe
         Anims/Other/Fire_Rifle_Ironsights Anims/Other/Reload_Rifle_Hip Anims/Other/Reload_Pistol
         Player/1Handed/Attack_01_Seq Player/1Handed/Attack_02_Seq Player/1Handed/Attack_04_Seq Player/1Handed/Attack_06_Seq
         Zombie/Regular/A_Enemy_Zombie_Idle Zombie/Regular/Locomotion/Anim_Zombie_walk1_inplace
@@ -128,6 +143,9 @@ if has --anims; then
         Zombie/Regular/Other/Other/Zombie_DeathPosition
         Zombie/ZombieAnims/Zombie_Idle_01 Zombie/Regular/Other/Other/Zombie_Run
         Zombie/Regular/Locomotion/Anim_Zombie_ground-idle Zombie/Regular/Locomotion/Anim_Zombie_ground-move_inplace
+        Player/Anims/Actions/Push/Anim_SmallMeleePush Player/Anims/Actions/Push/Anim_PistolPush
+        Player/Anims/Actions/Push/Anim_RiflePush Zombie/ZombieAnims/Zombie_HitReact_Head
+        Player/Anims/Actions/Throw
     )
     "$SDX" animjson "$OUT" "${CLIPS[@]/#/$A/}" | grep -c '^ok' | xargs echo "animations:"
     # BP_Zombie_Dog: ZombieDogAILocomotion (stand/walk/run), bite and hit montages, death.
@@ -135,6 +153,9 @@ if has --anims; then
     DOG=(Locomotion/AS_Dog_Locomotion_Standing Locomotion/AS_Dog_Locomotion_Walking Locomotion/AS_Dog_Locomotion_Running
         Attack/AS_Dog_Attack_Bite Attack/AS_Dog_Attack_Hit Death/AS_Dog_Death_Standing)
     "$SDX" animjson "$OUT" "${DOG[@]/#/$D/}" | grep -c '^ok' | xargs echo "hound animations:"
+    # BP_PoliceStationGarageDoor's folding gate (level/garage.rs), mesh and FoldingGate_Anim_Montage's clip.
+    "$SDX" mesh "$OUT" SurrounDead/Content/Meshes/Gate/FoldingGate >/dev/null
+    "$SDX" animjson "$OUT" SurrounDead/Content/Meshes/Gate/FoldingGate_Anim >/dev/null
 fi
 
 # Regenerate assets/data/zombies.json (committed): BP_MasterZombie's children and their values.
@@ -148,17 +169,18 @@ fi
 # Regenerate assets/data/items.json (committed) from the JigSInventory data assets.
 if has --items; then
     TMP="$(mktemp -d)"
-    "$SDX" json "$TMP" SurrounDead/Content/Inventory/Items/DataAssets/ SurrounDead/Content/Inventory/Containers/ \
+    "$SDX" json "$TMP" SurrounDead/Content/Inventory/Items/DataAssets/ SurrounDead/Content/Inventory/Containers/ SurrounDead/Content/Blueprints/Throwables/ \
         SurrounDead/Content/Inventory/Items/Pickups/Weapons/ SurrounDead/Content/Inventory/Items/Other/Components/BP_WeaponsPickupComponent \
         SurrounDead/Content/Inventory/Items/Other/Components/Data/Enum_Firearms \
-        SurrounDead/Content/AI/AILootTables/ \
-        SurrounDead/Content/Inventory/Crafting/DT_CraftingTableTypes \
+        SurrounDead/Content/AI/AILootTables/ SurrounDead/Content/Blueprints/SkillTree/ \
+        SurrounDead/Content/Inventory/Crafting/DT_CraftingTableTypes SurrounDead/Content/PlayerModel/Other/ClothingSettings \
         SurrounDead/Content/Meshes/PlayerModels/SK_Chr_ToplessMale_01_Skeleton \
         SurrounDead/Content/JigSInventory/Jigsaw/Data/DataAsset/JigsawItem_DataAsset >/dev/null
     python3 "$HERE/gen_items.py" "$TMP"
     rm -rf "$TMP"
-    # Inventory pictures are renders of each item's inspect mesh (gameplay/icons.rs).
-    python3 -c "import json,os,sys; d=json.load(open('$ROOT/assets/data/items.json')); print('\n'.join(sorted({v['mesh'] for v in d['items'].values() if v['mesh'] and not os.path.exists('$OUT/'+v['mesh']+'.glb')})))" > "$HERE/mappings/item_meshes.txt"
+    # Inventory pictures are renders of each item's inspect mesh (gameplay/icons.rs); containers
+    # spawned at runtime (police/keycard briefcases) draw their class's mesh.
+    python3 -c "import json,os,sys; d=json.load(open('$ROOT/assets/data/items.json')); m=[v['mesh'] for v in [*d['items'].values(), *d['containers'].values()]]; print('\n'.join(sorted({x for x in m if x and not os.path.exists('$OUT/'+x+'.glb')})))" > "$HERE/mappings/item_meshes.txt"
     if [[ -s "$HERE/mappings/item_meshes.txt" ]]; then
         xargs -a "$HERE/mappings/item_meshes.txt" -n 300 "$SDX" mesh "$OUT" | grep -c '^ok' | xargs echo "item meshes:"
     fi

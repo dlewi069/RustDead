@@ -1,19 +1,29 @@
 //! In-world gameplay on top of the level: searching containers, inventory, survival vitals,
 //! combat.
 
+pub mod burning;
 pub mod combat;
+pub mod damage_numbers;
 pub mod daynight;
 pub mod equipment;
+pub mod flashlight;
+pub mod footsteps;
 pub mod hud;
 pub mod icons;
 pub mod interact;
 pub mod inventory_ui;
 pub mod items;
+pub mod journal;
+pub mod keypad;
 pub mod lockpick;
 pub mod medical;
 pub mod weather;
+pub mod whistle;
 pub mod notify;
+pub mod recoil;
+pub mod shove;
 pub mod survival;
+pub mod throwables;
 pub mod zombies;
 
 use bevy::prelude::*;
@@ -38,7 +48,17 @@ impl Plugin for GameplayPlugin {
         zombies::plugin(app);
         notify::plugin(app);
         lockpick::plugin(app);
+        keypad::plugin(app);
         weather::plugin(app);
+        footsteps::plugin(app);
+        flashlight::plugin(app);
+        shove::plugin(app);
+        throwables::plugin(app);
+        burning::plugin(app);
+        damage_numbers::plugin(app);
+        recoil::plugin(app);
+        whistle::plugin(app);
+        journal::plugin(app);
     }
 }
 

@@ -148,7 +148,58 @@ def firearms_have_component_data(ctx):
             ctx.err(f"{k}: firearm data {'missing' if gun else 'on a non-firearm'} (export_assets.sh --items)")
 
 
+def clothing_has_body_parts(ctx):
+    # BodyPartVisibility needs each worn item's body-part meshes (gameplay::equipment::body_meshes).
+    parts = {"Torso", "Arms", "Biceps", "Hands", "Legs", "LowerThighs", "LowerLegs", "Feet"}
+    for k, v in ctx.items["items"].items():
+        c = v.get("clothing")
+        if not c:
+            continue
+        body = c.get("body") or {}
+        for sex in ("male", "female"):
+            if set(body.get(sex) or {}) != parts:
+                ctx.err(f"{k}: clothing without {sex} body parts")
+                continue
+            for mesh in filter(None, body[sex].values()):
+                if GAME.exists() and not (GAME / f"{mesh}.glb").exists():
+                    ctx.err(f"{k}: body part {mesh} not exported")
+
+
+def walk_clips_have_footsteps(ctx):
+    # gameplay::footsteps follows the sequences' Footstep notifies (Anim.cs exports them).
+    anims = GAME / "SurrounDead" / "Content" / "Animations" / "Anims"
+    if not anims.exists():
+        return
+    for clip in ("No_Rifle/ThirdPersonRun", "No_Rifle/ThirdPersonSprint", "No_Rifle/A_Crouch_Walk",
+                 "Rifle_Standing/A_AR_Run", "Pistol_Crouch/A_HG_Crouch_Walk"):
+        f = anims / f"{clip}.anim.json"
+        if not f.exists():
+            ctx.err(f"{clip}: not exported")
+            continue
+        d = json.loads(f.read_text())
+        steps = [n["time"] for n in d.get("notifies", []) if n["name"] == "Footstep"]
+        if len(steps) != 2 or not all(0 <= t <= d["duration"] + 0.05 for t in steps):
+            ctx.err(f"{clip}: footsteps {steps} in a {d['duration']:.2f} s clip")
+    crouch = json.loads((anims / "No_Rifle/A_Crouch_Walk.anim.json").read_text())
+    if crouch.get("rate") != 0.8:
+        ctx.err(f"A_Crouch_Walk: RateScale {crouch.get('rate')} (0.8 in the game)")
+
+
+def character_clips_dont_scale(ctx):
+    # Survivor and zombie clips never scale bones; a scale (Fire_Rifle_Ironsights came out at 4,
+    # an additive clip) blows up the parts hung off bones, like hair on the head.
+    anims = GAME / "SurrounDead" / "Content" / "Animations"
+    for f in sorted(anims.rglob("*.anim.json")):
+        d = json.loads(f.read_text())
+        worst = max((abs(x - 1) for v in d["bones"].values() for k in v["s"] for x in k), default=0)
+        if worst > 0.01:
+            ctx.err(f"{f.relative_to(anims)}: bone scale off by {worst:.2f}")
+
+
 CHECKS = [
+    character_clips_dont_scale,
+    walk_clips_have_footsteps,
+    clothing_has_body_parts,
     recipes_reference_real_items,
     weapons_and_magazines_are_consistent,
     equip_sockets_exist,

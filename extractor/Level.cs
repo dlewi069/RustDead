@@ -40,6 +40,11 @@ static class LevelExport
     // Every actor with its class, so gameplay actors (spawners, containers, traders, vehicles,
     // lights, Blueprint buildings) can be mapped to Rust systems. Spawners also carry their
     // per-instance property overrides (SpawnAmount, RespawnMethod, box extent...) as `props`.
+    // Lab generators, light switches and lights, other generators: linked by actor refs.
+    static bool Powered(string cls) => cls.StartsWith("BP_Laboratory") || cls.Contains("Generator") || cls.Contains("PoliceStation") || cls == "BP_Lever_C";
+    // Actors whose components are moved per instance (ladder points, item spawner points).
+    static bool Placed(string cls) => cls == "BP_Ladder_C" || cls == "BP_SpecialItemContainerSpawner_C" || cls == "BP_Keycard_Spawner_C";
+
     public static void WriteActors(IEnumerable<UObject> exports, string outDir)
     {
         var actors = new List<object>();
@@ -50,16 +55,23 @@ static class LevelExport
             string cls = actor.Class?.Name.Text ?? actor.ExportType;
             Dictionary<string, object?>? props = null;
             // Spawners, and the sky/weather actors whose settings drive day/night and weather.
-            if (cls.Contains("AISpawner") || cls.StartsWith("Ultra_Dynamic") || cls.StartsWith("Weather_Override") || cls.StartsWith("UDS_") || cls == "BP_SkySettings_C" || cls.Contains("Door"))
+            if (cls.Contains("AISpawner") || cls.StartsWith("Ultra_Dynamic") || cls.StartsWith("Weather_Override") || cls.StartsWith("UDS_") || cls == "BP_SkySettings_C" || cls.Contains("Door") || Placed(cls) || Powered(cls))
             {
                 props = new();
                 foreach (var tag in actor.Properties)
                 {
                     var v = tag.Tag?.GenericValue;
                     // Class references (SpawnedActorClass) by name; other object refs are dropped.
+                    // Weather actors and the power network keep object refs (actor arrays: a
+                    // generator's Actors, a switch's Lights...) as names.
                     bool weather = !cls.Contains("AISpawner");
                     if (v is FPackageIndex idx)
                     {
+                        // Ladders, item spawners: a component moved on the instance (PlayerPostition,
+                        // Spawn1...) as "<Component>.RelativeLocation" (UE cm); absent = the BP template's.
+                        if (Placed(cls) && idx.ResolvedObject?.Load() is USceneComponent sc)
+                            foreach (var p in sc.Properties.Where(p => p.Name.Text is "RelativeLocation" or "RelativeRotation"))
+                                props[$"{tag.Name.Text}.{p.Name.Text}"] = Newtonsoft.Json.Linq.JToken.FromObject(p.Tag?.GenericValue ?? "").ToString(Newtonsoft.Json.Formatting.None);
                         // Class references (SpawnedActorClass); weather actors keep asset refs too.
                         if (idx.Name.EndsWith("_C") || weather) props[tag.Name.Text] = idx.Name;
                         continue;

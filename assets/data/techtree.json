@@ -1,0 +1,175 @@
+{
+ "nodes": [
+  {
+   "cost": 1,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/HEALTH_REGEN.png",
+   "id": "Skill_HealthRegen",
+   "kind": 3,
+   "name": "Health Regen",
+   "parents": [],
+   "pos": [
+    288,
+    32
+   ],
+   "tooltip": "Health regeneration up to 80% as long as your player is in good condition."
+  },
+  {
+   "cost": 2,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/CRIT.png",
+   "id": "Skill_CriticalHitter",
+   "kind": 1,
+   "name": "Critical Hitter",
+   "parents": [
+    "Skill_HealthRegen"
+   ],
+   "pos": [
+    96,
+    192
+   ],
+   "tooltip": "Doubles chance of critical hits. (Melee & Ranged)"
+  },
+  {
+   "cost": 2,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/Distraction.png",
+   "id": "Skill_Distraction",
+   "kind": 2,
+   "name": "Distraction",
+   "parents": [
+    "Skill_HealthRegen"
+   ],
+   "pos": [
+    288,
+    192
+   ],
+   "tooltip": "Whistle to distract enemies.\r\n(Default key: O )"
+  },
+  {
+   "cost": 2,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/CombatROll.png",
+   "id": "Skill_CombatRoll",
+   "kind": 3,
+   "name": "Combat Roll",
+   "parents": [
+    "Skill_HealthRegen"
+   ],
+   "pos": [
+    480,
+    192
+   ],
+   "tooltip": "Player can combat roll out the way of incoming attacks.\r\n(Default key: C )"
+  },
+  {
+   "cost": 3,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/DEMO_EXPERT.png",
+   "id": "Skill_DemolitionExpert",
+   "kind": 1,
+   "name": "Demolition Expert",
+   "parents": [
+    "Skill_CriticalHitter"
+   ],
+   "pos": [
+    96,
+    320
+   ],
+   "tooltip": "Explosives do more damage."
+  },
+  {
+   "cost": 3,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/Lockpick+.png",
+   "id": "Skill_Lockpick",
+   "kind": 2,
+   "name": "Lockpick+",
+   "parents": [
+    "Skill_Distraction"
+   ],
+   "pos": [
+    288,
+    320
+   ],
+   "tooltip": "Lock pick advanced locks."
+  },
+  {
+   "cost": 3,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/Parkour.png",
+   "id": "Skill_Parkour",
+   "kind": 3,
+   "name": "Parkour",
+   "parents": [
+    "Skill_CombatRoll"
+   ],
+   "pos": [
+    480,
+    320
+   ],
+   "tooltip": "Player can parkour while falling/jumping & increased parkour speed."
+  },
+  {
+   "cost": 5,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/NightCreature.png",
+   "id": "Skill_NightCreature",
+   "kind": 1,
+   "name": "Night Creature",
+   "parents": [
+    "Skill_DemolitionExpert"
+   ],
+   "pos": [
+    96,
+    448
+   ],
+   "tooltip": "Deal more melee damage at night."
+  },
+  {
+   "cost": 5,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/DeathBringer.png",
+   "id": "Skill_Deathbringer",
+   "kind": 2,
+   "name": "Deathbringer",
+   "parents": [
+    "Skill_Lockpick"
+   ],
+   "pos": [
+    288,
+    448
+   ],
+   "tooltip": "Once each life, when health reaches 0, 15 health will be added to the player."
+  },
+  {
+   "cost": 5,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/Huntsman.png",
+   "id": "Skill_Huntsman",
+   "kind": 3,
+   "name": "Huntsman",
+   "parents": [
+    "Skill_Parkour"
+   ],
+   "pos": [
+    480,
+    448
+   ],
+   "tooltip": "Extra bag of meat from animal kills."
+  },
+  {
+   "cost": 5,
+   "icon": "game/SurrounDead/Content/UI/Textures/Skills/HarvestMasterr.png",
+   "id": "Skill_HarvestMaster",
+   "kind": 3,
+   "name": "Harvest Master",
+   "parents": [
+    "Skill_Huntsman"
+   ],
+   "pos": [
+    480,
+    576
+   ],
+   "tooltip": "Double the amount of resources from harvestable nodes."
+  }
+ ],
+ "size": [
+  640.0,
+  1000.0
+ ],
+ "slot": [
+  70.0,
+  70.0
+ ]
+}

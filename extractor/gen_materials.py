@@ -60,7 +60,7 @@ def run_json(out, pkgs):
 
 # Materials swapped in at runtime (skin colour, hair colour) that no mesh references by default.
 # Materials only blueprints name (survivor skins/hair; zombie skins from BP_MasterZombie `Materials`).
-EXTRA_PREFIXES = ["PlayerModel/Materials/", "PlayerModel/Hair/Material/", "PolygonFiles/PolygonCityZombies/Materials/", "PolygonFiles/PolygonDog/Material/", "Terrain/Foliage/Materials/", "PolygonFiles/PolygonNature/Materials/"]
+EXTRA_PREFIXES = ["PlayerModel/Materials/", "PlayerModel/Hair/Material/", "PolygonFiles/PolygonCityZombies/Materials/", "PolygonFiles/PolygonDog/Material/", "Terrain/Foliage/Materials/", "PolygonFiles/PolygonNature/Materials/", "Blueprints/Laboratory/Materials/Status/", "Meshes/Materials/"]
 
 
 def main():

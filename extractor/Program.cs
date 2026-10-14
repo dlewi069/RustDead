@@ -1,3 +1,4 @@
+using CUE4Parse_Conversion.Sounds;
 // SdExport: pulls textures and meshes out of the SurrounDead UE 5.3 pak via CUE4Parse.
 //
 // Usage:
@@ -47,6 +48,9 @@ provider.ReadScriptData = Environment.GetEnvironmentVariable("SD_SCRIPT") == "1"
 provider.Initialize();
 provider.SubmitKey(new FGuid(), new FAesKey(new byte[32]));
 provider.PostMount();
+// Plugin content mount points (/ACLPlugin/... -> Engine/Plugins/Animation/ACLPlugin/Content/...),
+// so ACL-compressed clips (FoldingGate_Anim) find their codec settings.
+provider.LoadVirtualPaths();
 
 IEnumerable<string> Expand(IEnumerable<string> paths) =>
     paths.SelectMany(p => p.EndsWith('/')
@@ -68,6 +72,19 @@ if (cmd == "list")
 {
     foreach (var k in provider.Files.Keys.Where(k => k.Contains(args[1], StringComparison.OrdinalIgnoreCase)).OrderBy(k => k))
         Console.WriteLine(k);
+    return 0;
+}
+
+// A pak file's bytes as they are: raw <out> <file>... A .ufont is the TrueType file; it's written
+// as .ttf, which Bevy's font loader recognises.
+if (cmd == "raw")
+{
+    foreach (var f in args.Skip(2))
+    {
+        var path = OutPath(args[1], f.EndsWith(".ufont") ? f[..^".ufont".Length] : f, f.EndsWith(".ufont") ? ".ttf" : "");
+        File.WriteAllBytes(path, provider.SaveAsset(f));
+        Console.WriteLine($"raw {f} -> {path}");
+    }
     return 0;
 }
 
@@ -110,6 +127,35 @@ if (cmd == "json")
         File.WriteAllText(path, Newtonsoft.Json.JsonConvert.SerializeObject(exports, Newtonsoft.Json.Formatting.Indented));
         Console.WriteLine($"json {pkg} -> {path}");
     }
+    return 0;
+}
+
+// SoundWaves decoded to their own format (ogg, wav, binka, ...): audio <out> <pkg or folder/>...
+if (cmd == "audio")
+{
+    int ok = 0, n = 0;
+    foreach (var pkg in Expand(args.Skip(2)))
+    {
+        try
+        {
+            foreach (var export in provider.LoadPackage(pkg + ".uasset").GetExports())
+            {
+                if (export is not CUE4Parse.UE4.Assets.Exports.Sound.USoundWave wave) continue;
+                n++;
+                wave.Decode(true, out var format, out var data);
+                if (data == null || string.IsNullOrEmpty(format)) { Console.Error.WriteLine($"FAIL {pkg}: no data"); continue; }
+                var path = OutPath(args[1], pkg, "." + format.ToLowerInvariant());
+                File.WriteAllBytes(path, data);
+                Console.WriteLine($"ok   {pkg} -> {path}");
+                ok++;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine($"FAIL {pkg}: {e.Message}");
+        }
+    }
+    Console.Error.WriteLine($"done: {ok}/{n} sounds");
     return 0;
 }
 

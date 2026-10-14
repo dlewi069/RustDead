@@ -7,10 +7,16 @@
 //! - `actors.json`: every actor's class and transform (PlayerStarts, spawners, containers...);
 //!   spawners also carry their property overrides ([`spawners`]).
 //!
-//! Props and splines are bucketed into [`CELL`]-metre cells and streamed around the camera.
+//! Props and splines are bucketed into [`CELL`]-metre cells and streamed around the camera,
+//! except door meshes, which [`doors`] spawns itself so they can move.
 
 pub mod collision;
+pub mod doors;
+pub mod garage;
+pub mod ladders;
+pub mod power;
 pub mod grass;
+pub mod item_spawners;
 pub mod lights;
 pub mod spawners;
 pub mod spline;
@@ -41,12 +47,15 @@ pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(MaterialPlugin::<TerrainMaterial>::default())
-            .add_systems(OnEnter(AppState::InGame), (enter_level, grass::setup_grass, lights::setup_lights).chain())
+            .add_systems(OnEnter(AppState::InGame), (enter_level, grass::setup_grass, lights::setup_lights, ladders::setup_ladders, power::setup_power, item_spawners::setup_item_spawns, item_spawners::spawn_item_containers, garage::setup_garages).chain())
             .init_resource::<collision::CollisionCache>()
-            .add_systems(OnExit(AppState::InGame), (reset_terrain, reset_props, grass::reset_grass, lights::reset_lights))
+            .init_resource::<doors::Doors>()
+            .init_resource::<garage::Garages>()
+            .add_systems(OnExit(AppState::InGame), (reset_terrain, reset_props, grass::reset_grass, lights::reset_lights, doors::reset_doors))
             .add_systems(
                 PostUpdate,
-                collision::move_bodies
+                (ladders::climb_ladders, collision::move_bodies)
+                    .chain()
                     .before(bevy::transform::TransformSystems::Propagate)
                     .run_if(in_state(AppState::InGame))
                     .run_if(in_state(crate::menus::MenuScreen::None)),
@@ -55,6 +64,14 @@ impl Plugin for LevelPlugin {
                 Update,
                 (stream_terrain, request_props, resolve_props, spawn_cells, spawners::run_spawners, spawners::optimize_subjects, grass::resolve_grass, grass::stream_grass, lights::update_lights, spin_turbines)
                     .chain()
+                    .run_if(in_state(AppState::InGame)),
+            )
+            .add_systems(
+                Update,
+                (
+                    (doors::load_doors, doors::spawn_doors, doors::move_doors, garage::move_garages, power::status_lamps).chain().after(resolve_props),
+                    doors::interact_doors.after(crate::gameplay::interact::search_containers),
+                )
                     .run_if(in_state(AppState::InGame)),
             );
     }
@@ -98,6 +115,8 @@ pub struct Level {
     meshes: Vec<PropMesh>,
     splines: Vec<SplineMesh>,
     cells: HashMap<IVec2, Vec<Item>>,
+    /// Interactive doors (their meshes are not in `cells`).
+    pub doors: Vec<doors::DoorDef>,
 }
 
 struct PropMesh {
@@ -112,6 +131,8 @@ struct Part {
     material: Handle<StandardMaterial>,
     /// Characters collide with it (not leaves, grass, plants, rubbish decals).
     collide: bool,
+    /// A status lamp the Blueprint recolours (material slot 1 of a lab switch or door frame).
+    lamp: Option<power::LampKind>,
 }
 
 /// Materials characters walk through: foliage cards and ground clutter.
@@ -145,10 +166,14 @@ impl Level {
                 meshes.len() as u32 - 1
             })
         };
+        let (found, taken) = doors::find(&actors, &placements);
         let mut cells: HashMap<IVec2, Vec<Item>> = HashMap::new();
         for (path, list) in &placements {
             let id = mesh_id(path, &mut meshes);
-            for m in list {
+            for (k, m) in list.iter().enumerate() {
+                if taken.contains(&(path.clone(), k)) {
+                    continue;
+                }
                 let transform = affine(m);
                 cells.entry(cell_of(transform.translation)).or_default().push(Item::Static { mesh: id, transform });
             }
@@ -157,8 +182,17 @@ impl Level {
             let id = mesh_id(&s.mesh, &mut meshes);
             cells.entry(cell_of(affine(&s.transform).translation)).or_default().push(Item::Spline { index: i as u32, mesh: id });
         }
-        info!("level: {} meshes, {} cells, {} actors", meshes.len(), cells.len(), actors.len());
-        Some(Self { actors, meshes, splines, cells })
+        let doors = found
+            .into_iter()
+            .map(|(mut d, paths)| {
+                for (part, path) in d.parts.iter_mut().zip(&paths) {
+                    part.mesh = mesh_id(path, &mut meshes);
+                }
+                d
+            })
+            .collect::<Vec<_>>();
+        info!("level: {} meshes, {} cells, {} actors, {} doors", meshes.len(), cells.len(), actors.len(), doors.len());
+        Some(Self { actors, meshes, splines, cells, doors })
     }
 
     /// PlayerStarts straight from disk, for callers that run before [`Level`] is inserted.
@@ -293,7 +327,7 @@ fn resolve_props(
                     continue;
                 }
                 if water {
-                    parts.push(Part { mesh: p.mesh.clone(), material: lib.water(&mut materials), collide: false });
+                    parts.push(Part { mesh: p.mesh.clone(), material: lib.water(&mut materials), collide: false, lamp: None });
                     continue;
                 }
                 let mat = lib.get(name, &assets, &mut materials).unwrap_or_else(|| materials.add(StandardMaterial::default()));
@@ -301,8 +335,8 @@ fn resolve_props(
                 if let Some(trunk_mat) = lib.trunk(name, &mut materials)
                     && let Some((leaves, trunk)) = meshes.get(&p.mesh).and_then(|m| crate::models::split_by_vertex_alpha(&m))
                 {
-                    parts.push(Part { mesh: meshes.add(leaves), material: mat, collide: false });
-                    parts.push(Part { mesh: meshes.add(trunk), material: trunk_mat, collide: true });
+                    parts.push(Part { mesh: meshes.add(leaves), material: mat, collide: false, lamp: None });
+                    parts.push(Part { mesh: meshes.add(trunk), material: trunk_mat, collide: true, lamp: None });
                     continue;
                 }
                 // UE materials ignore vertex colour; Bevy would multiply it in (see models).
@@ -311,7 +345,7 @@ fn resolve_props(
                 {
                     mesh.remove_attribute(Mesh::ATTRIBUTE_COLOR);
                 }
-                parts.push(Part { mesh: p.mesh.clone(), material: mat, collide: !walk_through(name) });
+                parts.push(Part { mesh: p.mesh.clone(), material: mat, collide: !walk_through(name), lamp: power::LampKind::of(&m.path, name) });
             }
         }
         if ready {
@@ -375,6 +409,9 @@ fn spawn_cells(
                         let mut child = commands.spawn((Mesh3d(p.mesh.clone()), MeshMaterial3d(p.material.clone()), transform));
                         if spins {
                             child.insert(TurbineBlades);
+                        }
+                        if let Some(kind) = p.lamp {
+                            child.insert(power::StatusLamp::new(kind, transform.translation));
                         }
                         let child = child.id();
                         commands.entity(cell).add_child(child);

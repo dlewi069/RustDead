@@ -242,6 +242,15 @@ comment (see `menus/settings.rs::default_value`).
   share bind space; static parts hang off the Head mesh's bones at the BP components' relative
   transforms, converted by `ue_relative`: hair/beard on `head`, eyebrows on `eyebrows`, mouth and
   accessories on `head` at (0, 156.9, 0.5) cm, which cancels the bone's bind pose so they follow the head).
+- `src/audio/mod.rs`: the game's SoundCues. `Sound` messages (cue, position) pick a weighted
+  variant, roll the modulators' pitch/volume, apply the cue's SoundAttenuation over the camera
+  distance (Linear or UE's logarithmic curve; no panning/occlusion) and the SoundClass's Audio
+  slider × MASTER. Loops (`Emitter` with `follow`) track their owner; removing `Voiced` stops them.
+  Wired: gunshots (FirearmSound), empty click, jam, bullet hits (Head_shot_1-5 /
+  bullet_impact_body_thump_01-08), melee whoosh and Body_Flesh hits, explosions, zombie breath
+  loops / attack growls / death (hounds: HoundCue / HoundAttackCue), footsteps by surface
+  (`footsteps.rs`: the dominant paint layer's PhysMaterial, props = Concrete), flashlight, whistle,
+  UI clicks (every `Activate`). Not yet: music, ambience, weather, reload/equip/door/lever sounds.
 - `src/progression/passive.rs`: PassiveSkillsComponent decompiled (see Skill trees below);
   `GameState::passive` (saved). Level-ups queue in `level_ups`, which `notify.rs` announces.
 - `src/{ai,combat,crafting,economy,engine,items,looting,persistence,progression,survival,vehicles,world}`:
@@ -257,6 +266,7 @@ read it. `extractor/` is a small .NET 10 CLI on **CUE4Parse** that reads the pak
 
 ```
 extractor/export_assets.sh --all         # everything below
+extractor/export_assets.sh --sounds      # assets/data/sounds.json + decoded waves (after --items)
 extractor/export_assets.sh               # UI textures -> assets/game/
 extractor/export_assets.sh --models      # character/zombie/vehicle/prop meshes (.glb) + materials.json
 extractor/export_assets.sh --level       # LongdownValley: terrain, placements, splines, actors, meshes (~1 GB)
@@ -289,6 +299,13 @@ extractor/export_assets.sh --items       # regenerate assets/data/items.json (co
   fields (kismet.py shows struct members as `?`; the raw bytecode JSON names them), RecoilRate and
   ResetRecoilDivider) and
   `reduce_durability`, plus the AI loot tables (`AI/AILootTables`).
+- `gen_sounds.py` (`--sounds`): the cues the port plays (its CUES list, the guns' FirearmSound
+  etc. from items.json) flattened from their node graphs (WavePlayer, Random weights, Modulator
+  ranges with UE's 0.95-1.05 defaults, Mixer, Looping; SoundCue VolumeMultiplier defaults to 0.75),
+  the SoundAttenuation assets (inner radius, falloff, model) and the landscape layers' surfaces.
+  Waves are Bink Audio: `SdExport audio` writes `.binka`, `vgmstream-cli` (needed on PATH)
+  decodes to WAV under assets/game/ (gitignored). Run it through export_assets.sh (it needs
+  SD_USMAP); it refuses to run with an empty listing. `breakingopen` fails to decode.
 - `gen_menu_data.py` turns settings/difficulty pages, `IMC_General` key bindings, creator options and
   `Enum_Occupation` into `assets/data/menus.json`. Radio-select options aren't serialized and are
   inferred from the page string table (`"inferred": true`).
@@ -419,4 +436,4 @@ extractor/export_assets.sh --items       # regenerate assets/data/items.json (co
 - Mode levels (Shooting Range, Tutorial, Vehicle Playground) are disabled. Key rebinding, save
   search/rename and the save menu's "create new slot" box aren't implemented. Discord/Trello/Roadmap
   buttons are omitted. `BackgroundBlur` is approximated with a dark overlay.
-- UI click sound (`UI_click_sound_Cue`) and other audio aren't exported yet.
+- Audio: music, ambience and most interaction sounds aren't wired yet (see `src/audio`).

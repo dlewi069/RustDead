@@ -249,6 +249,10 @@ def firearm(p):
         "recoil_rate": c.get("RecoilRate", 2.5),
         "reset_recoil_divider": c.get("ResetRecoilDivider", 1.5),
         "pellets": c.get("ShotgunPellets", 6),
+        # The shot's SoundCue (PlaySoundAtLocation at the muzzle), suppressed and chambering ones.
+        "sound": pkg_name(c.get("FirearmSound")),
+        "suppressed_sound": pkg_name(c.get("FirearmSuppressedSound")),
+        "chamber_sound": pkg_name(c.get("FirearmChamberSound")),
     }
 
 

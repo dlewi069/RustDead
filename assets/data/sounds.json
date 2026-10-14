@@ -1,0 +1,3210 @@
+{
+ "attenuation": {
+  "Aircraft": {
+   "falloff": 1750.0,
+   "inner": 1500.0,
+   "model": "Logarithmic",
+   "spatialize": true
+  },
+  "BulletImpact": {
+   "falloff": 15.0,
+   "inner": 0.5,
+   "model": "Linear",
+   "spatialize": true
+  },
+  "DoorOpeningClosing": {
+   "falloff": 10.0,
+   "inner": 0.75,
+   "model": "Linear",
+   "spatialize": false
+  },
+  "FootSteps": {
+   "falloff": 20.0,
+   "inner": 0.5,
+   "model": "Linear",
+   "spatialize": true
+  },
+  "Generator": {
+   "falloff": 25.0,
+   "inner": 6.0,
+   "model": "Linear",
+   "spatialize": true
+  },
+  "GunshotsPistol": {
+   "falloff": 200.0,
+   "inner": 10.0,
+   "model": "Logarithmic",
+   "spatialize": true
+  },
+  "GunshotsPistolSuppressed": {
+   "falloff": 150.0,
+   "inner": 7.5,
+   "model": "Logarithmic",
+   "spatialize": true
+  },
+  "GunshotsRifle": {
+   "falloff": 250.0,
+   "inner": 20.0,
+   "model": "Logarithmic",
+   "spatialize": true
+  },
+  "GunshotsRifleSuppressed": {
+   "falloff": 175.0,
+   "inner": 15.0,
+   "model": "Logarithmic",
+   "spatialize": true
+  },
+  "GunshotsShotgun": {
+   "falloff": 250.0,
+   "inner": 25.0,
+   "model": "Logarithmic",
+   "spatialize": true
+  },
+  "GunshotsSniper": {
+   "falloff": 300.0,
+   "inner": 25.0,
+   "model": "Logarithmic",
+   "spatialize": true
+  },
+  "Jukebox": {
+   "falloff": 60.0,
+   "inner": 20.0,
+   "model": "Linear",
+   "spatialize": true
+  },
+  "Nuke": {
+   "falloff": 2000.0,
+   "inner": 1500.0,
+   "model": "Logarithmic",
+   "spatialize": true
+  },
+  "PlayerRadio": {
+   "falloff": 25.0,
+   "inner": 6.0,
+   "model": "Linear",
+   "spatialize": true
+  },
+  "Radio": {
+   "falloff": 25.0,
+   "inner": 6.0,
+   "model": "Linear",
+   "spatialize": true
+  },
+  "RadioStatic": {
+   "falloff": 5.0,
+   "inner": 1.0,
+   "model": "Linear",
+   "spatialize": true
+  },
+  "Water": {
+   "falloff": 60.0,
+   "inner": 32.582226999999996,
+   "model": "Linear",
+   "spatialize": true
+  },
+  "Zombies": {
+   "falloff": 30.0,
+   "inner": 2.0,
+   "model": "Linear",
+   "spatialize": true
+  }
+ },
+ "classes": {
+  "AmbientAudio": "AMBIENT",
+  "EffectsAudio": "EFFECTS",
+  "MusicAudio": "MUSIC",
+  "RadioMusicAudio": "RADIO",
+  "UIAudio": "UI"
+ },
+ "cues": {
+  "AK-74_echo_03_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Premium_Weapons_Bullets_SFX/WAV/Assault_rifle/AK-74/AK-74_echo_03.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "AKM_Single_Shot2_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/AK_47/AKM_Single_Shot2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "AKM_suppressed_fire_102_with_Reverb_2_Cue": {
+   "attenuation": "GunshotsRifleSuppressed",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/AK_47/AKM_suppressed_fire_102_with_Reverb_2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "AR-15_02_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Premium_Weapons_Bullets_SFX/WAV/Assault_rifle/AR-15/AR-15_02.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "AR_Single_Shot_2_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Assault_Rifle_02/AR_Single_Shot_2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "AR_Single_Shot_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Assault_Rifle_02/AR_Single_Shot.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "AR_Single_Shot_Suppressed_3_Cue": {
+   "attenuation": "GunshotsRifleSuppressed",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Assault_Rifle/AR_Single_Shot__Suppressed__3.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "AR_Single_Shot__Suppressed__2_Cue": {
+   "attenuation": "GunshotsRifleSuppressed",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Assault_Rifle_01/AR_Single_Shot__Suppressed_.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "AR_Single_Shot__Suppressed__Cue": {
+   "attenuation": "GunshotsRifleSuppressed",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Assault_Rifle_01/AR_Single_Shot__Suppressed_.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "Barret-M28_07_Cue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Premium_Weapons_Bullets_SFX/WAV/Rifle/Sniper_rifle/Barret-M28/Barret-M28_07.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Body_Flesh_1_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Bullet_Impacts_Flybys/Body_Flesh_Impact/Body_Flesh_1.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Body_Flesh_2_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 0.75,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Bullet_Impacts_Flybys/Body_Flesh_Impact/Body_Flesh_2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Body_Flesh_3_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Bullet_Impacts_Flybys/Body_Flesh_Impact/Body_Flesh_3.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Body_Flesh_4_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Bullet_Impacts_Flybys/Body_Flesh_Impact/Body_Flesh_4.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Body_Flesh_5_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Bullet_Impacts_Flybys/Body_Flesh_Impact/Body_Flesh_5.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "BreakOpen_Cue": {
+   "attenuation": "Radio",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [],
+   "volume": 0.5
+  },
+  "ConcreteSprint_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_concrete_run_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_concrete_run_20.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_concrete_run_16.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_concrete_run_07.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Concrete_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_concrete_walk_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_concrete_walk_03.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_concrete_walk_16.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_concrete_walk_05.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "DirtSprint_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_dirt_walk_run_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_dirt_walk_run_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_dirt_walk_run_12.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_dirt_walk_run_11.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Dirt_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_dirt_walk_run_06.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_dirt_walk_run_07.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_dirt_walk_run_08.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_dirt_walk_run_05.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "ES_Grenade_Launcher_7_-_SFX_Producer_Cue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/ES_Grenade_Launcher_7_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "GrassSprint_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_grass_run_06.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_grass_run_08.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_grass_run_09.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_grass_run_05.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Grass_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_grass_walk_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_grass_walk_05.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_grass_walk_07.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_grass_walk_04.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "GunJam_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_chamber_jammed_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_chamber_jammed_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_chamber_jammed_03.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.25
+  },
+  "Head_shot_1_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Bullet_Impacts_Flybys/Head_shot/Head_shot_1.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Head_shot_2_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Bullet_Impacts_Flybys/Head_shot/Head_shot_2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Head_shot_3_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Bullet_Impacts_Flybys/Head_shot/Head_shot_3.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Head_shot_4_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Bullet_Impacts_Flybys/Head_shot/Head_shot_4.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Head_shot_5_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Bullet_Impacts_Flybys/Head_shot/Head_shot_5.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "HoundAttackCue": {
+   "attenuation": "GunshotsPistol",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Zombies/Dog/Sound/DogGrowl4.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "HoundCue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Zombies/Dog/Sound/DogGrowl1.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Zombies/Dog/Sound/DogGrowl3.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Zombies/Dog/Sound/DogGrowl6.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Zombies/Dog/Sound/DogGrowlLong2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "M-249_01_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Premium_Weapons_Bullets_SFX/WAV/Machinegun/M-249/M-249_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "MetalSprint_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_metal_low_run_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_metal_low_run_03.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_metal_low_run_05.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_metal_low_run_09.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Metal_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_metal_low_walk_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_metal_low_walk_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_metal_low_walk_03.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_metal_low_walk_05.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Pistol_01_Cue": {
+   "attenuation": "GunshotsPistol",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Premium_Weapons_Bullets_SFX/WAV/Pistol/Pistol/Pistol_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Pistol_Single_Shot_2_Cue": {
+   "attenuation": "GunshotsPistol",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Pistol_05/Pistol_Single_Shot_2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Pistol_Single_Shot__Suppressed__2_Cue": {
+   "attenuation": "GunshotsPistolSuppressed",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Pistol_05/Pistol_Single_Shot__Suppressed__2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "Revolver_Single_Shot_3_Cue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Magnum_Revolver/Revolver_Single_Shot_3.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "RockSprint_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_gravel_run_15.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_gravel_run_05.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_gravel_run_13.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_gravel_run_03.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Rock_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_gravel_walk_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_gravel_walk_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_gravel_walk_09.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_gravel_walk_08.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "SMG_Single_Shot_3_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Submachine_Gun_01/SMG_Single_Shot_3.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "SMG_Single_Shot_5_Cue": {
+   "attenuation": "GunshotsPistol",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Submachine_Gun_01/SMG_Single_Shot_5.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "SMG_Single_Shot__Suppressed__2_Cue": {
+   "attenuation": "GunshotsPistolSuppressed",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Submachine_Gun_01/SMG_Single_Shot__Suppressed__2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "S_EmptyFire_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Sounds/Wav/S_EmptyFire.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "SandSprint_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_sand_run_12.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_sand_run_19.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_sand_run_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_sand_run_05.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Sand_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_sand_walk_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_sand_walk_05.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_sand_walk_09.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_sand_walk_13.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Searching_Cue": {
+   "attenuation": null,
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SFXInteraction/Wav/Searching.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "ShotGun_Boom_101__Suppressed__Cue": {
+   "attenuation": "GunshotsRifleSuppressed",
+   "class": "EffectsAudio",
+   "pitch": 0.85,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Shotgun_01/ShotGun_Boom_101__Suppressed_.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "Sniper_Single_Shot_2_Cue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Sniper_Semi_Auto/Sniper_Single_Shot_2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Sniper_Single_Shot_4_Cue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Sniper_Semi_Auto/Sniper_Single_Shot_4.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "Sniper_Single_Shot_Cue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Sniper_Semi_Auto/Sniper_Single_Shot.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "Sniper_Single_Shot__Suppressed__2_Cue": {
+   "attenuation": "GunshotsRifleSuppressed",
+   "class": "EffectsAudio",
+   "pitch": 0.85,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Sniper_Semi_Auto/Sniper_Single_Shot__Suppressed__2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "Sniper_rifle_03_Cue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Premium_Weapons_Bullets_SFX/WAV/Rifle/Sniper_rifle/Sniper_rifle/Sniper_rifle_03.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "SnowSprint_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_snow_run_04.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_snow_run_07.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_snow_run_19.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_snow_run_13.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Snow_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_snow_walk_10.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_snow_walk_11.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_snow_walk_12.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_snow_walk_16.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Turning_Flashlight_Off_3_Cue": {
+   "attenuation": null,
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Turning_Flashlight_Off_3.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Turning_Flashlight_On_Cue": {
+   "attenuation": null,
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Turning_Flashlight_On.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "UI_click_sound_Cue": {
+   "attenuation": null,
+   "class": "UIAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SurvivalSoundPack/Waves/UI_click_sound.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "WaterSprint_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_water_land_06.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_water_land_03.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_water_land_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_water_land_02.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Water_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_water_run_04.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_water_run_07.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_water_run_09.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_water_run_02.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Weapon_Fire_22_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SFX_OF_WEAPON/Fire/AudioWave/Weapon_Fire_22.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Weapon_Fire_25_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SFX_OF_WEAPON/Fire/AudioWave/Weapon_Fire_25.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Weapon_Hand_Move_02_Cue": {
+   "attenuation": "CampFire",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SFX_OF_WEAPON/Move/AudioWave/Weapon_Hand_Move_02.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.25
+  },
+  "Weapon_Silencer_22_Cue": {
+   "attenuation": "GunshotsRifleSuppressed",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SFX_OF_WEAPON/Fire_Silencer/AudioWave/Weapon_Silencer_22.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Whistle_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Other/Whistle.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.1
+  },
+  "WoodSprint_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_wood_run_13.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_wood_run_16.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_wood_run_05.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_wood_run_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Wood_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_wood_walk_15.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_wood_walk_03.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_wood_walk_16.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_wood_walk_08.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "ZombieBreathLoopCue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.6,
+      0.6
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie/Zombie_Sounds_-_Breath_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie_Sounds_Pro/Wavs/Zombie_Grunt_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.5,
+      0.5
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie/Zombie_Sounds_-_Breath_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie_Sounds_Pro/Wavs/Zombie_Grunt_02.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "ZombieDeathShort": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie/Zombie_Sounds_-_Death_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "ZombieGrowlShort": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie/Zombie_Sounds_-_Growl_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie/Zombie_Sounds_-_Growl_09.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie/Zombie_Sounds_-_Growl_05.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie/Zombie_Sounds_-_Growl_08.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "bullet_impact_body_thump_01_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Bullets/Wavs/bullet_impact_body_thump_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "bullet_impact_body_thump_02_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Bullets/Wavs/bullet_impact_body_thump_02.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "bullet_impact_body_thump_03_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Bullets/Wavs/bullet_impact_body_thump_03.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "bullet_impact_body_thump_04_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Bullets/Wavs/bullet_impact_body_thump_04.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "bullet_impact_body_thump_05_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Bullets/Wavs/bullet_impact_body_thump_05.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "bullet_impact_body_thump_06_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Bullets/Wavs/bullet_impact_body_thump_06.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "bullet_impact_body_thump_07_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Bullets/Wavs/bullet_impact_body_thump_07.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "bullet_impact_body_thump_08_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Bullets/Wavs/bullet_impact_body_thump_08.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "door_lock_fail_03_Cue": {
+   "attenuation": null,
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Doors/Wavs/door_lock_fail_03.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "explosion_large_06_Cue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.9,
+      1.1
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Explosion_Fire_Gas/Wavs/explosion_large_06.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "fire_flare_gun_Cue": {
+   "attenuation": null,
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SurvivalSoundPack/Waves/fire_flare_gun.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "foley_jump_movement_throw_02_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Foley/Wavs/foley_jump_movement_throw_02.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.1
+  },
+  "gun_grenade_launcher_shot_01_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_grenade_launcher_shot_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "gun_revolver_pistol_shot_01_Cue": {
+   "attenuation": "GunshotsPistol",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_revolver_pistol_shot_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "gun_rifle_shot_01_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_rifle_shot_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "gun_rifle_sniper_cock_01_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_rifle_sniper_cock_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.15
+  },
+  "gun_rifle_sniper_cock_03_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_rifle_sniper_cock_03.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "gun_shotgun_cock_01_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_shotgun_cock_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "gun_shotgun_sawed_off_shot_01_Cue": {
+   "attenuation": "GunshotsShotgun",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_shotgun_sawed_off_shot_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "gun_shotgun_sawed_off_shot_04_Cue": {
+   "attenuation": "GunshotsShotgun",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns/Wavs/gun_shotgun_sawed_off_shot_04.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "gun_silenced_sniper2_shot_01_Cue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Guns_Silenced/Wavs/gun_silenced_sniper2_shot_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "whoosh_weapon_knife_swing_01_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Weapons/Knife/Wavs/whoosh_weapon_knife_swing_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.2
+  }
+ },
+ "terrain_surfaces": {
+  "Birch_LayerInfo": "Grass",
+  "Concrete_LayerInfo": "Concrete",
+  "Grass_LayerInfo": "Grass",
+  "Meadow_LayerInfo": "Grass",
+  "Mud_LayerInfo": "Dirt",
+  "NoFoliage_LayerInfo": "Dirt",
+  "Pine_LayerInfo": "Grass",
+  "RadArea_LayerInfo": "Grass",
+  "Rock_LayerInfo": "Rock",
+  "Sand_LayerInfo": "Sand",
+  "Tropical_LayerInfo": "Grass",
+  "Wetland_LayerInfo": "Grass"
+ }
+}

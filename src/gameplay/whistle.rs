@@ -30,6 +30,7 @@ pub fn whistle_range(crouched: bool) -> f32 {
     if crouched { 15.0 } else { 40.0 }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn whistle(
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
@@ -38,6 +39,7 @@ fn whistle(
     player: Query<(&Transform, &Locomotion), With<CharacterModel>>,
     mut noise: MessageWriter<Noise>,
     mut notify: MessageWriter<super::notify::Notify>,
+    mut sound: MessageWriter<crate::audio::Sound>,
 ) {
     let Ok((t, loco)) = player.single() else { return };
     if let Some(age) = state.0.as_mut() {
@@ -61,6 +63,10 @@ fn whistle(
         return;
     }
     state.0 = Some(0.0);
+    // Whistle_Cue, a quarter as loud crouched.
+    let mut s = crate::audio::Sound::at("Whistle_Cue", t.translation + Vec3::Y * 1.6);
+    s.volume = if loco.crouched() { 0.25 } else { 1.0 };
+    sound.write(s);
 }
 
 #[cfg(test)]

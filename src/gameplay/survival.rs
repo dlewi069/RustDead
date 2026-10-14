@@ -275,6 +275,7 @@ fn fall_damage(
 }
 
 #[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)]
 fn zombie_attacks(
     mut commands: Commands,
     time: Res<Time>,
@@ -283,6 +284,7 @@ fn zombie_attacks(
     vitals: Res<PlayerVitals>,
     player: Query<&Transform, (With<CharacterModel>, With<KinematicBody>)>,
     mut zombies: Query<(Entity, &Transform, &LevelZombie, &Locomotion, Option<&mut SwingTimer>), Without<super::combat::Dead>>,
+    mut sound: MessageWriter<crate::audio::Sound>,
 ) {
     let Ok(p) = player.single() else { return };
     if vitals.is_dead() || game.state.is_none() {
@@ -307,6 +309,8 @@ fn zombie_attacks(
             timer.0 = 0.0;
             timer.1 = 0.0;
             let c = z.kind.class();
+            // AttackSound (ZombieGrowlShort; the hound's HoundAttackCue) at the zombie.
+            sound.write(crate::audio::Sound::at(z.kind.attack_sound(), t.translation + Vec3::Y));
             let taken = take_hit(&mut game, &db, &store, c.damage * mult);
             let Some(state) = game.state.as_mut() else { return };
             state.survival.take_damage(taken, false, 0.15);

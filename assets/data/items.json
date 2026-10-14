@@ -2194,6 +2194,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.4,
@@ -2202,7 +2203,9 @@
     "recoil_vertical": 0.0,
     "recoil_vertical_deviation": 0.05,
     "reset_recoil_divider": 1.5,
+    "sound": "AR_Single_Shot_Cue",
     "sound_radius": 70.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -2345,6 +2348,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.03,
     "pellets": 6,
     "recoil_horizontal": 0.15,
@@ -2353,7 +2357,9 @@
     "recoil_vertical": -0.35,
     "recoil_vertical_deviation": 0.05,
     "reset_recoil_divider": 1.5,
+    "sound": "AKM_Single_Shot2_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -2496,6 +2502,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.03,
     "pellets": 6,
     "recoil_horizontal": 0.0,
@@ -2504,7 +2511,9 @@
     "recoil_vertical": -0.5,
     "recoil_vertical_deviation": 0.0,
     "reset_recoil_divider": 1.5,
+    "sound": "AKM_Single_Shot2_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": "AKM_suppressed_fire_102_with_Reverb_2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -2647,6 +2656,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.4,
@@ -2655,7 +2665,9 @@
     "recoil_vertical": -0.04,
     "recoil_vertical_deviation": 0.02,
     "reset_recoil_divider": 1.5,
+    "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 70.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -2798,6 +2810,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.15,
@@ -2806,7 +2819,9 @@
     "recoil_vertical": -0.1,
     "recoil_vertical_deviation": 0.05,
     "reset_recoil_divider": 1.5,
+    "sound": "SMG_Single_Shot_5_Cue",
     "sound_radius": 60.0,
+    "suppressed_sound": "SMG_Single_Shot__Suppressed__2_Cue",
     "type": 1
    },
    "flashlight_intensity": 0.0,
@@ -3782,6 +3797,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.25,
     "pellets": 6,
     "recoil_horizontal": 0.9,
@@ -3790,7 +3806,9 @@
     "recoil_vertical": -2.35,
     "recoil_vertical_deviation": 0.5,
     "reset_recoil_divider": 2.0,
+    "sound": "Barret-M28_07_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": null,
     "type": 3
    },
    "flashlight_intensity": 0.0,
@@ -4406,6 +4424,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.15,
@@ -4414,7 +4433,9 @@
     "recoil_vertical": -0.175,
     "recoil_vertical_deviation": 0.075,
     "reset_recoil_divider": 1.0,
+    "sound": "Pistol_Single_Shot_2_Cue",
     "sound_radius": 50.0,
+    "suppressed_sound": "Pistol_Single_Shot__Suppressed__2_Cue",
     "type": 0
    },
    "flashlight_intensity": 0.0,
@@ -5533,6 +5554,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.2,
     "pellets": 6,
     "recoil_horizontal": 0.3,
@@ -5541,7 +5563,9 @@
     "recoil_vertical": -1.5,
     "recoil_vertical_deviation": 0.5,
     "reset_recoil_divider": 1.5,
+    "sound": "gun_shotgun_sawed_off_shot_04_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": "ShotGun_Boom_101__Suppressed__Cue",
     "type": 4
    },
    "flashlight_intensity": 0.0,
@@ -6943,6 +6967,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.4,
@@ -6951,7 +6976,9 @@
     "recoil_vertical": -0.04,
     "recoil_vertical_deviation": 0.01,
     "reset_recoil_divider": 1.5,
+    "sound": "SMG_Single_Shot__Suppressed__2_Cue",
     "sound_radius": 7.5,
+    "suppressed_sound": null,
     "type": 1
    },
    "flashlight_intensity": 0.0,
@@ -7329,6 +7356,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.0,
@@ -7337,7 +7365,9 @@
     "recoil_vertical": -0.15,
     "recoil_vertical_deviation": 0.0,
     "reset_recoil_divider": 1.5,
+    "sound": "Pistol_Single_Shot_2_Cue",
     "sound_radius": 50.0,
+    "suppressed_sound": "Pistol_Single_Shot__Suppressed__2_Cue",
     "type": 0
    },
    "flashlight_intensity": 0.0,
@@ -9777,6 +9807,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.04,
     "pellets": 6,
     "recoil_horizontal": 0.3,
@@ -9785,7 +9816,9 @@
     "recoil_vertical": -0.45,
     "recoil_vertical_deviation": 0.0,
     "reset_recoil_divider": 1.5,
+    "sound": "AK-74_echo_03_Cue",
     "sound_radius": 70.0,
+    "suppressed_sound": "AKM_suppressed_fire_102_with_Reverb_2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -11621,6 +11654,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.035,
     "pellets": 6,
     "recoil_horizontal": 0.25,
@@ -11629,7 +11663,9 @@
     "recoil_vertical": -0.3,
     "recoil_vertical_deviation": 0.125,
     "reset_recoil_divider": 1.0,
+    "sound": "AR_Single_Shot__Suppressed__Cue",
     "sound_radius": 15.0,
+    "suppressed_sound": null,
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -12434,6 +12470,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.35,
@@ -12442,7 +12479,9 @@
     "recoil_vertical": -0.15,
     "recoil_vertical_deviation": 0.075,
     "reset_recoil_divider": 1.0,
+    "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 50.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -14050,6 +14089,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.15,
@@ -14058,7 +14098,9 @@
     "recoil_vertical": -0.35,
     "recoil_vertical_deviation": 0.025,
     "reset_recoil_divider": 1.0,
+    "sound": "AR_Single_Shot__Suppressed__2_Cue",
     "sound_radius": 15.0,
+    "suppressed_sound": null,
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -14623,6 +14665,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.3,
@@ -14631,7 +14674,9 @@
     "recoil_vertical": -1.0,
     "recoil_vertical_deviation": 0.2,
     "reset_recoil_divider": 1.0,
+    "sound": "Revolver_Single_Shot_3_Cue",
     "sound_radius": 50.0,
+    "suppressed_sound": null,
     "type": 0
    },
    "flashlight_intensity": 0.0,
@@ -14842,6 +14887,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.05,
     "pellets": 6,
     "recoil_horizontal": 0.0,
@@ -14850,7 +14896,9 @@
     "recoil_vertical": -1.0,
     "recoil_vertical_deviation": 0.2,
     "reset_recoil_divider": 1.5,
+    "sound": "Weapon_Fire_22_Cue",
     "sound_radius": 70.0,
+    "suppressed_sound": "Weapon_Silencer_22_Cue",
     "type": 0
    },
    "flashlight_intensity": 0.0,
@@ -16664,6 +16712,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": "gun_shotgun_cock_01_Cue",
     "malfunction_chance": 0.125,
     "pellets": 8,
     "recoil_horizontal": 0.85,
@@ -16672,7 +16721,9 @@
     "recoil_vertical": -0.95,
     "recoil_vertical_deviation": 0.15,
     "reset_recoil_divider": 1.0,
+    "sound": "gun_shotgun_sawed_off_shot_01_Cue",
     "sound_radius": 60.0,
+    "suppressed_sound": "ShotGun_Boom_101__Suppressed__Cue",
     "type": 4
    },
    "flashlight_intensity": 0.0,
@@ -17023,6 +17074,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.05,
     "pellets": 6,
     "recoil_horizontal": 0.4,
@@ -17031,7 +17083,9 @@
     "recoil_vertical": -0.55,
     "recoil_vertical_deviation": 0.2,
     "reset_recoil_divider": 1.5,
+    "sound": "AR-15_02_Cue",
     "sound_radius": 70.0,
+    "suppressed_sound": "AKM_suppressed_fire_102_with_Reverb_2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -18053,6 +18107,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.15,
     "pellets": 6,
     "recoil_horizontal": 0.5,
@@ -18061,7 +18116,9 @@
     "recoil_vertical": 0.5,
     "recoil_vertical_deviation": 0.25,
     "reset_recoil_divider": 1.0,
+    "sound": "fire_flare_gun_Cue",
     "sound_radius": 5.0,
+    "suppressed_sound": null,
     "type": 8
    },
    "flashlight_intensity": 0.0,
@@ -18525,6 +18582,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.25,
@@ -18533,7 +18591,9 @@
     "recoil_vertical": -0.175,
     "recoil_vertical_deviation": 0.0,
     "reset_recoil_divider": 1.5,
+    "sound": "Pistol_Single_Shot_2_Cue",
     "sound_radius": 50.0,
+    "suppressed_sound": "Pistol_Single_Shot__Suppressed__2_Cue",
     "type": 0
    },
    "flashlight_intensity": 0.0,
@@ -21133,6 +21193,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.15,
     "pellets": 6,
     "recoil_horizontal": 1.0,
@@ -21141,7 +21202,9 @@
     "recoil_vertical": -1.5,
     "recoil_vertical_deviation": 0.5,
     "reset_recoil_divider": 2.0,
+    "sound": "gun_grenade_launcher_shot_01_Cue",
     "sound_radius": 20.0,
+    "suppressed_sound": null,
     "type": 5
    },
    "flashlight_intensity": 0.0,
@@ -21325,6 +21388,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.3,
@@ -21333,7 +21397,9 @@
     "recoil_vertical": 0.0,
     "recoil_vertical_deviation": 0.0,
     "reset_recoil_divider": 1.0,
+    "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 50.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -22086,6 +22152,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.1,
@@ -22094,7 +22161,9 @@
     "recoil_vertical": -0.05,
     "recoil_vertical_deviation": 0.015,
     "reset_recoil_divider": 1.5,
+    "sound": "AR_Single_Shot_2_Cue",
     "sound_radius": 70.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -23895,6 +23964,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": "gun_rifle_sniper_cock_03_Cue",
     "malfunction_chance": 0.2,
     "pellets": 6,
     "recoil_horizontal": 0.6,
@@ -23903,7 +23973,9 @@
     "recoil_vertical": -1.85,
     "recoil_vertical_deviation": 0.3,
     "reset_recoil_divider": 2.0,
+    "sound": "Sniper_Single_Shot_4_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": "Sniper_Single_Shot__Suppressed__2_Cue",
     "type": 3
    },
    "flashlight_intensity": 0.0,
@@ -24713,6 +24785,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.125,
@@ -24721,7 +24794,9 @@
     "recoil_vertical": -0.125,
     "recoil_vertical_deviation": 0.05,
     "reset_recoil_divider": 1.5,
+    "sound": "SMG_Single_Shot_5_Cue",
     "sound_radius": 60.0,
+    "suppressed_sound": "SMG_Single_Shot__Suppressed__2_Cue",
     "type": 1
    },
    "flashlight_intensity": 0.0,
@@ -25984,6 +26059,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": "gun_rifle_sniper_cock_01_Cue",
     "malfunction_chance": 0.1,
     "pellets": 6,
     "recoil_horizontal": 1.0,
@@ -25992,7 +26068,9 @@
     "recoil_vertical": -1.85,
     "recoil_vertical_deviation": 0.5,
     "reset_recoil_divider": 1.0,
+    "sound": "Sniper_Single_Shot_2_Cue",
     "sound_radius": 60.0,
+    "suppressed_sound": "gun_silenced_sniper2_shot_01_Cue",
     "type": 3
    },
    "flashlight_intensity": 0.0,
@@ -27102,6 +27180,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": "gun_rifle_sniper_cock_03_Cue",
     "malfunction_chance": 0.2,
     "pellets": 6,
     "recoil_horizontal": 0.8,
@@ -27110,7 +27189,9 @@
     "recoil_vertical": -1.75,
     "recoil_vertical_deviation": 0.2,
     "reset_recoil_divider": 1.5,
+    "sound": "Sniper_Single_Shot__Suppressed__2_Cue",
     "sound_radius": 15.0,
+    "suppressed_sound": null,
     "type": 3
    },
    "flashlight_intensity": 0.0,
@@ -27325,6 +27406,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.03,
     "pellets": 6,
     "recoil_horizontal": 0.35,
@@ -27333,7 +27415,9 @@
     "recoil_vertical": -0.35,
     "recoil_vertical_deviation": 0.05,
     "reset_recoil_divider": 1.5,
+    "sound": "M-249_01_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -27557,6 +27641,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.25,
@@ -27565,7 +27650,9 @@
     "recoil_vertical": -0.25,
     "recoil_vertical_deviation": 0.0,
     "reset_recoil_divider": 1.5,
+    "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 70.0,
+    "suppressed_sound": "AR_Single_Shot_Suppressed_3_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -27708,6 +27795,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.175,
@@ -27716,7 +27804,9 @@
     "recoil_vertical": 0.0,
     "recoil_vertical_deviation": 0.0,
     "reset_recoil_divider": 1.5,
+    "sound": "Pistol_Single_Shot_2_Cue",
     "sound_radius": 50.0,
+    "suppressed_sound": "Pistol_Single_Shot__Suppressed__2_Cue",
     "type": 0
    },
    "flashlight_intensity": 0.0,
@@ -27859,6 +27949,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.325,
@@ -27867,7 +27958,9 @@
     "recoil_vertical": -0.075,
     "recoil_vertical_deviation": 0.05,
     "reset_recoil_divider": 1.5,
+    "sound": "Pistol_01_Cue",
     "sound_radius": 60.0,
+    "suppressed_sound": "SMG_Single_Shot__Suppressed__2_Cue",
     "type": 1
    },
    "flashlight_intensity": 0.0,
@@ -28172,6 +28265,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.15,
@@ -28180,7 +28274,9 @@
     "recoil_vertical": -0.7,
     "recoil_vertical_deviation": 0.15,
     "reset_recoil_divider": 1.5,
+    "sound": "SMG_Single_Shot_5_Cue",
     "sound_radius": 60.0,
+    "suppressed_sound": "SMG_Single_Shot__Suppressed__2_Cue",
     "type": 1
    },
    "flashlight_intensity": 0.0,
@@ -29180,6 +29276,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": "gun_rifle_sniper_cock_01_Cue",
     "malfunction_chance": 0.1,
     "pellets": 6,
     "recoil_horizontal": 1.75,
@@ -29188,7 +29285,9 @@
     "recoil_vertical": -1.75,
     "recoil_vertical_deviation": 0.75,
     "reset_recoil_divider": 1.5,
+    "sound": "Sniper_Single_Shot_Cue",
     "sound_radius": 65.0,
+    "suppressed_sound": "Sniper_Single_Shot__Suppressed__2_Cue",
     "type": 3
    },
    "flashlight_intensity": 0.0,
@@ -31604,6 +31703,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": "gun_rifle_sniper_cock_03_Cue",
     "malfunction_chance": 0.2,
     "pellets": 6,
     "recoil_horizontal": 0.8,
@@ -31612,7 +31712,9 @@
     "recoil_vertical": -2.0,
     "recoil_vertical_deviation": 0.3,
     "reset_recoil_divider": 2.0,
+    "sound": "Sniper_rifle_03_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": "Sniper_Single_Shot__Suppressed__2_Cue",
     "type": 3
    },
    "flashlight_intensity": 0.0,
@@ -33840,6 +33942,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.4,
@@ -33848,7 +33951,9 @@
     "recoil_vertical": -0.3,
     "recoil_vertical_deviation": 0.0,
     "reset_recoil_divider": 1.5,
+    "sound": "SMG_Single_Shot_3_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 1
    },
    "flashlight_intensity": 0.0,
@@ -34619,6 +34724,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.4,
@@ -34627,7 +34733,9 @@
     "recoil_vertical": -0.175,
     "recoil_vertical_deviation": 0.025,
     "reset_recoil_divider": 1.0,
+    "sound": "AR_Single_Shot__Suppressed__Cue",
     "sound_radius": 10.0,
+    "suppressed_sound": null,
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -35813,6 +35921,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": "gun_shotgun_cock_01_Cue",
     "malfunction_chance": 0.25,
     "pellets": 6,
     "recoil_horizontal": 0.5,
@@ -35821,7 +35930,9 @@
     "recoil_vertical": -2.25,
     "recoil_vertical_deviation": 0.5,
     "reset_recoil_divider": 2.0,
+    "sound": "gun_shotgun_sawed_off_shot_01_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": "ShotGun_Boom_101__Suppressed__Cue",
     "type": 4
    },
    "flashlight_intensity": 0.0,
@@ -38049,6 +38160,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.1,
@@ -38057,7 +38169,9 @@
     "recoil_vertical": -0.1,
     "recoil_vertical_deviation": 0.025,
     "reset_recoil_divider": 1.0,
+    "sound": "ES_Grenade_Launcher_7_-_SFX_Producer_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": null,
     "type": 6
    },
    "flashlight_intensity": 0.0,
@@ -38301,6 +38415,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.06,
     "pellets": 6,
     "recoil_horizontal": 0.0,
@@ -38309,7 +38424,9 @@
     "recoil_vertical": -0.3,
     "recoil_vertical_deviation": 0.15,
     "reset_recoil_divider": 1.5,
+    "sound": "Weapon_Fire_25_Cue",
     "sound_radius": 70.0,
+    "suppressed_sound": "AKM_suppressed_fire_102_with_Reverb_2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -38675,6 +38792,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": "gun_shotgun_cock_01_Cue",
     "malfunction_chance": 0.075,
     "pellets": 6,
     "recoil_horizontal": 1.25,
@@ -38683,7 +38801,9 @@
     "recoil_vertical": -2.25,
     "recoil_vertical_deviation": 0.25,
     "reset_recoil_divider": 2.0,
+    "sound": "gun_shotgun_sawed_off_shot_01_Cue",
     "sound_radius": 75.0,
+    "suppressed_sound": "ShotGun_Boom_101__Suppressed__Cue",
     "type": 4
    },
    "flashlight_intensity": 0.0,
@@ -38885,6 +39005,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.03,
     "pellets": 6,
     "recoil_horizontal": 0.125,
@@ -38893,7 +39014,9 @@
     "recoil_vertical": -0.45,
     "recoil_vertical_deviation": 0.2,
     "reset_recoil_divider": 1.5,
+    "sound": "AR_Single_Shot_2_Cue",
     "sound_radius": 80.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -42713,6 +42836,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.0,
@@ -42721,7 +42845,9 @@
     "recoil_vertical": -0.4,
     "recoil_vertical_deviation": 0.0,
     "reset_recoil_divider": 1.5,
+    "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 70.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -43292,6 +43418,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.1,
@@ -43300,7 +43427,9 @@
     "recoil_vertical": -0.4,
     "recoil_vertical_deviation": 0.15,
     "reset_recoil_divider": 1.0,
+    "sound": "AR_Single_Shot__Suppressed__2_Cue",
     "sound_radius": 10.0,
+    "suppressed_sound": null,
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -46118,6 +46247,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.25,
@@ -46126,7 +46256,9 @@
     "recoil_vertical": -0.15,
     "recoil_vertical_deviation": 0.075,
     "reset_recoil_divider": 1.0,
+    "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 50.0,
+    "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
@@ -48076,6 +48208,7 @@
    },
    "firearm": {
     "automatic": false,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.3,
@@ -48084,7 +48217,9 @@
     "recoil_vertical": -1.35,
     "recoil_vertical_deviation": 0.25,
     "reset_recoil_divider": 1.5,
+    "sound": "gun_revolver_pistol_shot_01_Cue",
     "sound_radius": 60.0,
+    "suppressed_sound": null,
     "type": 0
    },
    "flashlight_intensity": 0.0,
@@ -51448,6 +51583,7 @@
    },
    "firearm": {
     "automatic": true,
+    "chamber_sound": null,
     "malfunction_chance": 0.025,
     "pellets": 6,
     "recoil_horizontal": 0.3,
@@ -51456,7 +51592,9 @@
     "recoil_vertical": -0.3,
     "recoil_vertical_deviation": 0.025,
     "reset_recoil_divider": 1.5,
+    "sound": "AR_Single_Shot__Suppressed__Cue",
     "sound_radius": 10.0,
+    "suppressed_sound": null,
     "type": 2
    },
    "flashlight_intensity": 0.0,

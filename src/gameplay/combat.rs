@@ -557,11 +557,12 @@ fn fire(
     mut player: PlayerAnim,
     lib: Res<AnimLibrary>,
     mut zombies: Query<(&Transform, &LevelZombie, &mut Health, Option<&mut UpperAction>), (Without<Dead>, Without<CharacterModel>)>,
-    (mut noise, mut notify, mut numbers, mut recoil): (
+    (mut noise, mut notify, mut numbers, mut recoil, mut sound): (
         MessageWriter<super::zombies::Noise>,
         MessageWriter<super::notify::Notify>,
         MessageWriter<super::damage_numbers::DamageNumber>,
         ResMut<super::recoil::Recoil>,
+        MessageWriter<crate::audio::Sound>,
     ),
 ) {
     armed.cooldown = (armed.cooldown - time.delta_secs()).max(0.0);
@@ -599,13 +600,14 @@ fn fire(
     if is_firearm(&def.kind) {
         let rpm = weapon.stat(&db, "FirearmRPM").unwrap_or(600.0).max(1.0);
         armed.cooldown = 60.0 / rpm;
-        let fa = def.firearm.unwrap_or_default();
+        let fa = def.firearm.clone().unwrap_or_default();
         // Local_StartShooting: an empty or missing magazine clicks and says so.
         let rounds = drawn(&armed, &mut game).and_then(|w| w.mag_mut(&db).map(|m| m.rounds));
         if rounds.is_none_or(|r| r == 0) {
             armed.cooldown = 0.25;
             if mouse.just_pressed(MouseButton::Left) {
                 notify.write(super::notify::Notify::new(if rounds.is_none() { "No mag in firearm" } else { "No ammo" }));
+                sound.write(crate::audio::Sound::at("S_EmptyFire_Cue", me.translation));
             }
             return;
         }
@@ -614,6 +616,7 @@ fn fire(
         if !goes_off(durability, store_bool(&store, "General", "FIREARM MALFUNCTION ENABLED?"), fa.malfunction_chance, rng.gen_range(0.0..100.0)) {
             armed.cooldown = 0.25;
             notify.write(super::notify::Notify::new("Weapon jammed"));
+            sound.write(crate::audio::Sound::at("GunJam_Cue", me.translation));
             return;
         }
         if let Some(m) = drawn(&armed, &mut game).and_then(|w| w.mag_mut(&db)) {
@@ -627,6 +630,10 @@ fn fire(
             w.durability = Some((durability - loss).max(0.0));
         }
         play(&mut action, ActionKind::Fire);
+        // MuzzleEffects: FirearmSound at the muzzle socket (suppressors aren't ported).
+        if let Some(cue) = &fa.sound {
+            sound.write(crate::audio::Sound::at(cue.clone(), me.translation + Vec3::Y * 1.35));
+        }
         // StartRecoil (after the trace below has used this frame's aim).
         let kick = super::recoil::kick(&fa, !armed.aiming, crouching, &mut rng);
         recoil.start(&fa, kick);
@@ -656,6 +663,9 @@ fn fire(
             // CriticalHit; Client_HitUI shows the result (headshots too).
             let (dmg, critical) = crit(falloff(shot_damage(base, head, &fa, headshot_mode), d, weapon.stat(&db, "DamageFallOff").unwrap_or(0.0)), &mut rng);
             hurt(&mut h, a, dmg, head);
+            // Trace_Headshot: Head_shot_1-5; Trace_BodyImpact: bullet_impact_body_thump_01-08.
+            let cue = if head { format!("Head_shot_{}_Cue", rng.gen_range(1..=5)) } else { format!("bullet_impact_body_thump_0{}_Cue", rng.gen_range(1..=8)) };
+            sound.write(crate::audio::Sound::at(cue, origin + dir * d));
             // Trace_Headshot / Trace_BodyImpact: AddXP_Marksmanship 4-6 / 1-2.
             if let Some(st) = game.state.as_mut() {
                 st.passive.add_xp(Passive::Marksmanship, if head { rng.gen_range(4.0..=6.0) } else { rng.gen_range(1.0..=2.0) });
@@ -694,27 +704,30 @@ fn fire(
         let rate = swing_rate(def.swing_speed, strength_speed, stamina >= drain);
         armed.cooldown = lib.action_secs(AnimSet::Survivor, stance, swing).map_or(MELEE_COOLDOWN, |d| (d / rate * 0.8).max(MELEE_COOLDOWN));
         action.start_at(swing, Some(rate));
+        sound.write(crate::audio::Sound::at("whoosh_weapon_knife_swing_01_Cue", me.translation));
         if let Some(state) = game.state.as_mut() {
             state.survival.stamina = (state.survival.stamina - drain).max(0.0);
         }
         let facing = me.rotation * Vec3::Z;
         let base = weapon.stat(&db, "MeleeDamage").unwrap_or(20.0);
-        let mut hits: Vec<(f32, f32, Mut<Health>, Option<Mut<UpperAction>>)> = zombies
+        let mut hits: Vec<(f32, f32, Vec3, Mut<Health>, Option<Mut<UpperAction>>)> = zombies
             .iter_mut()
             .filter_map(|(t, _, h, a)| {
                 let to = (t.translation - me.translation) * Vec3::new(1.0, 0.0, 1.0);
                 let d = to.length();
                 let back = backstab(t.rotation * Vec3::Z, to);
-                (d < MELEE_REACH && facing.angle_between(to.normalize_or_zero()).to_degrees() < MELEE_CONE).then_some((d, back, h, a))
+                (d < MELEE_REACH && facing.angle_between(to.normalize_or_zero()).to_degrees() < MELEE_CONE).then_some((d, back, t.translation, h, a))
             })
             .collect();
         hits.sort_by(|a, b| a.0.total_cmp(&b.0));
         // MELEE MULTI HIT: everyone in the arc, else the nearest.
-        for (_, back, mut h, a) in hits.into_iter().take(if multi_hit { usize::MAX } else { 1 }) {
+        for (_, back, at, mut h, a) in hits.into_iter().take(if multi_hit { usize::MAX } else { 1 }) {
             // DamageCalc: x2 into its back, CriticalHit, x StrengthMultiplier, DurabilityCheck.
             let (dmg, critical) = crit(base * back, &mut rng);
             let dmg = worn_damage(dmg * strength * night, durability, store_bool(&store, "General", "MELEE DAMAGE DEGRADATION ENABLED?"));
             hurt(&mut h, a, dmg, false);
+            // HitBody: one of Body_Flesh_1-5.
+            sound.write(crate::audio::Sound::at(format!("Body_Flesh_{}_Cue", rng.gen_range(1..=5)), at + Vec3::Y));
             numbers.write(super::damage_numbers::DamageNumber::hit(dmg, critical));
             // HitBody / HitHead: Client_StrengthXP(1-2), ReduceDurability(1).
             if let Some(st) = game.state.as_mut() {
@@ -755,6 +768,7 @@ fn kill_zombies(
     mut game: ResMut<CurrentGame>,
     mut zombies: Query<(Entity, &Health, &Transform, &mut Locomotion, Option<&LevelZombie>), Without<Dead>>,
     mut notify: MessageWriter<super::notify::Notify>,
+    mut sound: MessageWriter<crate::audio::Sound>,
 ) {
     let xp_mult = difficulty(&store, "General", "XP MULTIPLIER");
     let popup = store.find(&row_key("settings", "Gameplay", "XP POP UP ENABLED?")) == Some(Value::Bool(true));
@@ -763,8 +777,11 @@ fn kill_zombies(
             continue;
         }
         *loco = Locomotion::Dead;
-        // No longer an obstacle (or a falling body).
-        commands.entity(e).insert(Dead::at(t)).remove::<KinematicBody>();
+        // No longer an obstacle (or a falling body); Zombie_Cue.Deactivate, DeathSound.
+        commands.entity(e).insert(Dead::at(t)).remove::<KinematicBody>().remove::<crate::audio::Voiced>();
+        if let Some(cue) = z.and_then(|z| z.kind.death_sound()) {
+            sound.write(crate::audio::Sound::at(cue, t.translation + Vec3::Y));
+        }
         if let Some(state) = game.state.as_mut() {
             let [lo, hi] = z.map_or([5.0, 10.0], |z| z.kind.class().xp);
             let xp = kill_xp(state.progression.level, rand::thread_rng().gen_range(lo..=hi), xp_mult);
@@ -1055,10 +1072,10 @@ mod tests {
     fn spawned_guns_carry_their_pickup_data() {
         let Ok(text) = std::fs::read_to_string("assets/data/items.json") else { return };
         let db: ItemDb = serde_json::from_str(&text).unwrap();
-        let m4 = db.items["DA_M4CQB"].firearm.unwrap();
+        let m4 = db.items["DA_M4CQB"].firearm.clone().unwrap();
         assert!(m4.automatic && m4.kind == 2 && m4.sound_radius == 70.0);
         assert_eq!(m4.headshot_multiplier(), 2.25);
-        let m9 = db.items["DA_M9"].firearm.unwrap();
+        let m9 = db.items["DA_M9"].firearm.clone().unwrap();
         assert!(!m9.automatic && m9.sound_radius == 50.0 && m9.headshot_multiplier() == 2.0);
         assert!(db.items["DA_M4CQB"].reduce_durability > 0.0 && db.items["DA_M4CQB"].durability == 100.0);
         // Every gun has its component data.

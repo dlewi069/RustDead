@@ -281,6 +281,28 @@ def journal_unlocks_skills(ctx):
         ctx.err("08za_journal: Lockpick+ wasn't refused for its locked parent")
 
 
+def sounds_play(ctx):
+    """The game's SoundCues play: the rifle's shot and a hit (08g_armed), footsteps (08b_walked),
+    the melee whoosh (08i_melee), the frag's explosion (08ic_throw) and zombies breathing."""
+    played = {}
+    for step, rest in re.findall(r"autoshot sounds (\S+) ?(.*)", ctx.log):
+        played[step] = {k: int(n) for k, n in (x.split("=") for x in rest.split() if "=" in x)}
+    if not played:
+        ctx.err("sounds not logged")
+        return
+    def has(step, pred, what):
+        if step not in played:
+            ctx.err(f"{step}: sounds not logged")
+        elif not any(pred(k) for k in played[step]):
+            ctx.err(f"{step}: no {what} played ({sorted(played[step])[:12]})")
+    has("08b_walked", lambda k: k.removesuffix("_Cue").removesuffix("Sprint") in ("Concrete", "Dirt", "Grass", "Rock", "Sand", "Metal", "Wood", "Water", "Snow"), "footstep")
+    has("08g_armed", lambda k: k.startswith(("bullet_impact_body_thump", "Head_shot")), "bullet hit")
+    has("08g_armed", lambda k: ("shot" in k.lower() or "fire" in k.lower()) and not k.startswith(("Head_shot", "S_EmptyFire", "bullet")), "gunshot")
+    has("08i_melee", lambda k: k.startswith("whoosh"), "melee swing")
+    has("08ic_throw", lambda k: k.startswith("explosion"), "explosion")
+    has("08m_hound", lambda k: k in ("ZombieBreathLoopCue", "HoundCue"), "zombie voice")
+
+
 def body_parts_move_in_step(ctx):
     """Each survivor body part has its own AnimationPlayer; parts that join late (new clothes)
     copy the others' clip times, so the head and hands stay with the body."""
@@ -450,7 +472,7 @@ def level_spawners_wake(ctx):
         ctx.err("zombie spawners woke with empty groups (spawn multiplier/count?)")
 
 
-CHECKS = [ran_cleanly, every_step_has_a_screenshot, shots_kill_the_zombie, lockpick_opened, door_opens, keypad_opens_the_door, clothing_hides_the_body, ladder_climbs, lab_generator_lights_the_lab, shove_and_stomp, frag_grenade_explodes, molotov_sets_the_zombie_burning, damage_numbers_float, recoil_kicks, passive_skills_gain_xp, journal_unlocks_skills, body_parts_move_in_step, police_garage_opens, crouch_is_slow_and_quiet, hard_landing_hurts, flashlight_lights_up, sitting_holds_still, night_is_darker_than_day, frame_rate, level_spawners_wake, hound_has_its_health, corpse_opens_as_loot, medical_icons_show, weather_changes_the_scene]
+CHECKS = [ran_cleanly, every_step_has_a_screenshot, shots_kill_the_zombie, lockpick_opened, door_opens, keypad_opens_the_door, clothing_hides_the_body, ladder_climbs, lab_generator_lights_the_lab, shove_and_stomp, frag_grenade_explodes, molotov_sets_the_zombie_burning, damage_numbers_float, recoil_kicks, passive_skills_gain_xp, journal_unlocks_skills, sounds_play, body_parts_move_in_step, police_garage_opens, crouch_is_slow_and_quiet, hard_landing_hurts, flashlight_lights_up, sitting_holds_still, night_is_darker_than_day, frame_rate, level_spawners_wake, hound_has_its_health, corpse_opens_as_loot, medical_icons_show, weather_changes_the_scene]
 
 
 def main():

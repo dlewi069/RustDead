@@ -1071,11 +1071,16 @@ fn tour_shove(
             pitch.0 = Some(60f32.to_radians());
             *stage = 4;
         }
-        4 if tour.t > 2.4 => {
-            keys.press(KeyCode::KeyV);
-            *stage = 5;
+        // Held looking down (stray mouse motion over the window would turn the stomp into a shove).
+        4 => {
+            pitch.0 = Some(60f32.to_radians());
+            if tour.t > 2.4 {
+                keys.press(KeyCode::KeyV);
+                *stage = 5;
+            }
         }
         5 => {
+            pitch.0 = Some(60f32.to_radians());
             keys.release(KeyCode::KeyV);
             *stage = 6;
         }

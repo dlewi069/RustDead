@@ -1,6 +1,7 @@
 //! In-world gameplay on top of the level: searching containers, inventory, survival vitals,
 //! combat.
 
+pub mod ambience;
 pub mod burning;
 pub mod combat;
 pub mod damage_numbers;
@@ -59,6 +60,7 @@ impl Plugin for GameplayPlugin {
         recoil::plugin(app);
         whistle::plugin(app);
         journal::plugin(app);
+        ambience::plugin(app);
     }
 }
 

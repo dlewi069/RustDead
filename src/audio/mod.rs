@@ -69,6 +69,17 @@ pub struct SoundDb {
     /// Landscape paint layer (LayerInfo) -> its PhysMaterial's surface ("Grass", "Dirt"...).
     #[serde(default)]
     pub terrain_surfaces: HashMap<String, String>,
+    /// A sequence's AnimNotify_PlaySound (its montage's, in sequence time): reloads' mag out/in.
+    #[serde(default)]
+    pub action_sounds: HashMap<String, Vec<NotifySound>>,
+}
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct NotifySound {
+    pub time: f32,
+    pub cue: String,
+    pub volume: f32,
+    pub pitch: f32,
 }
 
 impl SoundDb {
@@ -137,7 +148,7 @@ pub fn plugin(app: &mut App) {
         .init_resource::<Played>()
         .add_message::<Sound>()
         .add_observer(click)
-        .add_systems(Update, (ambient_loops, play, follow).chain());
+        .add_systems(Update, (action_sounds, ambient_loops, play, follow).chain());
 }
 
 /// ButtonWidget's click: UI_click_sound_Cue on every button press.
@@ -230,6 +241,34 @@ fn play(
             }
         }
         debug!("sound {} gain {gain:.2}", s.cue);
+    }
+}
+
+/// The survivor's action montage's PlaySound notifies, as its clip passes them (at the action's
+/// play rate; a new action starts over).
+#[allow(clippy::type_complexity)]
+fn action_sounds(
+    time: Res<Time>,
+    db: Res<SoundDb>,
+    player: Query<(&Transform, &crate::models::UpperAction, &crate::models::Stance), (With<crate::models::CharacterModel>, With<crate::level::KinematicBody>)>,
+    mut state: Local<(u32, f32, usize)>,
+    mut sound: MessageWriter<Sound>,
+) {
+    let Ok((t, action, stance)) = player.single() else { return };
+    let (serial, elapsed, next) = &mut *state;
+    if action.serial != *serial {
+        *serial = action.serial;
+        *elapsed = 0.0;
+        *next = 0;
+    }
+    let Some(kind) = action.kind else { return };
+    let Some(list) = crate::models::AnimSet::Survivor.action_clip(*stance, kind).and_then(|clip| db.action_sounds.get(clip)) else { return };
+    *elapsed += time.delta_secs() * action.rate();
+    while let Some(n) = list.get(*next).filter(|n| n.time <= *elapsed) {
+        let mut s = Sound::at(n.cue.clone(), t.translation + Vec3::Y * 1.3);
+        s.volume = n.volume;
+        sound.write(s);
+        *next += 1;
     }
 }
 
@@ -329,5 +368,10 @@ mod tests {
         }
         assert_eq!(db.classes.get("EffectsAudio").map(String::as_str), Some("EFFECTS"));
         assert!(db.attenuation.contains_key("GunshotsRifle"));
+        // The reload montages' mag out / mag in notifies, in clip order.
+        let reload = &db.action_sounds["Anims/Other/Reload_Rifle_Hip"];
+        assert_eq!(reload.iter().map(|n| n.cue.as_str()).collect::<Vec<_>>(), ["AR_Mag_Out_Cue", "AR_Mag_IN_2_Cue"]);
+        assert!(reload[0].time < reload[1].time);
+        assert_eq!(crate::models::AnimSet::Survivor.action_clip(crate::models::Stance::Rifle, crate::models::ActionKind::Reload), Some("Anims/Other/Reload_Rifle_Hip"));
     }
 }

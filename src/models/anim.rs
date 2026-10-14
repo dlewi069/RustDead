@@ -236,6 +236,11 @@ impl AnimSet {
         }
     }
 
+    /// The sequence an action plays for a stance (relative to Content/Animations/).
+    pub fn action_clip(self, stance: Stance, kind: ActionKind) -> Option<&'static str> {
+        self.actions().into_iter().find(|(k, _)| *k == (stance, kind)).map(|(_, p)| p)
+    }
+
     /// Upper-body montages' sequences per stance.
     fn actions(self) -> Vec<((Stance, ActionKind), &'static str)> {
         use ActionKind::*;

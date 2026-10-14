@@ -313,7 +313,8 @@ fn zombie_attacks(
             sound.write(crate::audio::Sound::at(z.kind.attack_sound(), t.translation + Vec3::Y));
             let taken = take_hit(&mut game, &db, &store, c.damage * mult);
             let Some(state) = game.state.as_mut() else { return };
-            state.survival.take_damage(taken, false, 0.15);
+            // (The old simulation's take_damage also rolled "infection", which the game hasn't got.)
+            state.survival.health = (state.survival.health - taken).max(0.0);
             // `Medical Effects` rolls: Chance for Bleed / Heavy Bleed / Broken Bone (MedicalComponent
             // runs them), then Chance for Rad Damage adds Radiation Damage.
             let roll = |p: f32| rand::random::<f32>() < p;
@@ -352,13 +353,15 @@ fn death_and_respawn(
 ) {
     let (Some(state), Ok((mut t, mut loco))) = (game.state.as_mut(), player.single_mut()) else { return };
     // Skill_Deathbringer: once each life, a killing blow leaves 25 health instead.
-    if vitals.dead_for.is_none() && !state.survival.is_alive() && state.tech.deathbringer() {
+    // The game's death: MedicalComponent.Health <= 0 (AnyDamage).
+    let alive = state.survival.health > 0.0;
+    if vitals.dead_for.is_none() && !alive && state.tech.deathbringer() {
         state.survival.health = crate::progression::tech::DEATHBRINGER_HEALTH;
         info!("deathbringer: back to {} health", state.survival.health);
         return;
     }
     match vitals.dead_for {
-        None if !state.survival.is_alive() => {
+        None if !alive => {
             vitals.dead_for = Some(0.0);
             *loco = Locomotion::Dead;
             *overlay = GameOverlay::None;

@@ -44,7 +44,19 @@ CUES = [
     # Doors (the door BPs' PlaySoundAtLocation), the locked door's crowbar, fires, generators.
     "door_lock_open_02_Cue", "door_lock_close_01_Cue", "metal_gate_automatic_door_squeak_05_Cue", "MetalDoorImpact_Cue",
     "WoodBreak_cue", "SC_CampFire", "engine_generator_loop_01_Cue", "LightHum_Cue",
+    # BP_AmbientSoundController: day and night ambience.
+    "birds__1__Cue", "night_and_crickets_ambient_loop_Cue",
     "ZombieBreathLoopCue", "ZombieGrowlShort", "ZombieDeathShort", "HoundCue", "HoundAttackCue", "UI_click_sound_Cue",
+]
+
+# The montages behind the survivor's actions (models/anim.rs AnimSet::actions): their PlaySound
+# notifies sound as the action plays.
+MONTAGES = [
+    "Animations/Anims/Other/Reload_Rifle_Hip_Montage", "Animations/Anims/Other/Reload_Pistol_Montage",
+    "Animations/Anims/Other/Fire_Rifle_Ironsights_Montage",
+    *[f"Animations/Anims/Montages/1HMeleeAttack{i}_Montage" for i in range(1, 5)],
+    "Animations/Player/1Handed/Attack_Stomp_Montage_RM", "Animations/Player/Montages/Actions/Throw_Montage",
+    *[f"Animations/Player/Montages/Actions/Push/Anim_{k}Push_Montage" for k in ("SmallMelee", "Rifle", "Pistol", "LargeMelee")],
 ]
 
 # The Audio settings' sliders for each SoundClass (MuffleAudio parents Ambient and Effects).
@@ -156,6 +168,66 @@ def terrain_surfaces(tmp, stems):
     return out
 
 
+def play_sound_notifies(exports, notifies):
+    """[(montage or sequence time, cue, volume, pitch)] for the PlaySound notifies."""
+    by_name = {e["Name"]: e for e in exports}
+    out = []
+    for n in notifies or []:
+        obj = (n.get("Notify") or {}).get("ObjectName", "")
+        if "AnimNotify_PlaySound" not in obj:
+            continue
+        e = by_name.get(obj.split(":")[-1].rstrip("'"))
+        p = (e or {}).get("Properties") or {}
+        cue = name_of(p.get("Sound"))
+        if cue:
+            t = n.get("LinkValue", n.get("Time", 0.0)) or 0.0
+            out.append((t, cue, p.get("VolumeMultiplier", 1.0), p.get("PitchMultiplier", 1.0)))
+    return out
+
+
+def action_sounds(tmp, stems):
+    """Sequence (relative to Content/Animations/) -> [{time, cue, volume, pitch}] in its own time:
+    the montages' PlaySound notifies mapped through their segments, plus the sequence's own."""
+    pkgs = ["SurrounDead/Content/" + m for m in MONTAGES]
+    dump(tmp, pkgs)
+    out = {}
+    seqs = set()
+    for pkg in pkgs:
+        exports = load(tmp, pkg)
+        mont = next((e for e in exports if e["Type"] == "AnimMontage"), None)
+        if not mont:
+            print(f"  no montage {pkg}", file=sys.stderr)
+            continue
+        p = mont.get("Properties") or {}
+        segs = []
+        for track in p.get("SlotAnimTracks") or []:
+            for seg in (track.get("AnimTrack") or {}).get("AnimSegments") or []:
+                ref = seg.get("AnimReference") or {}
+                path = ref.get("ObjectPath", "").split(".")[0]
+                if path:
+                    start, rate = seg.get("StartPos", 0.0), seg.get("AnimPlayRate", 1.0) or 1.0
+                    length = (seg.get("AnimEndTime", 0.0) - seg.get("AnimStartTime", 0.0)) / abs(rate)
+                    segs.append((path, start, start + length, seg.get("AnimStartTime", 0.0), rate))
+        for t, cue, vol, pitch in play_sound_notifies(exports, p.get("Notifies")):
+            for path, s0, s1, a0, rate in segs:
+                if s0 <= t <= s1 + 1e-3:
+                    rel = path.removeprefix("SurrounDead/Content/Animations/")
+                    out.setdefault(rel, []).append({"time": round(a0 + (t - s0) * rate, 4), "cue": cue, "volume": vol, "pitch": pitch})
+                    break
+        seqs.update("SurrounDead/Content/" + x[0].removeprefix("SurrounDead/Content/") for x in segs)
+    dump(tmp, sorted(seqs))
+    for pkg in sorted(seqs):
+        exports = load(tmp, pkg)
+        seq = next((e for e in exports if e["Type"] == "AnimSequence"), None)
+        if seq:
+            rel = pkg.removeprefix("SurrounDead/Content/Animations/")
+            for t, cue, vol, pitch in play_sound_notifies(exports, (seq.get("Properties") or {}).get("Notifies")):
+                out.setdefault(rel, []).append({"time": round(t, 4), "cue": cue, "volume": vol, "pitch": pitch})
+    for v in out.values():
+        v.sort(key=lambda x: x["time"])
+    return out
+
+
 def decode(tmp, pkgs):
     """SdExport audio -> .binka (or .ogg/.wav) -> assets/game/<path>.wav. Returns the waves made."""
     todo = [p for p in pkgs if not (GAME / (p + ".wav")).exists()]
@@ -193,8 +265,10 @@ def main():
     for it in items.values():
         fa = it.get("firearm") or {}
         wanted += [fa.get(k) for k in ("sound", "suppressed_sound", "chamber_sound") if fa.get(k)]
-    wanted = sorted(set(wanted))
     tmp = tempfile.mkdtemp()
+    actions = action_sounds(tmp, stems)
+    wanted += [n["cue"] for v in actions.values() for n in v]
+    wanted = sorted(set(wanted))
     dump(tmp, [stems[w] for w in wanted if w in stems])
     cues, waves = {}, set()
     for w in wanted:
@@ -231,7 +305,7 @@ def main():
         for v in c["variants"]:
             v["waves"] = ["game/" + x + ".wav" for x in v["waves"] if (GAME / (x + ".wav")).exists()]
         c["variants"] = [v for v in c["variants"] if v["waves"]]
-    out = {"cues": cues, "attenuation": attenuation(tmp, stems), "classes": CLASS_SETTINGS, "terrain_surfaces": terrain_surfaces(tmp, stems)}
+    out = {"cues": cues, "attenuation": attenuation(tmp, stems), "classes": CLASS_SETTINGS, "terrain_surfaces": terrain_surfaces(tmp, stems), "action_sounds": actions}
     (DATA / "sounds.json").write_text(json.dumps(out, indent=1, sort_keys=True))
     print(f"sounds: {len(cues)} cues, {len(waves)} waves ({made} decoded now)")
     shutil.rmtree(tmp, ignore_errors=True)

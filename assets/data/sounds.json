@@ -1,4 +1,34 @@
 {
+ "action_sounds": {
+  "Anims/Other/Reload_Pistol": [
+   {
+    "cue": "Pistol_Mag_Out_Cue",
+    "pitch": 1.0,
+    "time": 0.0741,
+    "volume": 1.0
+   },
+   {
+    "cue": "Pistol_Mag_IN_Cue",
+    "pitch": 1.0,
+    "time": 1.2584,
+    "volume": 1.0
+   }
+  ],
+  "Anims/Other/Reload_Rifle_Hip": [
+   {
+    "cue": "AR_Mag_Out_Cue",
+    "pitch": 1.0,
+    "time": 0.4973,
+    "volume": 1.0
+   },
+   {
+    "cue": "AR_Mag_IN_2_Cue",
+    "pitch": 1.0,
+    "time": 1.776,
+    "volume": 1.0
+   }
+  ]
+ },
  "attenuation": {
   "Aircraft": {
    "falloff": 1750.0,
@@ -208,6 +238,52 @@
     }
    ],
    "volume": 0.75
+  },
+  "AR_Mag_IN_2_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Assault_Rifle_02/AR_Mag_IN_2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "AR_Mag_Out_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Assault_Rifle_03/AR_Mag_Out.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
   },
   "AR_Single_Shot_2_Cue": {
    "attenuation": "GunshotsRifle",
@@ -1506,6 +1582,52 @@
     }
    ],
    "volume": 0.75
+  },
+  "Pistol_Mag_IN_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Pistol_05/Pistol_Mag_IN.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "Pistol_Mag_Out_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Pistol_01/Pistol_Mag_Out.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
   },
   "Pistol_Single_Shot_2_Cue": {
    "attenuation": "GunshotsPistol",
@@ -2882,6 +3004,29 @@
    ],
    "volume": 0.5
   },
+  "birds__1__Cue": {
+   "attenuation": null,
+   "class": "AmbientAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/birds__1_.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
   "bullet_impact_body_thump_01_Cue": {
    "attenuation": "BulletImpact",
    "class": "EffectsAudio",
@@ -3451,6 +3596,29 @@
      ],
      "waves": [
       "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Doors/Wavs/metal_gate_automatic_door_squeak_05.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "night_and_crickets_ambient_loop_Cue": {
+   "attenuation": null,
+   "class": "AmbientAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SurvivalSoundPack/Waves/night_and_crickets_ambient_loop.wav"
      ],
      "weight": 1.0
     }

@@ -254,7 +254,11 @@ comment (see `menus/settings.rs::default_value`).
   UI clicks (every `Activate`), doors (`doors::door_sounds`: keycard/keypad lock open/close, lab
   doors, hangar/warehouse squeak; the crowbar's WoodBreak), and `AmbientLoop`s placed from the
   level's actors (`power::ambient_sound`: fires' SC_CampFire, camp generators, the police
-  generator's hum while on). Not yet: music, weather, reload/equip/lever/radio/siren sounds.
+  generator's hum while on), the reload montages' AnimNotify_PlaySound (sounds.json
+  `action_sounds`: gen_sounds.py maps each montage's notifies through its segments to sequence
+  time; `audio::action_sounds` plays them as the survivor's action passes them), and
+  `gameplay/ambience.rs` (BP_AmbientSoundController: birds by day, crickets by night, 0.3 x the
+  weather's multiplier). Not yet: music (BP_Audio_Manager/Area), weather, equip/lever/radio/siren.
 - `src/progression/passive.rs`: PassiveSkillsComponent decompiled (see Skill trees below);
   `GameState::passive` (saved). Level-ups queue in `level_ups`, which `notify.rs` announces.
 - `src/{ai,combat,crafting,economy,engine,items,looting,persistence,progression,survival,vehicles,world}`:
@@ -397,7 +401,8 @@ extractor/export_assets.sh --items       # regenerate assets/data/items.json (co
   The old `survival::MedicalSystem` / `conditions` and SurvivalStats' infection are the earlier
   simulation's inventions (no longer ticked in the world). Event_HungerDebuff / ThirstDebuff only
   arm the starvation-damage timers (ported). Every hit the survivor takes (zombies, falls,
-  starvation, bleed ticks) goes through `survival::take_hit` = CalculatePlayerDamage: worn body
+  starvation, bleed ticks) goes through `survival::take_hit`; death is health <= 0 only (the old
+  SurvivalStats infection, which zombie hits used to raise until it killed, isn't the game's) = CalculatePlayerDamage: worn body
   armor then headwear with `IsArmor?` divide by 1 + ArmorProtection/100 and wear when ARMOR
   DURABILITY ENABLED? (`equipment::armor_damage`). SprintingRestricted? (-125 cm/s sprint) is never
   set in the game: OnRep_BodyArmorEquipped? compares ItemIDs 'MilitaryHeavyArmor(2)' while the

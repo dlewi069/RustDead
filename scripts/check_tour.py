@@ -304,6 +304,8 @@ def sounds_play(ctx):
     has("08ic_throw", lambda k: k.startswith("explosion"), "explosion")
     has("08m_hound", lambda k: k in ("ZombieBreathLoopCue", "HoundCue"), "zombie voice")
     has("08s_keypad", lambda k: k == "door_lock_open_02_Cue", "keypad door lock")
+    has("08_in_game", lambda k: k == "birds__1__Cue", "daytime birds")
+    has("08k_night", lambda k: k == "night_and_crickets_ambient_loop_Cue", "night crickets")
     has("08vb_garage", lambda k: k == "engine_generator_loop_01_Cue", "generator hum")
 
 

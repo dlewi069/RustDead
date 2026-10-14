@@ -117,6 +117,8 @@ enum Action {
     Equip,
     Unequip,
     Use,
+    /// `Jig.Context.ReadBook`: a skill book (+250 XP) or magazine (the skill's XP boost).
+    Read,
     Drop,
     /// `Jig.Context.Unload`: a weapon's magazine out, or a magazine's rounds out.
     Unload,
@@ -254,6 +256,10 @@ struct Ctx<'a> {
     view: &'a VicinityView,
     craft: &'a CraftView,
     player: Vec3,
+    /// XP MULTIPLIER (XpMultiplierCalc), for reading books.
+    xp_mult: f32,
+    /// A message the last action left for the screen ("Reading this book had no effect...").
+    notice: Option<&'static str>,
 }
 
 impl Ctx<'_> {
@@ -456,6 +462,11 @@ impl Ctx<'_> {
             target.attachments.push(stack);
             return Ok(None);
         }
+        // A battery into an empty flashlight (its SC_Battery container).
+        if tdef.kind == "Flashlight" && super::flashlight::battery(target, db).is_none() && tdef.attachments.iter().any(|a| a.item == stack.item) && stack.count == 1 {
+            target.attachments.push(stack);
+            return Ok(None);
+        }
         Err(stack)
     }
 
@@ -515,7 +526,10 @@ impl Ctx<'_> {
             Action::Unload => {
                 let db = self.db;
                 let Some(stack) = self.stack_mut(r) else { return };
+                let battery = super::flashlight::battery(stack, db).map(|b| b.item.clone());
                 let out = if let Some(i) = stack.attachments.iter().position(|a| db.items.get(&a.item).is_some_and(|d| d.capacity > 0)) {
+                    Some(stack.attachments.remove(i))
+                } else if let Some(i) = battery.and_then(|b| stack.attachments.iter().position(|a| a.item == b)) {
                     Some(stack.attachments.remove(i))
                 } else {
                     let ammo = db.items.get(&stack.item).and_then(|d| d.ammo.first().cloned());
@@ -549,14 +563,59 @@ impl Ctx<'_> {
             Action::Use => {
                 let Some((mut stack, placed)) = self.take(r) else { return };
                 if let (Some(def), Some(state)) = (self.db.items.get(&stack.item), self.game.state.as_mut()) {
-                    super::medical::consume(&mut state.survival, &mut state.effects, def);
+                    super::medical::consume(&mut state.survival, &mut state.effects, &mut state.passive, def);
                     stack.count -= 1;
                 }
                 if stack.count > 0 {
                     self.restore(r, stack, placed);
                 }
             }
+            Action::Read => {
+                let Some((mut stack, placed)) = self.take(r) else { return };
+                let id = self.db.items.get(&stack.item).map(|d| d.id.clone()).unwrap_or_default();
+                let xp_mult = self.xp_mult;
+                if let Some(state) = self.game.state.as_mut() {
+                    match read_book(&mut state.passive, &id) {
+                        Some(true) => {
+                            stack.count -= 1;
+                            // XpMultiplierCalc(80, 100): character XP too.
+                            let roll = rand::Rng::gen_range(&mut rand::thread_rng(), 80.0..=100.0);
+                            let xp = state.progression.level.max(1) as f32 * roll * 1.05 * xp_mult;
+                            state.progression.add_xp(xp.round() as u64);
+                            info!("read {id}");
+                        }
+                        Some(false) => self.notice = Some("Reading this book had no effect..."),
+                        None => {}
+                    }
+                }
+                if stack.count > 0 {
+                    self.restore(r, stack, placed);
+                }
+            }
         }
+    }
+}
+
+/// JigContextMenuComp.ContextReadBook: "<Skill>Book" gives the skill 250 XP; "<Skill>Magazine"
+/// starts its XP boost (XPMultiplier_<Skill>), unless one is already running. Whether it was used
+/// up (None: not a skill book).
+fn read_book(passive: &mut crate::progression::passive::PassiveSkills, id: &str) -> Option<bool> {
+    use crate::progression::passive::Passive;
+    let (skill, book) = Passive::ALL.iter().find_map(|&p| {
+        let name = p.name().replace(' ', "");
+        if id == format!("{name}Book") {
+            Some((p, true))
+        } else if id == format!("{name}Magazine") {
+            Some((p, false))
+        } else {
+            None
+        }
+    })?;
+    if book {
+        passive.add_xp(skill, 250.0);
+        Some(true)
+    } else {
+        Some(passive.use_book(skill))
     }
 }
 
@@ -746,7 +805,7 @@ fn rebuild(
     assets: Res<AssetServer>,
     player: Query<&Transform, (With<CharacterModel>, With<crate::level::KinematicBody>)>,
 ) {
-    let InvData { db, game, containers, ground, view, dirty, craft } = &mut data;
+    let InvData { db, game, containers, ground, view, dirty, craft, .. } = &mut data;
     let db: &ItemDb = db;
     if !overlay.is_open() {
         ui.split = None;
@@ -1247,12 +1306,24 @@ struct InvData<'w> {
     view: ResMut<'w, VicinityView>,
     dirty: ResMut<'w, Dirty>,
     craft: ResMut<'w, CraftView>,
+    store: Res<'w, crate::menus::settings::SettingsStore>,
+    notify: MessageWriter<'w, super::notify::Notify>,
 }
 
 impl InvData<'_> {
     fn ctx(&mut self, player: Vec3) -> (Ctx<'_>, &mut Dirty) {
         (
-            Ctx { db: &self.db, game: &mut self.game, containers: &mut self.containers, ground: &mut self.ground, view: &self.view, craft: &self.craft, player },
+            Ctx {
+                db: &self.db,
+                game: &mut self.game,
+                containers: &mut self.containers,
+                ground: &mut self.ground,
+                view: &self.view,
+                craft: &self.craft,
+                player,
+                xp_mult: super::survival::difficulty(&self.store, "General", "XP MULTIPLIER"),
+                notice: None,
+            },
             &mut self.dirty,
         )
     }
@@ -1461,7 +1532,11 @@ fn on_click(
     let db = ctx.db;
     if let Ok(MenuOption(action, r)) = options.get(target) {
         ctx.act(*action, *r);
+        let notice = ctx.notice.take();
         dirty.0 = true;
+        if let Some(n) = notice {
+            data.notify.write(super::notify::Notify::new(n));
+        }
         return;
     }
     let Ok(r) = items.get(target).copied() else { return };
@@ -1496,12 +1571,22 @@ fn on_click(
                 if def.consumable {
                     opts.push((if def.kind.contains("Drink") { "Drink" } else if def.kind.contains("Food") { "Eat" } else { "Use" }, Action::Use));
                 }
+                if def.context.iter().any(|c| c == "ReadBook") {
+                    opts.push(("Read", Action::Read));
+                }
             }
             if let Some((stack, _)) = ctx.peek(r)
                 && r.loc != Loc::Vicinity
                 && (stack.mag(db).is_some() || (def.capacity > 0 && stack.rounds > 0))
             {
                 opts.push(("Unload", Action::Unload));
+            }
+            if let Some((stack, _)) = ctx.peek(r)
+                && r.loc != Loc::Vicinity
+                && super::flashlight::battery(&stack, db).is_some()
+            {
+                // Not the game's: it drags the battery out of the SC_Battery slot.
+                opts.push(("Remove Battery", Action::Unload));
             }
             if r.loc != Loc::Vicinity {
                 opts.push(("Drop", Action::Drop));
@@ -1547,10 +1632,42 @@ mod tests {
     fn with_ctx(db: &ItemDb, f: impl FnOnce(&mut Ctx)) -> (CurrentGame, Containers, Ground) {
         let (mut game, mut containers, mut ground, view, craft) = (CurrentGame::default(), Containers::default(), Ground::default(), VicinityView::default(), CraftView::default());
         {
-            let mut ctx = Ctx { db, game: &mut game, containers: &mut containers, ground: &mut ground, view: &view, craft: &craft, player: Vec3::ZERO };
+            let mut ctx = Ctx { db, game: &mut game, containers: &mut containers, ground: &mut ground, view: &view, craft: &craft, player: Vec3::ZERO, xp_mult: 1.0, notice: None };
             f(&mut ctx);
         }
         (game, containers, ground)
+    }
+
+    #[test]
+    fn skill_books_and_magazines() {
+        use crate::progression::passive::{Passive, PassiveSkills};
+        let mut p = PassiveSkills::default();
+        assert_eq!(read_book(&mut p, "FirstAidBook"), Some(true));
+        assert_eq!(p.get(Passive::FirstAid).xp, 250.0);
+        assert_eq!(read_book(&mut p, "ThiefMagazine"), Some(true), "starts the boost");
+        assert_eq!(read_book(&mut p, "ThiefMagazine"), Some(false), "no effect while it runs");
+        p.add_xp(Passive::Thief, 10.0);
+        assert_eq!(p.get(Passive::Thief).xp, 20.0);
+        assert_eq!(read_book(&mut p, "DA_Bandages"), None);
+        // The data offers READ on all 20 of them.
+        let Some(db) = db() else { return };
+        let readable: Vec<_> = db.items.values().filter(|d| d.context.iter().any(|c| c == "ReadBook")).map(|d| d.id.clone()).collect();
+        assert_eq!(readable.len(), 20);
+        assert!(readable.iter().all(|id| read_book(&mut PassiveSkills::default(), id).is_some()), "{readable:?}");
+    }
+
+    #[test]
+    fn batteries_go_into_empty_flashlights_only() {
+        let Some(db) = db() else { return };
+        let mut light = db.stack("DA_Flashlight", 1);
+        light.attachments.clear();
+        let battery = db.stack("DA_Battery", 1);
+        // Not into a rifle, nor a second one into a full flashlight.
+        let mut rifle = db.stack("DA_M4CQB", 1);
+        assert!(Ctx::item_over_item(&db, battery.clone(), &mut rifle).is_err());
+        assert!(matches!(Ctx::item_over_item(&db, battery.clone(), &mut light), Ok(None)));
+        assert!(super::super::flashlight::battery(&light, &db).is_some());
+        assert!(Ctx::item_over_item(&db, battery, &mut light).is_err());
     }
 
     #[test]

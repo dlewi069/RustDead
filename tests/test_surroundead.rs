@@ -170,8 +170,9 @@ fn test_progression_and_skill_tree() {
     assert_eq!(prog.level, 1);
     assert_eq!(prog.unspent_points, 0);
 
-    // Grant 150 XP -> Level up to 2 (+1 skill point)
-    let lvl = prog.add_xp(150);
+    // LevellingComponent: 500 XP -> level 2 (+1 skill point)
+    assert_eq!(prog.add_xp(150), None);
+    let lvl = prog.add_xp(350);
     assert_eq!(lvl, Some(2));
     assert_eq!(prog.level, 2);
     assert_eq!(prog.unspent_points, 1);

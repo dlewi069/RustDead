@@ -271,9 +271,78 @@ impl PlayerInventory {
     }
 }
 
+/// BP_PlayerCharacter.CalculatePlayerDamage, for every hit the survivor takes (AnyDamage): worn
+/// body armor, then headwear, that is armor (`IsArmor?`) and not worn out divides the damage by
+/// 1 + ArmorProtection / 100 (GetArmorDamageReduction; 1 without the stat), and with ARMOR
+/// DURABILITY ENABLED? loses `ReduceDurabilityAmount` x ARMOR DURABILITY MULTIPLIER (`wear`).
+pub fn armor_damage(inv: &mut PlayerInventory, db: &ItemDb, mut damage: f32, wear: Option<f32>) -> f32 {
+    for slot in [Slot::BodyArmor, Slot::Headwear] {
+        let Some(stack) = inv.equipped.get_mut(&slot) else { continue };
+        let Some(def) = db.items.get(&stack.item).filter(|d| d.armor) else { continue };
+        let left = stack.durability.unwrap_or(def.durability);
+        if left == 0.0 {
+            continue;
+        }
+        damage /= 1.0 + stack.stat(db, "ArmorProtection").unwrap_or(0.0) / 100.0;
+        if let Some(mult) = wear {
+            stack.durability = Some((left - def.reduce_durability * mult).max(0.0));
+        }
+    }
+    damage
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn armor_divides_damage_and_wears_out() {
+        let Ok(text) = std::fs::read_to_string("assets/data/items.json") else { return };
+        let db: ItemDb = serde_json::from_str(&text).unwrap();
+        let mut inv = PlayerInventory::default();
+        assert_eq!(armor_damage(&mut inv, &db, 30.0, Some(1.0)), 30.0);
+        // Heavy armor rolled 30 protection: / 1.3.
+        let mut vest = db.stack("DA_HeavyMilitaryBodyArmor", 1);
+        vest.stats.insert("ArmorProtection".into(), 30.0);
+        inv.equipped.insert(Slot::BodyArmor, vest);
+        assert!((armor_damage(&mut inv, &db, 26.0, None) - 20.0).abs() < 1e-4);
+        assert_eq!(inv.equipped[&Slot::BodyArmor].durability, None, "durability off: no wear");
+        // A helmet with 10 on top: / 1.3 / 1.1. Wear: ReduceDurabilityAmount (0.31) each.
+        let mut helmet = db.stack("DA_BlackOpsHelmet", 1);
+        helmet.stats.insert("ArmorProtection".into(), 10.0);
+        inv.equipped.insert(Slot::Headwear, helmet);
+        assert!((armor_damage(&mut inv, &db, 28.6, Some(2.0)) - 20.0).abs() < 1e-3);
+        assert!((inv.equipped[&Slot::BodyArmor].durability.unwrap() - (100.0 - 0.62)).abs() < 1e-3);
+        // Worn out: no protection left.
+        inv.equipped.get_mut(&Slot::BodyArmor).unwrap().durability = Some(0.0);
+        inv.equipped.remove(&Slot::Headwear);
+        assert_eq!(armor_damage(&mut inv, &db, 30.0, Some(1.0)), 30.0);
+        // Ordinary headwear (not IsArmor?) does nothing.
+        assert!(!db.items["DA_WinterCoat"].armor && db.items["DA_BlackOpsHelmet"].armor);
+    }
+
+    #[test]
+    fn clothing_hides_the_body_parts_under_it() {
+        let Ok(text) = std::fs::read_to_string("assets/data/items.json") else { return };
+        let db: ItemDb = serde_json::from_str(&text).unwrap();
+        let shown = |inv: &PlayerInventory, female: bool| -> Vec<&'static str> { body_meshes(inv, &db, female).0.into_iter().filter(|(_, m)| m.is_some()).map(|(b, _)| b).collect() };
+        let mut inv = PlayerInventory::default();
+        assert_eq!(shown(&inv, false), ["Torso", "Arms", "Hands", "Legs", "LowerLegs", "Feet"]);
+        // A coat hides torso and arms; trousers the legs; boots the feet.
+        inv.equip(Slot::Torso, db.stack("DA_WinterCoat", 1));
+        assert_eq!(shown(&inv, false), ["Hands", "Legs", "LowerLegs", "Feet"]);
+        inv.equip(Slot::Legs, db.stack("DA_CargoPants", 1));
+        inv.equip(Slot::Feet, db.stack("DA_Boots1", 1));
+        assert_eq!(shown(&inv, true), ["Hands"]);
+        // A T-shirt keeps the forearms bare (and the underwear biceps).
+        inv.equip(Slot::Torso, db.stack("DA_HawaiianShirt", 1));
+        let b = body_meshes(&inv, &db, false);
+        assert!(b.0.iter().any(|(p, m)| *p == "Biceps" && m.as_deref().is_some_and(|m| m.ends_with("SK_Chr_Underwear_Male_01_Biceps"))), "{b:?}");
+        assert_eq!(shown(&inv, false), ["Arms", "Biceps", "Hands"]);
+        // The robe sets everything; trousers can't change the legs under it, boots still hide feet.
+        inv.equip(Slot::Torso, db.stack("DA_Robe", 1));
+        assert_eq!(shown(&inv, false), ["Hands", "Legs", "LowerThighs", "LowerLegs"]);
+    }
 
     #[test]
     fn real_items_find_their_slots_and_bring_their_pockets() {
@@ -307,6 +376,43 @@ mod tests {
 }
 
 /// Clothing meshes the equipped items put on the survivor (male/female variant by sex).
+/// The body-part meshes under the worn clothing, as BP_PlayerCharacter's BodyPartVisibility
+/// leaves them: each clothing slot sets its region from the item's BodyPartSettings (Torso:
+/// torso/arms/biceps, Gloves: hands, Legs: legs/lower thighs/lower legs, Feet: feet) and taking it
+/// off restores the bare region (UpdateBodyParts). An `update_all` item (the robe) on Torso, Body
+/// Armor or Legs sets every part, and the Torso and Legs regions then stay as it set them
+/// (CheckClothing); gloves and footwear still apply on top.
+pub fn body_meshes(inv: &PlayerInventory, db: &ItemDb, female: bool) -> crate::models::BodyMeshes {
+    let sex = if female { "Female" } else { "Male" };
+    let mut body = crate::models::default_body(sex);
+    let worn = |slot: Slot| {
+        let c = db.items.get(&inv.equipped.get(&slot)?.item)?.clothing.as_ref()?;
+        let parts = c.body.as_ref()?;
+        Some((c.update_all, if female { &parts.female } else { &parts.male }))
+    };
+    let mut apply = |parts: &std::collections::BTreeMap<String, Option<String>>, region: &[&str]| {
+        for (b, mesh) in body.iter_mut().filter(|(b, _)| region.contains(b)) {
+            *mesh = parts.get(*b).cloned().flatten();
+        }
+    };
+    let all = [Slot::Torso, Slot::BodyArmor, Slot::Legs].into_iter().find_map(|s| worn(s).filter(|w| w.0));
+    if let Some((_, parts)) = all {
+        apply(parts, &crate::models::BODY_PARTS);
+    } else {
+        for (slot, region) in [(Slot::Torso, &["Torso", "Arms", "Biceps"][..]), (Slot::Legs, &["Legs", "LowerThighs", "LowerLegs"][..])] {
+            if let Some((_, parts)) = worn(slot) {
+                apply(parts, region);
+            }
+        }
+    }
+    for (slot, region) in [(Slot::Gloves, &["Hands"][..]), (Slot::Feet, &["Feet"][..])] {
+        if let Some((_, parts)) = worn(slot) {
+            apply(parts, region);
+        }
+    }
+    crate::models::BodyMeshes(body)
+}
+
 pub fn worn_meshes(inv: &PlayerInventory, db: &ItemDb, female: bool) -> Vec<(String, String)> {
     inv.equipped
         .iter()

@@ -126,9 +126,8 @@ pub fn can_try(game: &mut CurrentGame, lock: &Lock) -> Result<(), &'static str> 
     if player_inv(game).count(LOCKPICK) == 0 {
         return Err("You need a lockpick");
     }
-    // Lockpick+ is a tech-tree skill in the game; until that tree is ported, the progression
-    // system's Lockpicking skill stands in for it.
-    let skilled = game.state.as_ref().is_some_and(|s| s.progression.get_skill_level(crate::progression::skills::SkillType::Lockpicking) > 0);
+    // The tech tree's Lockpick+.
+    let skilled = game.state.as_ref().is_some_and(|s| s.tech.has(crate::progression::tech::LOCKPICK));
     if lock.difficulty.advanced() && !skilled {
         return Err("Advanced lock, unlock Lockpick+ skill to picklock");
     }
@@ -232,8 +231,20 @@ fn play(
     if let Some(waited) = picking.success.as_mut() {
         *waited += dt;
         if *waited >= SUCCESS_WAIT {
-            // LockpickSuccessful -> OpenContainer.
-            containers.unlocked.insert(actor);
+            // LockpickSuccessful -> OpenContainer. BP_MASTER_PicklockContainer: AddXP_Scavenging
+            // (4-6) and AddXP_Thief (40-60); BP_LockedDoor: AddXP_Thief (20-30).
+            if containers.unlocked.insert(actor)
+                && let Some(st) = game.state.as_mut()
+            {
+                use crate::progression::passive::Passive;
+                let mut rng = rand::thread_rng();
+                if containers.list.iter().any(|c| c.0 == actor) {
+                    st.passive.add_xp(Passive::Scavenging, rng.gen_range(4.0..=6.0));
+                    st.passive.add_xp(Passive::Thief, rng.gen_range(40.0..=60.0));
+                } else {
+                    st.passive.add_xp(Passive::Thief, rng.gen_range(20.0..=30.0));
+                }
+            }
             *overlay = GameOverlay::None;
             containers.open_now = Some(actor);
             dirty.0 = true;

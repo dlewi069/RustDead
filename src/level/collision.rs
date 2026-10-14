@@ -22,16 +22,26 @@ pub struct KinematicBody {
     pub grounded: bool,
     /// Set by gameplay for one frame to jump.
     pub jump: Option<f32>,
+    /// On a ladder (`ladders`): no gravity; gameplay moves it up and down, the floor stops it.
+    pub climbing: bool,
+    /// Seconds spent held in the air waiting for the props below to load (see `move_bodies`).
+    held: f32,
+    /// Set for one frame on touching down from a fall: the downward speed, m/s (OnLanded's
+    /// `GetVelocity().Z * -1`).
+    pub landed: Option<f32>,
 }
 
 impl KinematicBody {
     pub fn new(radius: f32, height: f32) -> Self {
-        Self { radius, height, vertical_velocity: 0.0, grounded: true, jump: None }
+        Self { radius, height, vertical_velocity: 0.0, grounded: true, jump: None, climbing: false, landed: None, held: 0.0 }
     }
 }
 
 const STEP: f32 = 0.45;
-const GRAVITY: f32 = -26.0;
+/// Longest a falling body waits for the props under it to load.
+const HOLD_FOR: f32 = 5.0;
+/// UE gravity (-980 cm/s^2) x BP_PlayerCharacter CharMoveComp GravityScale 1.75.
+const GRAVITY: f32 = -9.8 * 1.75;
 /// Surfaces steeper than this (normal.y below) are walls.
 const WALKABLE: f32 = 0.6;
 
@@ -47,6 +57,29 @@ pub struct CollisionCache {
     items: HashMap<(IVec2, u32), Option<ItemTris>>,
     /// Cells recently raycast through (seconds left), kept built between shots.
     pinned: HashMap<IVec2, f32>,
+    /// Moving props (doors), keyed by their owner's index; rebuilt by the owner when they move.
+    dynamic: HashMap<usize, ItemTris>,
+}
+
+/// World-space triangles of `mesh` placed at `t`.
+pub(super) fn tris_of(mesh: &Mesh, t: &Transform) -> Vec<[Vec3; 3]> {
+    let mut out = Vec::new();
+    mesh_tris(mesh, t, &mut out);
+    out
+}
+
+fn bounded(tris: Vec<[Vec3; 3]>) -> Option<ItemTris> {
+    if tris.is_empty() {
+        return None;
+    }
+    let (mut min, mut max) = (Vec3::MAX, Vec3::MIN);
+    for t in &tris {
+        for v in t {
+            min = min.min(*v);
+            max = max.max(*v);
+        }
+    }
+    Some(ItemTris { min, max, tris: Arc::new(tris) })
 }
 
 fn mesh_tris(mesh: &Mesh, t: &Transform, out: &mut Vec<[Vec3; 3]>) {
@@ -66,6 +99,25 @@ fn mesh_tris(mesh: &Mesh, t: &Transform, out: &mut Vec<[Vec3; 3]>) {
 }
 
 impl CollisionCache {
+    pub(super) fn has_dynamic(&self, key: usize) -> bool {
+        self.dynamic.contains_key(&key)
+    }
+
+    /// Replace a moving prop's triangles (an empty list still marks it as built).
+    pub(super) fn set_dynamic(&mut self, key: usize, tris: Vec<[Vec3; 3]>) {
+        let item = bounded(tris).unwrap_or(ItemTris { min: Vec3::MAX, max: Vec3::MIN, tris: Arc::default() });
+        self.dynamic.insert(key, item);
+    }
+
+    /// Triangles currently held for moving prop `key`.
+    pub fn dynamic_tris(&self, key: usize) -> usize {
+        self.dynamic.get(&key).map_or(0, |d| d.tris.len())
+    }
+
+    pub(super) fn clear_dynamic(&mut self) {
+        self.dynamic.clear();
+    }
+
     fn item(&mut self, level: &Level, streaming: &PropStreaming, meshes: &Assets<Mesh>, cell: IVec2, index: u32) -> Option<ItemTris> {
         if let Some(c) = self.items.get(&(cell, index)) {
             return c.clone();
@@ -91,24 +143,22 @@ impl CollisionCache {
                 true
             }
         };
-        let built = (ready && !tris.is_empty()).then(|| {
-            let (mut min, mut max) = (Vec3::MAX, Vec3::MIN);
-            for t in &tris {
-                for v in t {
-                    min = min.min(*v);
-                    max = max.max(*v);
-                }
-            }
-            ItemTris { min, max, tris: Arc::new(tris) }
-        });
+        let built = if ready { bounded(tris) } else { None };
         self.items.insert((cell, index), built.clone());
         built
     }
 
     /// Triangles of items whose bounds overlap the box around `p`.
     fn near(&mut self, level: &Level, streaming: &PropStreaming, meshes: &Assets<Mesh>, p: Vec3, reach: Vec3) -> Vec<Arc<Vec<[Vec3; 3]>>> {
+        self.near_pending(level, streaming, meshes, p, reach).0
+    }
+
+    /// [`Self::near`], and whether the cells under the box (the whole column) still have props
+    /// whose collision isn't built (cell not streamed in, or meshes loading).
+    fn near_pending(&mut self, level: &Level, streaming: &PropStreaming, meshes: &Assets<Mesh>, p: Vec3, reach: Vec3) -> (Vec<Arc<Vec<[Vec3; 3]>>>, bool) {
+        let mut pending = false;
         let (lo, hi) = (p - reach, p + reach);
-        let mut out = Vec::new();
+        let mut out: Vec<_> = self.dynamic.values().filter(|it| it.min.cmple(hi).all() && it.max.cmpge(lo).all()).map(|it| it.tris.clone()).collect();
         let c0 = cell_of(lo);
         let c1 = cell_of(hi);
         for cz in c0.y..=c1.y {
@@ -116,10 +166,14 @@ impl CollisionCache {
                 let cell = IVec2::new(cx, cz);
                 let Some(items) = level.cells.get(&cell) else { continue };
                 if !streaming.loaded.contains_key(&cell) {
+                    pending |= !items.is_empty();
                     continue;
                 }
                 for i in 0..items.len() as u32 {
-                    if let Some(it) = self.item(level, streaming, meshes, cell, i)
+                    let it = self.item(level, streaming, meshes, cell, i);
+                    // Built items are cached (bounds or None); uncached ones are still loading.
+                    pending |= !self.items.contains_key(&(cell, i));
+                    if let Some(it) = it
                         && it.min.cmple(hi).all()
                         && it.max.cmpge(lo).all()
                     {
@@ -128,7 +182,7 @@ impl CollisionCache {
                 }
             }
         }
-        out
+        (out, pending)
     }
 
     /// Highest walkable prop surface under `xz` between heights `below..=above` (props must be
@@ -263,21 +317,30 @@ pub fn move_bodies(
     let mut positions = Vec::new();
     for (mut body, mut t) in &mut bodies {
         let mut p = t.translation;
-        let tris = match (&level, &streaming) {
-            (Some(l), Some(s)) => cache.near(l, s, &meshes, p + Vec3::Y * body.height * 0.5, Vec3::new(body.radius + 1.0, body.height, body.radius + 1.0)),
-            _ => Vec::new(),
+        body.landed = None;
+        let (tris, pending) = match (&level, &streaming) {
+            (Some(l), Some(s)) => cache.near_pending(l, s, &meshes, p + Vec3::Y * body.height * 0.5, Vec3::new(body.radius + 1.0, body.height, body.radius + 1.0)),
+            _ => (Vec::new(), false),
         };
 
         p = push_out_of_walls(p, body.radius, body.height, &tris);
 
         // Ground: terrain or the highest floor within a step of the feet.
-        let terrain_y = terrain.as_ref().map(|t| t.height(p.x, p.z));
+        let terrain_y = terrain.as_ref().and_then(|t| t.ground_under(p));
         let floor_y = floor_under(&tris, p.x, p.z, p.y - 50.0, p.y + STEP);
         let ground = match (terrain_y, floor_y) {
             (Some(a), Some(b)) => a.max(b),
             (a, b) => a.or(b).unwrap_or(0.0),
         };
 
+        if body.climbing {
+            body.jump = None;
+            body.grounded = false;
+            p.y = (p.y + body.vertical_velocity * dt).max(ground);
+            t.translation = p;
+            positions.push(p);
+            continue;
+        }
         if let Some(v) = body.jump.take()
             && body.grounded
         {
@@ -291,11 +354,28 @@ pub fn move_bodies(
                 p.y = ground;
             }
         }
+        // Not ours: UE has every floor loaded. A body placed (spawn, save load, teleport) above
+        // props that are still streaming in hangs there instead of dropping through them, for up
+        // to HOLD_FOR seconds.
+        if !body.grounded && body.vertical_velocity <= 0.0 && pending && body.held < HOLD_FOR {
+            if body.held == 0.0 {
+                info!("body held at {p}: props below still loading");
+            }
+            body.held += dt;
+            body.vertical_velocity = 0.0;
+            t.translation = p;
+            positions.push(p);
+            continue;
+        }
+        if !pending {
+            body.held = 0.0;
+        }
         if !body.grounded {
             body.vertical_velocity += GRAVITY * dt;
             p.y += body.vertical_velocity * dt;
             if p.y <= ground {
                 p.y = ground;
+                body.landed = Some(-body.vertical_velocity);
                 body.vertical_velocity = 0.0;
                 body.grounded = true;
             }
@@ -329,9 +409,15 @@ fn ray_triangle(origin: Vec3, dir: Vec3, [a, b, c]: [Vec3; 3]) -> Option<f32> {
     (t > 0.0).then_some(t)
 }
 
-/// Nearest hit among triangle sets, within `max`.
-fn first_hit(sets: &[Arc<Vec<[Vec3; 3]>>], origin: Vec3, dir: Vec3, max: f32) -> Option<f32> {
-    sets.iter().flat_map(|s| s.iter()).filter_map(|t| ray_triangle(origin, dir, *t)).filter(|&d| d <= max).min_by(f32::total_cmp)
+/// Nearest hit among triangle sets, within `max`, and the triangle hit.
+fn first_hit(sets: &[Arc<Vec<[Vec3; 3]>>], origin: Vec3, dir: Vec3, max: f32) -> Option<(f32, [Vec3; 3])> {
+    sets.iter().flat_map(|s| s.iter()).filter_map(|t| ray_triangle(origin, dir, *t).map(|d| (d, *t))).filter(|&(d, _)| d <= max).min_by(|a, b| a.0.total_cmp(&b.0))
+}
+
+/// A triangle's unit normal, turned to face against `dir`.
+pub fn facing_normal([a, b, c]: [Vec3; 3], dir: Vec3) -> Vec3 {
+    let n = (b - a).cross(c - a).normalize_or_zero();
+    if n.dot(dir) > 0.0 { -n } else { n }
 }
 
 /// Rays against the level's streamed props (bullets). Props that aren't streamed in or whose
@@ -347,6 +433,11 @@ pub struct PropRays<'w> {
 impl PropRays<'_> {
     /// Distance to the first prop surface along `dir` (unit) within `max`.
     pub fn cast(&mut self, origin: Vec3, dir: Vec3, max: f32) -> Option<f32> {
+        self.cast_hit(origin, dir, max).map(|(d, _)| d)
+    }
+
+    /// Like `cast`, with the surface normal (facing the ray) at the hit.
+    pub fn cast_hit(&mut self, origin: Vec3, dir: Vec3, max: f32) -> Option<(f32, Vec3)> {
         const SEGMENT: f32 = 16.0;
         let (Some(level), Some(streaming)) = (self.level.as_deref(), self.streaming.as_deref()) else { return None };
         let cache = &mut *self.cache;
@@ -361,13 +452,22 @@ impl PropRays<'_> {
                 }
             }
             let sets = cache.near(level, streaming, &self.meshes, (a + b) * 0.5, (b - a).abs() * 0.5 + Vec3::splat(0.05));
-            if let Some(d) = first_hit(&sets, origin, dir, e + 0.05) {
-                return Some(d);
+            if let Some((d, tri)) = first_hit(&sets, origin, dir, e + 0.05) {
+                return Some((d, facing_normal(tri, dir)));
             }
             s = e;
         }
         None
     }
+}
+
+/// USpringArmComponent's collision test (on by default; ProbeSize 12 cm): the camera comes in to
+/// just short of the first thing between the pivot and where the arm wants it.
+pub const CAMERA_PROBE: f32 = 0.12;
+
+/// The arm length to use given the wanted `arm` and the first prop hit along it.
+pub fn spring_arm(arm: f32, hit: Option<f32>) -> f32 {
+    hit.map_or(arm, |d| (d - CAMERA_PROBE).clamp(0.1, arm))
 }
 
 #[allow(dead_code)]
@@ -376,6 +476,15 @@ const _: f32 = CELL;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn spring_arm_stops_short_of_walls() {
+        assert_eq!(spring_arm(3.0, None), 3.0);
+        assert!((spring_arm(3.0, Some(1.0)) - 0.88).abs() < 1e-6);
+        // A hit beyond the arm or right at the pivot.
+        assert_eq!(spring_arm(3.0, Some(5.0)), 3.0);
+        assert_eq!(spring_arm(3.0, Some(0.05)), 0.1);
+    }
 
     #[test]
     fn closest_point_inside_and_on_edge() {
@@ -405,9 +514,13 @@ mod tests {
     #[test]
     fn rays_stop_at_the_nearest_wall_from_either_side() {
         let walls = [wall_at_x(5.0), wall_at_x(3.0)];
-        assert!((first_hit(&walls, Vec3::new(0.0, 1.0, 0.0), Vec3::X, 100.0).unwrap() - 3.0).abs() < 1e-4);
-        // Back faces count too (the inside of a building).
-        assert!((first_hit(&walls, Vec3::new(10.0, 1.0, 0.0), -Vec3::X, 100.0).unwrap() - 5.0).abs() < 1e-4);
+        let (d, tri) = first_hit(&walls, Vec3::new(0.0, 1.0, 0.0), Vec3::X, 100.0).unwrap();
+        assert!((d - 3.0).abs() < 1e-4);
+        assert!((facing_normal(tri, Vec3::X) - -Vec3::X).length() < 1e-4);
+        // Back faces count too (the inside of a building); the normal still faces the ray.
+        let (d, tri) = first_hit(&walls, Vec3::new(10.0, 1.0, 0.0), -Vec3::X, 100.0).unwrap();
+        assert!((d - 5.0).abs() < 1e-4);
+        assert!((facing_normal(tri, -Vec3::X) - Vec3::X).length() < 1e-4);
         // Over the top, out of range, or pointing away: nothing.
         assert!(first_hit(&walls, Vec3::new(0.0, 5.0, 0.0), Vec3::X, 100.0).is_none());
         assert!(first_hit(&walls, Vec3::new(0.0, 1.0, 0.0), Vec3::X, 2.5).is_none());

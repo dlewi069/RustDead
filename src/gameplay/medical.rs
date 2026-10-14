@@ -7,7 +7,8 @@
 //! - **Radiation sickness**: the game's radiation meter (100 = clean) at 0 deals 15 damage every
 //!   5 s (`ApplyRadiationDamage`); anything that raises the meter clears it. Our
 //!   `SurvivalStats::radiation` counts the other way (0 = clean), so sickness is at 100.
-//! - Consumables: `Medical` heals (`IncreaseHealth`, FirstAidMultiplier 1), `Radiation` raises the
+//! - Consumables: `Medical` heals (`IncreaseHealth`: × the passive FirstAidMultiplier, and 5-10
+//!   First Aid XP), `Radiation` raises the
 //!   meter (lowers ours), and `RemoveMedicalEffects` ends the named effects.
 
 use rand::Rng;
@@ -122,13 +123,17 @@ impl MedicalEffects {
 }
 
 /// Use a consumable: its stats (`Jig.ConsumableStat.*`) and the effects it removes.
-pub fn consume(s: &mut SurvivalStats, effects: &mut MedicalEffects, def: &super::items::ItemDef) {
+pub fn consume(s: &mut SurvivalStats, effects: &mut MedicalEffects, passive: &mut crate::progression::passive::PassiveSkills, def: &super::items::ItemDef) {
+    use crate::progression::passive::Passive;
     for (stat, [lo, hi]) in &def.stats {
         let v = (lo + hi) * 0.5;
         match stat.as_str() {
             "Hunger" => s.hunger = (s.hunger + v).clamp(0.0, 100.0),
             "Thirst" => s.thirst = (s.thirst + v).clamp(0.0, 100.0),
-            "Medical" | "Health" | "Heal" => s.heal(v),
+            "Medical" | "Health" | "Heal" if v != 0.0 => {
+                s.heal(v * passive.multiplier(Passive::FirstAid));
+                passive.add_xp(Passive::FirstAid, rand::thread_rng().gen_range(5.0..=10.0));
+            }
             "Energy" | "Stamina" => s.stamina = (s.stamina + v).clamp(0.0, s.max_stamina),
             // IncreaseRadiation: the meter goes up, ours down; any rise ends the sickness.
             "Radiation" => {
@@ -207,18 +212,26 @@ mod tests {
         let db: super::super::items::ItemDb = serde_json::from_str(&text).unwrap();
         let mut s = SurvivalStats::new();
         let mut e = MedicalEffects::default();
+        let mut p = crate::progression::passive::PassiveSkills::default();
         s.health = 50.0;
         e.add_bleed(&mut rng());
         e.add_broken_bone(&mut rng());
-        consume(&mut s, &mut e, &db.items["DA_Bandages"]);
+        consume(&mut s, &mut e, &mut p, &db.items["DA_Bandages"]);
         assert_eq!(s.health, 65.0, "Medical 15");
+        let xp = p.get(crate::progression::passive::Passive::FirstAid).xp;
+        assert!((5.0..=10.0).contains(&xp), "healing gives 5-10 First Aid XP ({xp})");
         assert!(!e.bleeding() && e.broken_bone.is_some() && !s.bleeding);
-        consume(&mut s, &mut e, &db.items["DA_Splint"]);
+        consume(&mut s, &mut e, &mut p, &db.items["DA_Splint"]);
         assert!(e.broken_bone.is_none());
         s.radiation = 100.0;
         e.radiation_sickness = true;
-        consume(&mut s, &mut e, &db.items["DA_RadiationPills"]);
+        consume(&mut s, &mut e, &mut p, &db.items["DA_RadiationPills"]);
         assert_eq!(s.radiation, 50.0);
         assert!(!e.radiation_sickness);
+        // A trained First Aid heals more.
+        p.add_xp(crate::progression::passive::Passive::FirstAid, 1000.0);
+        s.health = 50.0;
+        consume(&mut s, &mut e, &mut p, &db.items["DA_Bandages"]);
+        assert!((s.health - (50.0 + 15.0 * 1.0325)).abs() < 1e-3, "{}", s.health);
     }
 }

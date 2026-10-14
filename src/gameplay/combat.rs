@@ -10,10 +10,18 @@
 //! - R (`IA_Reload`) tops the attached magazine up from carried ammo it accepts, or slots in a
 //!   carried magazine when none is attached.
 //! - Zombies (`DamageComponent`) have 100 ± 50 HP × ZOMBIE HEALTH MULTIPLIER, die, and give
-//!   level × 5-10 × 1.05 × XP MULTIPLIER XP (`XpMultiplierCalc`). Head hits kill outright (`CanHeadshot1Shot?`).
+//!   level × 5-10 × 1.05 × XP MULTIPLIER XP (`XpMultiplierCalc`). Headshots do FirearmDamage ×
+//!   FirearmTypeMultiplier; with HEADSHOT MODE they kill outright (`CanHeadshot1Shot?`) and body
+//!   hits do a quarter. Melee: ×2 into a zombie's back, × the passive StrengthMultiplier.
+//! - Passive skill XP: Marksmanship 4-6 per headshot / 1-2 per body hit, Reloading 2-3 per
+//!   reload (whose montage runs at ReloadBaseSpeed × ReloadingMultiplier), Strength 1-2 per melee
+//!   hit (swings at SwingSpeed × StrengthSpeedMultiplier).
 //! - The BP_Ingame `AmmoBox`: firearm name, fire-mode icon, rounds in the magazine over carried ammo.
 
 use bevy::prelude::*;
+
+use crate::progression::passive::Passive;
+use crate::progression::tech;
 use rand::Rng;
 
 use super::equipment::Slot;
@@ -49,6 +57,16 @@ const CORPSE_SECS: f32 = 60.0;
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct CombatSet;
 
+/// Turn the gameplay camera to this yaw once (radians; W then walks along -(sin, 0, cos)). Used by
+/// the screenshot tour.
+#[derive(Resource, Default)]
+pub struct CameraYawRequest(pub Option<f32>);
+
+/// Set the gameplay camera's pitch once (radians above the pivot). The screenshot tour pins it
+/// while shooting, so stray mouse motion over its window doesn't move the aim.
+#[derive(Resource, Default)]
+pub struct CameraPitchRequest(pub Option<f32>);
+
 /// The gameplay camera (the one shots are aimed down).
 #[derive(Component)]
 pub struct PlayerCamera;
@@ -79,6 +97,11 @@ impl Armed {
     pub fn reloading(&self) -> bool {
         self.reload.is_some()
     }
+
+    /// A shot, swing or reload is still under way (its montage playing).
+    pub fn busy(&self) -> bool {
+        self.cooldown > 0.0 || self.reload.is_some()
+    }
 }
 
 /// Hit points (zombies).
@@ -96,6 +119,13 @@ pub struct Dead {
     upright: Quat,
     /// Feet height when it died.
     ground: f32,
+}
+
+impl Dead {
+    /// Dying where `t` stands.
+    pub fn at(t: &Transform) -> Self {
+        Self { secs: 0.0, upright: t.rotation, ground: t.translation.y }
+    }
 }
 
 /// Seconds a corpse takes to topple. The game ragdolls zombies (there's no death clip, only
@@ -143,6 +173,7 @@ enum AmmoText {
 struct FireModeIcon;
 
 pub fn plugin(app: &mut App) {
+    app.init_resource::<CameraYawRequest>().init_resource::<CameraPitchRequest>();
     app.init_resource::<Armed>()
         .init_resource::<TracerAssets>()
         .add_systems(OnEnter(AppState::InGame), (|mut a: ResMut<Armed>| *a = Armed::default(), spawn_ammo_box))
@@ -220,11 +251,10 @@ fn set_stance(armed: Res<Armed>, db: Res<ItemDb>, mut game: ResMut<CurrentGame>,
 }
 
 fn play(action: &mut UpperAction, kind: ActionKind) {
-    action.kind = Some(kind);
-    action.serial = action.serial.wrapping_add(1);
+    action.start(kind);
 }
 
-type PlayerAnim<'w, 's> = Query<'w, 's, (&'static Transform, &'static Stance, &'static mut UpperAction), (With<CharacterModel>, With<KinematicBody>)>;
+type PlayerAnim<'w, 's> = Query<'w, 's, (&'static Transform, &'static Stance, &'static mut UpperAction, Option<&'static crate::models::Locomotion>), (With<CharacterModel>, With<KinematicBody>)>;
 
 /// Fill the attached magazine from carried ammo; with no magazine, slot in a carried one.
 /// Takes as long as the stance's reload montage.
@@ -258,10 +288,20 @@ fn reload(
         };
         if needs {
             armed.reload = Some(0.0);
-            if let Ok((_, stance, mut action)) = player.single_mut() {
-                *length = lib.action_secs(AnimSet::Survivor, *stance, ActionKind::Reload).unwrap_or(RELOAD_SECS);
-                play(&mut action, ActionKind::Reload);
+            // GetNewMagInfo: the magazine going in's ReloadSpeed stat.
+            let mag_stat = weapon.mag(&db).and_then(|m| m.stat(&db, "ReloadSpeed")).or_else(|| mag_for(&db, &weapon.item).and_then(|m| db.items.get(&m)?.stats.get("ReloadSpeed").map(|r| r[0]))).unwrap_or(0.0);
+            let base = db.items.get(&weapon.item).map_or(1.0, |d| d.reload_speed);
+            let state = game.state.as_mut();
+            let rate = reload_rate(mag_stat, base, state.as_ref().map_or(1.0, |s| s.passive.multiplier(Passive::Reloading)));
+            // Jig_StartReloading: AddXP_Reloading(2-3).
+            if let Some(st) = state {
+                st.passive.add_xp(Passive::Reloading, rand::thread_rng().gen_range(2.0..=3.0));
             }
+            if let Ok((_, stance, mut action, _)) = player.single_mut() {
+                *length = lib.action_secs(AnimSet::Survivor, *stance, ActionKind::Reload).unwrap_or(RELOAD_SECS) / rate;
+                action.start_at(ActionKind::Reload, Some(rate));
+            }
+            info!("reload at rate {rate:.2}");
         }
         return;
     }
@@ -319,9 +359,55 @@ fn take_one(inv: &mut super::equipment::PlayerInventory, item: &str) -> Option<S
     None
 }
 
-/// Damage after a critical roll: `CriticalHitChance` %, `CriticalHitMultiplier` % extra.
-fn with_crit(base: f32, chance: f32, mult: f32, rng: &mut impl Rng) -> f32 {
-    if rng.gen_range(0.0..100.0) < chance { base * (1.0 + mult / 100.0) } else { base }
+/// BP_FirearmPickup.DamageMultiplier: a headshot does FirearmDamage x FirearmTypeMultiplier;
+/// with HEADSHOT MODE a body hit does a quarter. (Attachments' DamageChange isn't ported.)
+pub fn shot_damage(base: f32, head: bool, fa: &super::items::FirearmData, headshot_mode: bool) -> f32 {
+    match (head, headshot_mode) {
+        (true, _) => base * fa.headshot_multiplier(),
+        (false, true) => base * 0.25,
+        (false, false) => base,
+    }
+}
+
+/// DamageComponent.DamageTaken: a headshot kills outright only with HEADSHOT MODE (and the
+/// zombie's CanHeadshot1Shot?, which only the Ultra Radiated archetype clears).
+pub fn one_shot(head: bool, headshot_mode: bool) -> bool {
+    head && headshot_mode
+}
+
+/// BP_MeleePickup.DamageCalc: x2 when the zombie faces away from the swing (its forward · the
+/// direction from the survivor to it >= 0.25).
+pub fn backstab(zombie_forward: Vec3, to_zombie: Vec3) -> f32 {
+    if zombie_forward.dot(to_zombie.normalize_or_zero()) >= 0.25 { 2.0 } else { 1.0 }
+}
+
+/// The reload montage's play rate: GetNewMagInfo (-ReloadSpeed / 100 of the magazine going in)
+/// + ReloadBaseSpeed x ReloadingMultiplier.
+pub fn reload_rate(mag_reload_speed: f32, base: f32, reloading: f32) -> f32 {
+    (-mag_reload_speed / 100.0 + base * reloading).max(0.1)
+}
+
+/// A melee attack's play rate: SwingSpeed x StrengthSpeedMultiplier, halved without the
+/// weapon's StaminaDrain to spare.
+pub fn swing_rate(swing_speed: f32, strength_speed: f32, enough_stamina: bool) -> f32 {
+    (swing_speed * strength_speed * if enough_stamina { 1.0 } else { 0.5 }).max(0.1)
+}
+
+/// BP_MeleePickup.NightCreatureCheck: x1.35 with Skill_NightCreature before 06:00 or after 21:00
+/// (UDS Time of Day < 600 or > 2100).
+pub fn night_creature(unlocked: bool, hour: f32) -> f32 {
+    if unlocked && !(6.0..=21.0).contains(&hour) { 1.35 } else { 1.0 }
+}
+
+/// BP_MeleePickup.DurabilityCheck: with MELEE DAMAGE DEGRADATION, damage x (durability / 100)^0.225.
+pub fn worn_damage(damage: f32, durability: f32, degradation: bool) -> f32 {
+    if degradation { damage * (durability.max(0.0) / 100.0).powf(0.225) } else { damage }
+}
+
+/// `CriticalHit`: `CriticalHitChance` %, `CriticalHitMultiplier` % extra. The damage, and whether
+/// it was a crit (the floating number's colour).
+fn with_crit(base: f32, chance: f32, mult: f32, rng: &mut impl Rng) -> (f32, bool) {
+    if rng.gen_range(0.0..100.0) < chance { (base * (1.0 + mult / 100.0), true) } else { (base, false) }
 }
 
 /// `EffectiveDamage`: within the effective range (`DamageFallOff` metres; a muzzle attachment's
@@ -438,12 +524,12 @@ fn ray_hits_zombie(origin: Vec3, dir: Vec3, feet: Vec3) -> Option<(f32, bool)> {
 }
 
 /// Distance at which the ray dips under the terrain, if it does within `max`.
-fn terrain_hit(terrain: Option<&Terrain>, origin: Vec3, dir: Vec3, max: f32) -> Option<f32> {
+pub(crate) fn terrain_hit(terrain: Option<&Terrain>, origin: Vec3, dir: Vec3, max: f32) -> Option<f32> {
     let t = terrain?;
     let mut d = 0.5;
     while d < max {
         let p = origin + dir * d;
-        if p.y < t.height(p.x, p.z) {
+        if t.blocks(p) {
             return Some(d);
         }
         d += 0.75;
@@ -471,14 +557,19 @@ fn fire(
     mut player: PlayerAnim,
     lib: Res<AnimLibrary>,
     mut zombies: Query<(&Transform, &LevelZombie, &mut Health, Option<&mut UpperAction>), (Without<Dead>, Without<CharacterModel>)>,
-    mut noise: MessageWriter<super::zombies::Noise>,
-    mut notify: MessageWriter<super::notify::Notify>,
+    (mut noise, mut notify, mut numbers, mut recoil): (
+        MessageWriter<super::zombies::Noise>,
+        MessageWriter<super::notify::Notify>,
+        MessageWriter<super::damage_numbers::DamageNumber>,
+        ResMut<super::recoil::Recoil>,
+    ),
 ) {
     armed.cooldown = (armed.cooldown - time.delta_secs()).max(0.0);
     if armed.drawn.is_none() {
         return;
     }
-    let (Ok(cam), Ok((me, stance, mut action))) = (camera.single(), player.single_mut()) else { return };
+    let (Ok(cam), Ok((me, stance, mut action, loco))) = (camera.single(), player.single_mut()) else { return };
+    let crouching = loco.is_some_and(|l| l.crouched());
     let me = *me;
     let stance = *stance;
     let auto = armed.auto;
@@ -491,20 +582,17 @@ fn fire(
     let Some(weapon) = drawn(&armed, &mut game).cloned() else { return };
     let Some(def) = db.items.get(&weapon.item) else { return };
     let mut rng = rand::thread_rng();
-    let crit = |base: f32, rng: &mut rand::rngs::ThreadRng| {
-        with_crit(base, weapon.stat(&db, "CriticalHitChance").unwrap_or(0.0), weapon.stat(&db, "CriticalHitMultiplier").unwrap_or(0.0), rng)
-    };
+    // Skill_CriticalHitter doubles CriticalHitChance (CriticalHit, firearms and melee).
+    let crit_chance = weapon.stat(&db, "CriticalHitChance").unwrap_or(0.0) * if game.state.as_ref().is_some_and(|s| s.tech.has(tech::CRITICAL_HITTER)) { 2.0 } else { 1.0 };
+    let crit = |base: f32, rng: &mut rand::rngs::ThreadRng| with_crit(base, crit_chance, weapon.stat(&db, "CriticalHitMultiplier").unwrap_or(0.0), rng);
     let hurt = |h: &mut Health, flinch: Option<Mut<UpperAction>>, dmg: f32, head: bool| {
         if let Some(mut a) = flinch {
             play(&mut a, ActionKind::Hit);
         }
-        if head {
-            h.hp = 0.0; // CanHeadshot1Shot?
+        if one_shot(head, headshot_mode) {
+            h.hp = 0.0;
         } else {
             h.hp -= dmg;
-            if headshot_mode {
-                h.hp = h.hp.max(1.0); // HEADSHOT MODE: only the head kills
-            }
         }
     };
 
@@ -539,6 +627,10 @@ fn fire(
             w.durability = Some((durability - loss).max(0.0));
         }
         play(&mut action, ActionKind::Fire);
+        // StartRecoil (after the trace below has used this frame's aim).
+        let kick = super::recoil::kick(&fa, !armed.aiming, crouching, &mut rng);
+        recoil.start(&fa, kick);
+        info!("recoil kick {:.2} {:.2}", kick.x, kick.y);
         // ReportNoiseEvent out to the weapon's DefaultSoundRadius (suppressors aren't modelled).
         let heard = if fa.sound_radius > 0.0 { fa.sound_radius } else { super::zombies::HEARING };
         noise.write(super::zombies::Noise { at: me.translation, range: heard.min(super::zombies::HEARING) });
@@ -560,8 +652,15 @@ fn fire(
         let end = best.as_ref().map_or(origin + dir * wall, |b| origin + dir * b.0);
         if let Some((d, head, mut h, a)) = best {
             let base = weapon.stat(&db, "FirearmDamage").unwrap_or(30.0);
-            let dmg = falloff(crit(base, &mut rng), d, weapon.stat(&db, "DamageFallOff").unwrap_or(0.0));
+            // DamageMultiplier (and HEADSHOT MODE's quarter on the body), EffectiveDamage, then
+            // CriticalHit; Client_HitUI shows the result (headshots too).
+            let (dmg, critical) = crit(falloff(shot_damage(base, head, &fa, headshot_mode), d, weapon.stat(&db, "DamageFallOff").unwrap_or(0.0)), &mut rng);
             hurt(&mut h, a, dmg, head);
+            // Trace_Headshot / Trace_BodyImpact: AddXP_Marksmanship 4-6 / 1-2.
+            if let Some(st) = game.state.as_mut() {
+                st.passive.add_xp(Passive::Marksmanship, if head { rng.gen_range(4.0..=6.0) } else { rng.gen_range(1.0..=2.0) });
+            }
+            numbers.write(super::damage_numbers::DamageNumber::hit(dmg, critical));
         }
         // Tracer from the weapon (right hand, chest height) to where the round landed.
         let muzzle = me.translation + Vec3::Y * 1.35 + me.rotation * Vec3::new(-0.25, 0.0, 0.5);
@@ -579,30 +678,55 @@ fn fire(
         if !mouse.just_pressed(MouseButton::Left) {
             return;
         }
+        // A melee weapon worn to 0 doesn't swing.
+        let durability = weapon.durability.unwrap_or(def.durability);
+        if def.durability > 0.0 && durability <= 0.0 {
+            notify.write(super::notify::Notify::new("Item durability too low"));
+            return;
+        }
         // The weapon's attack montages in turn; the next swing waits for most of this one.
         let swing = ActionKind::Swing(armed.swing);
         armed.swing = (armed.swing + 1) % 4;
-        armed.cooldown = lib.action_secs(AnimSet::Survivor, stance, swing).map_or(MELEE_COOLDOWN, |d| (d * 0.8).max(MELEE_COOLDOWN));
-        play(&mut action, swing);
+        let drain = weapon.stat(&db, "StaminaDrain").unwrap_or(0.0);
+        let (stamina, strength_speed, strength) =
+            game.state.as_ref().map_or((100.0, 1.0, 1.0), |s| (s.survival.stamina, s.passive.strength_speed, s.passive.multiplier(Passive::Strength)));
+        let night = game.state.as_ref().map_or(1.0, |s| night_creature(s.tech.has(tech::NIGHT_CREATURE), s.environment.time_of_day_hours));
+        let rate = swing_rate(def.swing_speed, strength_speed, stamina >= drain);
+        armed.cooldown = lib.action_secs(AnimSet::Survivor, stance, swing).map_or(MELEE_COOLDOWN, |d| (d / rate * 0.8).max(MELEE_COOLDOWN));
+        action.start_at(swing, Some(rate));
         if let Some(state) = game.state.as_mut() {
-            let drain = weapon.stat(&db, "StaminaDrain").unwrap_or(0.0);
             state.survival.stamina = (state.survival.stamina - drain).max(0.0);
         }
         let facing = me.rotation * Vec3::Z;
         let base = weapon.stat(&db, "MeleeDamage").unwrap_or(20.0);
-        let mut hits: Vec<(f32, Mut<Health>, Option<Mut<UpperAction>>)> = zombies
+        let mut hits: Vec<(f32, f32, Mut<Health>, Option<Mut<UpperAction>>)> = zombies
             .iter_mut()
             .filter_map(|(t, _, h, a)| {
                 let to = (t.translation - me.translation) * Vec3::new(1.0, 0.0, 1.0);
                 let d = to.length();
-                (d < MELEE_REACH && facing.angle_between(to.normalize_or_zero()).to_degrees() < MELEE_CONE).then_some((d, h, a))
+                let back = backstab(t.rotation * Vec3::Z, to);
+                (d < MELEE_REACH && facing.angle_between(to.normalize_or_zero()).to_degrees() < MELEE_CONE).then_some((d, back, h, a))
             })
             .collect();
         hits.sort_by(|a, b| a.0.total_cmp(&b.0));
         // MELEE MULTI HIT: everyone in the arc, else the nearest.
-        for (_, mut h, a) in hits.into_iter().take(if multi_hit { usize::MAX } else { 1 }) {
-            let dmg = crit(base, &mut rng);
+        for (_, back, mut h, a) in hits.into_iter().take(if multi_hit { usize::MAX } else { 1 }) {
+            // DamageCalc: x2 into its back, CriticalHit, x StrengthMultiplier, DurabilityCheck.
+            let (dmg, critical) = crit(base * back, &mut rng);
+            let dmg = worn_damage(dmg * strength * night, durability, store_bool(&store, "General", "MELEE DAMAGE DEGRADATION ENABLED?"));
             hurt(&mut h, a, dmg, false);
+            numbers.write(super::damage_numbers::DamageNumber::hit(dmg, critical));
+            // HitBody / HitHead: Client_StrengthXP(1-2), ReduceDurability(1).
+            if let Some(st) = game.state.as_mut() {
+                st.passive.add_xp(Passive::Strength, rng.gen_range(1.0..=2.0));
+            }
+            if store_bool(&store, "General", "WEAPON DURABILITY ENABLED?")
+                && let Some(w) = drawn(&armed, &mut game)
+            {
+                let loss = def.reduce_durability * difficulty(&store, "General", "WEAPON DURABILITY MULTIPLIER");
+                let now = w.durability.unwrap_or(def.durability);
+                w.durability = Some((now - loss).max(0.0));
+            }
         }
     }
 }
@@ -640,7 +764,7 @@ fn kill_zombies(
         }
         *loco = Locomotion::Dead;
         // No longer an obstacle (or a falling body).
-        commands.entity(e).insert(Dead { secs: 0.0, upright: t.rotation, ground: t.translation.y }).remove::<KinematicBody>();
+        commands.entity(e).insert(Dead::at(t)).remove::<KinematicBody>();
         if let Some(state) = game.state.as_mut() {
             let [lo, hi] = z.map_or([5.0, 10.0], |z| z.kind.class().xp);
             let xp = kill_xp(state.progression.level, rand::thread_rng().gen_range(lo..=hi), xp_mult);
@@ -826,6 +950,49 @@ fn update_ammo_box(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn headshots_multiply_and_headshot_mode_rules() {
+        let rifle = super::super::items::FirearmData { kind: 2, ..Default::default() };
+        assert_eq!(shot_damage(40.0, true, &rifle, false), 90.0, "rifle headshot x2.25");
+        assert_eq!(shot_damage(40.0, false, &rifle, false), 40.0);
+        assert_eq!(shot_damage(40.0, false, &rifle, true), 10.0, "HEADSHOT MODE: a quarter on the body");
+        assert!(!one_shot(true, false), "headshots only one-shot in HEADSHOT MODE");
+        assert!(one_shot(true, true));
+        assert!(!one_shot(false, true));
+    }
+
+    #[test]
+    fn melee_hits_twice_as_hard_from_behind() {
+        // The zombie faces +Z; the survivor swings from behind it (towards +Z).
+        assert_eq!(backstab(Vec3::Z, Vec3::Z), 2.0);
+        assert_eq!(backstab(Vec3::Z, -Vec3::Z), 1.0, "face to face");
+        assert_eq!(backstab(Vec3::Z, Vec3::X), 1.0, "from the side");
+    }
+
+    #[test]
+    fn night_creature_hits_harder_at_night() {
+        assert_eq!(night_creature(true, 23.0), 1.35);
+        assert_eq!(night_creature(true, 5.5), 1.35);
+        assert_eq!(night_creature(true, 12.0), 1.0);
+        assert_eq!(night_creature(false, 23.0), 1.0);
+    }
+
+    #[test]
+    fn worn_melee_weapons_hit_softer() {
+        assert_eq!(worn_damage(40.0, 50.0, false), 40.0);
+        assert_eq!(worn_damage(40.0, 100.0, true), 40.0);
+        assert!((worn_damage(40.0, 50.0, true) - 40.0 * 0.5f32.powf(0.225)).abs() < 1e-4, "half worn: ~86%");
+    }
+
+    #[test]
+    fn reload_and_swing_rates() {
+        assert_eq!(reload_rate(0.0, 1.0, 1.0), 1.0);
+        assert!((reload_rate(20.0, 1.1, 1.0) - 0.9).abs() < 1e-6, "a drum mag (+20 ReloadSpeed) slows it");
+        assert!((reload_rate(0.0, 1.0, 1.0325) - 1.0325).abs() < 1e-6, "Reloading level 2");
+        assert_eq!(swing_rate(0.75, 1.0, true), 0.75, "sledgehammer");
+        assert_eq!(swing_rate(1.0, 1.0, false), 0.5, "out of stamina");
+    }
 
     #[test]
     fn hounds_are_long_and_low() {

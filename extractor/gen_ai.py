@@ -119,6 +119,8 @@ def main():
             "rad_damage": get(name, "Radiation Damage", 0.0),
             "xp": [get(name, "XPMultiplier_Min", 5.0), get(name, "XPMultiplier_Max", 10.0)],
             "loot_table": loot_by_value.get(e["Names"].get(loot, 0) if loot else 0),
+            # Damage_Shoved does nothing without a ShovedAnimation (crawlers and hounds clear it).
+            "shovable": get(name, "ShovedAnimation") is not None,
             # BP_JigMultiplayer's container: what the corpse's loot grid is called.
             "container": next((field(s, "ContainerName") for c in chain(name) for s in c["components"].get("BP_JigMultiplayer_C", {}).get("ContainersSettings", [])[:1]), None),
             "capsule_half_height": comp(name, "CapsuleComponent", "CapsuleHalfHeight", CAPSULE["CapsuleHalfHeight"]) / 100.0,

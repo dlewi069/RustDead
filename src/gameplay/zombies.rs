@@ -43,6 +43,14 @@ pub struct Noise {
     pub range: f32,
 }
 
+/// Damage_Shoved: Zombie_Pushed_Montage (2.33 s) plays, movement stops and `CanAttack?` is off
+/// until it completes. Seconds left.
+#[derive(Component, Clone, Copy, Debug)]
+pub struct Shoved(pub f32);
+
+/// Zombie_Pushed_Montage's length.
+pub const SHOVED_SECS: f32 = 2.3333333;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Brain {
     Roam { goal: Option<Vec3>, wait: f32 },
@@ -84,6 +92,9 @@ pub struct ZombieClass {
     /// `XPMultiplier_Min/Max`.
     pub xp: [f32; 2],
     pub loot_table: Option<String>,
+    /// It has a `ShovedAnimation` (crawlers and hounds don't, and shrug off shoves).
+    #[serde(default)]
+    pub shovable: bool,
     /// BP_JigMultiplayer's container name ("Dead Zombie", "Dead Zombie Hound").
     #[serde(default)]
     pub container: Option<String>,
@@ -148,6 +159,7 @@ static FALLBACK: std::sync::LazyLock<ZombieClass> = std::sync::LazyLock::new(|| 
     rad_damage: 0.0,
     xp: [5.0, 10.0],
     loot_table: None,
+        shovable: true,
     container: None,
     capsule_half_height: 0.9,
     capsule_radius: 0.35,
@@ -183,6 +195,9 @@ impl ZombieKind {
     pub fn attack_interval(self) -> (f32, f32) {
         let [a, b] = self.class().attack_interval;
         (a, b.max(a + 1e-3))
+    }
+    pub fn shovable(self) -> bool {
+        self.class().shovable
     }
     pub fn health(self) -> (f32, f32) {
         (self.class().health, self.class().health_deviation)
@@ -244,7 +259,7 @@ fn clear_line(terrain: Option<&Terrain>, a: Vec3, b: Vec3) -> bool {
     let steps = (d.length() / 1.5).ceil().max(1.0) as usize;
     (1..steps).all(|i| {
         let p = a + d * (i as f32 / steps as f32);
-        p.y > t.height(p.x, p.z)
+        !t.blocks(p)
     })
 }
 
@@ -312,13 +327,21 @@ fn act(
     store: Res<SettingsStore>,
     vitals: Res<super::PlayerVitals>,
     player: Query<&Transform, (With<CharacterModel>, With<KinematicBody>, Without<Zombie>)>,
-    mut zombies: Query<(&mut Transform, &mut Zombie, &mut Locomotion), Without<Dead>>,
+    mut zombies: Query<(&mut Transform, &mut Zombie, &mut Locomotion, Option<&mut Shoved>, Option<&super::burning::Burning>), Without<Dead>>,
 ) {
     let dt = time.delta_secs();
     let speed_mult = difficulty(&store, "AI", "ZOMBIE SPEED MULTIPLIER");
     let me = player.single().ok().map(|p| p.translation);
     let mut rng = rand::thread_rng();
-    for (mut t, mut z, mut loco) in &mut zombies {
+    for (mut t, mut z, mut loco, shoved, burning) in &mut zombies {
+        // Reeling from a shove: standing still, not attacking.
+        if let Some(mut s) = shoved
+            && s.0 > 0.0
+        {
+            s.0 -= dt;
+            loco.set_if_neq(Locomotion::Idle);
+            continue;
+        }
         let pos = t.translation;
         // (where to go, how fast, animation)
         let mut walk: Option<(Vec3, f32, Locomotion)> = None;
@@ -358,7 +381,7 @@ fn act(
                 let d = flat.length();
                 if d > 1e-3 {
                     face(&mut t, flat, dt);
-                    let step = (speed * speed_mult * dt).min(d);
+                    let step = (speed * speed_mult * super::burning::speed_factor(burning) * dt).min(d);
                     // Move the way it faces (it turns at 275°/s, so wide turns take a moment).
                     let fwd = t.rotation * Vec3::Z;
                     t.translation += fwd * step;

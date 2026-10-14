@@ -33,6 +33,12 @@ pub struct GameState {
     #[serde(default)]
     pub weather: crate::gameplay::weather::WeatherSave,
     pub progression: ProgressionSystem,
+    /// PassiveSkillsComponent: Fitness, Toughness, Sneaking... levels and multipliers.
+    #[serde(default)]
+    pub passive: crate::progression::passive::PassiveSkills,
+    /// TechTreeComponent: the unlocked tech tree skills.
+    #[serde(default)]
+    pub tech: crate::progression::tech::TechTree,
     pub equipment: Equipment,
     pub active_weapon: Option<WeaponStats>,
     pub zombies: Vec<Zombie>,
@@ -201,6 +207,8 @@ impl GameState {
             effects: Default::default(),
             weather: Default::default(),
             progression: ProgressionSystem::new(),
+            passive: Default::default(),
+            tech: Default::default(),
             equipment,
             active_weapon: create_weapon_preset("m4a1"),
             zombies,

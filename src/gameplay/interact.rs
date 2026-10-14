@@ -10,6 +10,9 @@
 use std::collections::{HashMap, HashSet};
 
 use bevy::prelude::*;
+use rand::Rng;
+
+use crate::progression::passive::Passive;
 
 use super::equipment::PlayerInventory;
 use super::inventory_ui::Dirty;
@@ -32,6 +35,12 @@ pub enum GameOverlay {
     Loot(usize),
     /// Picking a container's lock.
     Lockpick(usize),
+    /// A keypad door's code pad (door index).
+    Keypad(usize),
+    /// Reading a keypad door's note (door index).
+    Note(usize),
+    /// The journal (J), on its Skills page.
+    Journal,
 }
 
 impl GameOverlay {
@@ -53,7 +62,7 @@ pub fn player_inv(game: &mut CurrentGame) -> &mut PlayerInventory {
 /// Level containers (actor index, position, class) and what's been found in them this session.
 #[derive(Resource, Default)]
 pub struct Containers {
-    list: Vec<(usize, Vec3, String)>,
+    pub(crate) list: Vec<(usize, Vec3, String)>,
     pub searched: HashMap<usize, Grid>,
     /// Picklock containers' locks (rolled when first tried) and the ones picked open.
     pub locks: HashMap<usize, super::lockpick::Lock>,
@@ -65,6 +74,9 @@ pub struct Containers {
     corpses: HashMap<usize, Entity>,
     next_corpse: usize,
     collected: bool,
+    /// Containers item spawners placed (`level::item_spawners`), by key: their instance name
+    /// and the DT_UniqueLoot sets added to their loot.
+    pub spawned: HashMap<usize, (Option<String>, Vec<String>)>,
 }
 
 /// Container keys for corpses start above any level actor index.
@@ -77,13 +89,16 @@ pub fn container_def(db: &ItemDb, class: &str) -> Option<super::items::Container
         return Some(d.clone());
     }
     let c = super::zombies::ZombieKind::from_class(class)?.class();
-    Some(super::items::ContainerDef { name: c.container.clone().unwrap_or_else(|| "Dead Zombie".into()), table: c.loot_table.clone(), hold: 0.0, lockpick: false })
+    Some(super::items::ContainerDef { name: c.container.clone().unwrap_or_else(|| "Dead Zombie".into()), table: c.loot_table.clone(), hold: 0.0, lockpick: false, noise: 0.0, mesh: None })
 }
 
 #[derive(Resource, Default)]
-struct Search {
+pub(crate) struct Search {
     target: Option<usize>,
     progress: f32,
+    /// Quick Search's NoiseEvent timer (0.075 s) and whether this press already made its noise.
+    noise_tick: f32,
+    noise_done: bool,
 }
 
 #[derive(Component)]
@@ -113,7 +128,7 @@ fn reset_session(mut overlay: ResMut<GameOverlay>, mut containers: ResMut<Contai
     *search = Search::default();
 }
 
-fn collect_containers(level: Option<Res<Level>>, db: Res<ItemDb>, mut containers: ResMut<Containers>) {
+fn collect_containers(level: Option<Res<Level>>, spawns: Option<Res<crate::level::item_spawners::ItemSpawns>>, db: Res<ItemDb>, mut containers: ResMut<Containers>) {
     let Some(level) = level else { return };
     if containers.collected {
         return;
@@ -127,14 +142,19 @@ fn collect_containers(level: Option<Res<Level>>, db: Res<ItemDb>, mut containers
         .map(|(i, a)| (i, a.position(), a.class.clone()))
         .collect();
     containers.list.extend(found);
+    for s in spawns.iter().flat_map(|s| &s.0) {
+        containers.list.push((s.key, s.transform.translation, s.class.to_string()));
+        containers.spawned.insert(s.key, (s.name.clone(), s.unique.clone()));
+    }
 }
 
-/// Register zombies as they die and drop corpses that rotted away.
+/// Register zombies as they die, follow the corpses (one killed mid-fall or on a step keeps
+/// moving after it dies) and drop corpses that rotted away.
 #[allow(clippy::type_complexity)]
 fn track_corpses(
     mut containers: ResMut<Containers>,
     died: Query<(Entity, &Transform, &crate::level::LevelZombie), Added<super::combat::Dead>>,
-    alive: Query<(), With<super::combat::Dead>>,
+    alive: Query<&Transform, With<super::combat::Dead>>,
     mut overlay: ResMut<GameOverlay>,
 ) {
     for (e, t, z) in &died {
@@ -142,6 +162,12 @@ fn track_corpses(
         containers.next_corpse += 1;
         containers.list.push((key, t.translation, z.kind.class_name().to_string()));
         containers.corpses.insert(key, e);
+    }
+    let Containers { list, corpses, .. } = &mut *containers;
+    for (key, at, _) in list.iter_mut().filter(|c| c.0 >= CORPSE_KEYS) {
+        if let Some(t) = corpses.get(key).and_then(|e| alive.get(*e).ok()) {
+            *at = t.translation;
+        }
     }
     let gone: Vec<usize> = containers.corpses.iter().filter(|(_, e)| !alive.contains(**e)).map(|(k, _)| *k).collect();
     for k in gone {
@@ -185,8 +211,8 @@ fn hide_prompt(mut prompts: Query<&mut Visibility, With<Prompt>>) {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn search_containers(
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+pub(crate) fn search_containers(
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
     screen: Res<State<MenuScreen>>,
@@ -201,6 +227,12 @@ fn search_containers(
     mut bar: Query<&mut Node, With<PromptBar>>,
     mut game: ResMut<CurrentGame>,
     mut notify: MessageWriter<super::notify::Notify>,
+    (level, power, store, mut noise): (
+        Option<Res<crate::level::Level>>,
+        Option<Res<crate::level::power::Power>>,
+        Res<crate::menus::settings::SettingsStore>,
+        MessageWriter<super::zombies::Noise>,
+    ),
 ) {
     if let Some(actor) = containers.open_now.take()
         && let Some((_, _, class)) = containers.list.iter().find(|c| c.0 == actor).cloned()
@@ -220,18 +252,23 @@ fn search_containers(
         .iter()
         .filter(|(_, c, _)| (c.y - p.y).abs() < 2.5 && c.xz().distance(p.xz()) < REACH)
         .min_by(|a, b| a.1.distance(p).total_cmp(&b.1.distance(p)))
-        .cloned();
+        .cloned()
+        // A nearer door or keypad note takes F (`level::doors::interact_doors`).
+        .filter(|c| level.as_ref().and_then(|l| crate::level::doors::reach_distance(&l.doors, power.as_deref(), p)).is_none_or(|d| c.1.distance(p) <= d));
     let Some((actor, _, class)) = nearest else {
         *vis = Visibility::Hidden;
         *search = Search::default();
         return;
     };
-    let Some(def) = container_def(&db, &class) else { return };
+    let Some(mut def) = container_def(&db, &class) else { return };
+    if let Some((Some(name), _)) = containers.spawned.get(&actor) {
+        def.name = name.clone();
+    }
     *vis = Visibility::Inherited;
     let searched = containers.searched.contains_key(&actor);
 
     if search.target != Some(actor) {
-        *search = Search { target: Some(actor), progress: 0.0 };
+        *search = Search { target: Some(actor), ..default() };
     }
     // A picklock container still locked: F starts the lockpicking minigame.
     if def.lockpick && !searched && !containers.unlocked.contains(&actor) {
@@ -252,20 +289,53 @@ fn search_containers(
         }
         return;
     }
-    let hold = if searched { 0.0 } else { def.hold };
-    if keys.pressed(KeyCode::KeyF) {
-        search.progress += time.delta_secs();
+    let passive = game.state.as_ref().map(|s| s.passive.clone()).unwrap_or_default();
+    let scavenging = passive.multiplier(Passive::Scavenging);
+    let hold = if searched { 0.0 } else { search_time(def.hold, scavenging, super::survival::difficulty(&store, "Loot / Environment", "SEARCH TIME MULTIPLIER")) };
+    let holding = keys.pressed(KeyCode::KeyF);
+    // IA_QuickSearch (Left Shift) while holding: the bar fills 2.85 x ScavengingMultiplier as fast,
+    // and every 0.075 s there's a ChanceToProduceNoise / ThiefMultiplier % chance of a 40 m noise
+    // (once per press).
+    let quick = holding && hold > 0.0 && keys.pressed(KeyCode::ShiftLeft);
+    if !quick {
+        search.noise_tick = 0.0;
+        search.noise_done = false;
+    }
+    if holding {
+        search.progress += time.delta_secs() * if quick { QUICK_SEARCH * scavenging } else { 1.0 };
     } else {
         search.progress = 0.0;
+    }
+    if quick && !search.noise_done && def.noise > 0.0 {
+        search.noise_tick += time.delta_secs();
+        let mut rng = rand::thread_rng();
+        while search.noise_tick >= NOISE_EVERY && !search.noise_done {
+            search.noise_tick -= NOISE_EVERY;
+            if rng.gen_range(0.0..100.0) <= def.noise / passive.multiplier(Passive::Thief).max(0.01) {
+                search.noise_done = true;
+                noise.write(super::zombies::Noise { at: p, range: QUICK_SEARCH_NOISE });
+                info!("quick search made a noise ({})", def.name);
+            }
+        }
     }
     let verb = if def.lockpick && !searched { "pick the lock of" } else if searched { "open" } else { "search" };
     if let Ok(mut t) = text.single_mut() {
         t.0 = format!("Hold [F] to {verb} {}", def.name);
+        // The widget's QuickSearch line, shown while the key is held.
+        if holding && hold > 0.0 {
+            t.0.push_str("\n[LeftShift] Quick Search");
+        }
     }
     if let Ok(mut n) = bar.single_mut() {
         n.width = Val::Percent(if hold > 0.0 { (search.progress / hold).min(1.0) * 100.0 } else { 0.0 });
     }
-    if keys.pressed(KeyCode::KeyF) && search.progress >= hold {
+    if holding && search.progress >= hold {
+        // OpenContainer after a hold: AddXP_Scavenging(4-6).
+        if hold > 0.0
+            && let Some(st) = game.state.as_mut()
+        {
+            st.passive.add_xp(Passive::Scavenging, rand::thread_rng().gen_range(4.0..=6.0));
+        }
         open_loot(&db, &mut containers, actor, &class);
         *overlay = GameOverlay::Loot(actor);
         dirty.0 = true;
@@ -273,13 +343,28 @@ fn search_containers(
     }
 }
 
+/// Quick Search's bar speed (BP_LootContainerWidget: 2.85 x ScavengingMultiplier).
+const QUICK_SEARCH: f32 = 2.85;
+/// NoiseEvent's timer and ReportNoiseEvent range (4000 cm).
+const NOISE_EVERY: f32 = 0.075;
+const QUICK_SEARCH_NOISE: f32 = 40.0;
+
+/// BP_LootContainer: DurationToHold / ScavengingMultiplier x SEARCH TIME MULTIPLIER.
+pub fn search_time(hold: f32, scavenging: f32, setting: f32) -> f32 {
+    hold / scavenging.max(0.01) * setting
+}
+
 /// Roll a container's loot the first time it's opened.
 fn open_loot(db: &ItemDb, containers: &mut Containers, actor: usize, class: &str) {
     let Some(def) = container_def(db, class) else { return };
+    let (name, unique) = containers.spawned.get(&actor).cloned().unwrap_or_default();
     containers.searched.entry(actor).or_insert_with(|| {
-        let mut g = Grid::new(def.name.clone(), LOOT_COLUMNS, 6);
+        let mut g = Grid::new(name.unwrap_or(def.name), LOOT_COLUMNS, 6);
         let mut rng = rand::thread_rng();
-        for s in def.table.as_deref().map(|t| db.roll(t, &mut rng)).unwrap_or_default() {
+        let table = def.table.as_deref().map(|t| db.roll(t, &mut rng)).unwrap_or_default();
+        // AddUniqueLoot: the spawner's sets join the container's starting items.
+        let sets = unique.iter().flat_map(|u| db.roll_unique(u, &mut rng)).collect::<Vec<_>>();
+        for s in table.into_iter().chain(sets) {
             insert_growing(db, &mut g, s);
         }
         g
@@ -314,20 +399,34 @@ pub fn insert_growing(db: &ItemDb, g: &mut Grid, mut stack: super::items::Stack)
 }
 
 /// Keep the survivor dressed in whatever clothing is equipped.
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn dress_player(
     mut commands: Commands,
     mut game: ResMut<CurrentGame>,
     db: Res<ItemDb>,
     assets: Res<AssetServer>,
     data: Res<crate::menus::MenuData>,
-    mut players: Query<(Entity, Option<&mut crate::models::WornClothing>, Option<&Children>), (With<CharacterModel>, With<crate::level::KinematicBody>)>,
+    mut players: Query<(Entity, Option<&mut crate::models::WornClothing>, Option<&crate::models::BodyMeshes>, Option<&Children>), (With<CharacterModel>, With<crate::level::KinematicBody>)>,
     parts: Query<(), With<crate::models::ClothingPart>>,
+    body_parts: Query<&crate::models::BodyPart>,
 ) {
-    let Ok((player, worn, kids)) = players.single_mut() else { return };
+    let Ok((player, worn, body, kids)) = players.single_mut() else { return };
     if !game.is_changed() && worn.is_some() {
         return;
     }
     let female = game.profile.as_ref().is_some_and(|p| data.creator.body[0].options.get(p.body[0]).is_some_and(|s| s == "Female"));
+    // Body parts under the clothing (skin poked through coats and trousers without this).
+    let want_body = super::equipment::body_meshes(player_inv(&mut game), &db, female);
+    if body != Some(&want_body)
+        && let Some(profile) = game.profile.as_ref()
+    {
+        let have = body.cloned().unwrap_or_else(|| crate::models::BodyMeshes(crate::models::default_body(if female { "Female" } else { "Male" })));
+        let current: Vec<(Entity, &'static str)> = kids.into_iter().flat_map(|c| c.iter()).filter_map(|e| body_parts.get(e).ok().map(|b| (e, b.0))).collect();
+        crate::models::set_body(&mut commands, &assets, player, &current, &have, &want_body, &crate::models::skin_material(profile));
+        let shown: Vec<&str> = want_body.0.iter().filter(|(_, m)| m.is_some()).map(|(b, _)| *b).collect();
+        info!("body parts shown: {}", shown.join(" "));
+        commands.entity(player).insert(want_body);
+    }
     let want = crate::models::WornClothing(super::equipment::worn_meshes(player_inv(&mut game), &db, female));
     if worn.as_deref() == Some(&want) {
         return;
@@ -341,6 +440,32 @@ fn dress_player(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn scavenging_and_the_setting_scale_search_time() {
+        assert_eq!(search_time(4.0, 1.0, 1.0), 4.0);
+        assert!((search_time(4.0, 1.025, 1.0) - 4.0 / 1.025).abs() < 1e-6);
+        assert_eq!(search_time(4.0, 1.0, 0.5), 2.0, "SEARCH TIME MULTIPLIER");
+    }
+
+    #[test]
+    fn corpses_are_looted_where_they_lie() {
+        let mut app = App::new();
+        app.init_resource::<Containers>().init_resource::<GameOverlay>().add_systems(Update, track_corpses);
+        let t = Transform::from_xyz(1.0, 5.0, 2.0);
+        let zombie = crate::level::LevelZombie { home: Vec3::ZERO, spawner: None, model: String::new(), material: None, kind: Default::default() };
+        let e = app.world_mut().spawn((t, zombie, super::super::combat::Dead::at(&t))).id();
+        app.update();
+        // It settles 3 m lower after dying: its loot follows.
+        app.world_mut().get_mut::<Transform>(e).unwrap().translation.y = 2.0;
+        app.update();
+        let c = app.world().resource::<Containers>();
+        assert_eq!(c.list.iter().filter(|c| c.0 >= CORPSE_KEYS).map(|c| c.1).collect::<Vec<_>>(), [Vec3::new(1.0, 2.0, 2.0)]);
+        // Gone: no longer a container.
+        app.world_mut().despawn(e);
+        app.update();
+        assert!(app.world().resource::<Containers>().list.iter().all(|c| c.0 < CORPSE_KEYS));
+    }
 
     #[test]
     fn dead_zombies_are_loot_containers() {
@@ -360,5 +485,18 @@ mod tests {
         }
         // Level containers still come from items.json.
         assert!(container_def(&db, "Nonexistent_C").is_none());
+    }
+
+    #[test]
+    fn spawned_briefcase_holds_its_unique_set() {
+        let Ok(text) = std::fs::read_to_string("assets/data/items.json") else { return };
+        let db: ItemDb = serde_json::from_str(&text).unwrap();
+        let mut c = Containers::default();
+        c.list.push((7, Vec3::ZERO, "Container_SpecialItemSpawner_C".into()));
+        c.spawned.insert(7, (Some("Police Briefcase".into()), vec!["PoliceStationKeys".into()]));
+        open_loot(&db, &mut c, 7, "Container_SpecialItemSpawner_C");
+        let g = &c.searched[&7];
+        assert_eq!(g.name, "Police Briefcase");
+        assert!(g.items.iter().any(|p| p.stack.item == "DA_PoliceGeneratorKey"));
     }
 }

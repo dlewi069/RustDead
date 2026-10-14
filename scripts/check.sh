@@ -67,8 +67,9 @@ base=$(cat scripts/clippy_baseline.txt 2>/dev/null || echo 999999)
 [[ $now -le $base ]]; step clippy $? "$now warnings (baseline $base)"
 if [[ $now -gt $base ]]; then
     echo "  new clippy warnings; see $OUT/clippy.log" >>"$REPORT"
-elif [[ $now -lt $base ]]; then
-    echo "$now" >scripts/clippy_baseline.txt # ratchet down
+elif [[ $now -lt $base && $code -eq 0 ]]; then
+    # Ratchet down (not after a failed build: clippy stops at the errors and counts few warnings).
+    echo "$now" >scripts/clippy_baseline.txt
 fi
 
 # 3. unit tests

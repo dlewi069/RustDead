@@ -114,6 +114,16 @@ pub struct Emitter {
 #[derive(Component)]
 pub struct Voiced;
 
+/// A looping AudioComponent at a place (a campfire's SC_CampFire, a running generator's hum):
+/// its loop plays while `active` and the listener is within the cue's attenuation reach.
+#[derive(Component, Clone, Debug)]
+pub struct AmbientLoop {
+    pub cue: String,
+    /// The AudioComponent's VolumeMultiplier.
+    pub volume: f32,
+    pub active: bool,
+}
+
 /// How many times each cue has started (for the tour's checks).
 #[derive(Resource, Default, Debug)]
 pub struct Played(pub std::collections::BTreeMap<String, u32>);
@@ -123,7 +133,11 @@ pub struct Played(pub std::collections::BTreeMap<String, u32>);
 pub struct Listener;
 
 pub fn plugin(app: &mut App) {
-    app.insert_resource(SoundDb::load()).init_resource::<Played>().add_message::<Sound>().add_observer(click).add_systems(Update, (play, follow).chain());
+    app.insert_resource(SoundDb::load())
+        .init_resource::<Played>()
+        .add_message::<Sound>()
+        .add_observer(click)
+        .add_systems(Update, (ambient_loops, play, follow).chain());
 }
 
 /// ButtonWidget's click: UI_click_sound_Cue on every button press.
@@ -216,6 +230,34 @@ fn play(
             }
         }
         debug!("sound {} gain {gain:.2}", s.cue);
+    }
+}
+
+/// Start the loops in reach that should play, stop the ones switched off.
+#[allow(clippy::type_complexity)]
+fn ambient_loops(
+    mut commands: Commands,
+    db: Res<SoundDb>,
+    listener: Query<&GlobalTransform, With<Listener>>,
+    loops: Query<(Entity, &GlobalTransform, &AmbientLoop, Has<Voiced>)>,
+    mut sound: MessageWriter<Sound>,
+) {
+    let Some(ear) = listener.iter().next().map(|t| t.translation()) else { return };
+    for (e, t, l, voiced) in &loops {
+        if !l.active {
+            if voiced {
+                commands.entity(e).remove::<Voiced>();
+            }
+            continue;
+        }
+        if voiced {
+            continue;
+        }
+        let reach = db.cues.get(&l.cue).and_then(|c| c.attenuation.as_ref()).and_then(|a| db.attenuation.get(a)).map_or(30.0, |a| a.inner + a.falloff);
+        if t.translation().distance(ear) < reach {
+            commands.entity(e).insert(Voiced);
+            sound.write(Sound { cue: l.cue.clone(), at: Some(t.translation()), volume: l.volume, attenuation: None, follow: Some(e) });
+        }
     }
 }
 

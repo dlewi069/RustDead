@@ -266,6 +266,8 @@ pub fn part_transform(p: &DoorPart, open: f32) -> Transform {
 struct DoorState {
     open: f32,
     target: bool,
+    /// The direction its sound last played for (`door_sounds`).
+    heard: bool,
     locked: bool,
     since_open: f32,
     /// Opened for a while only (from behind, `Warning` doors): closes after this long.
@@ -516,10 +518,18 @@ pub(super) fn move_doors(
     mut parts: Query<(&DoorPartOf, &mut Transform)>,
     mut cache: ResMut<CollisionCache>,
     meshes: Res<Assets<Mesh>>,
+    mut sound: MessageWriter<crate::audio::Sound>,
 ) {
     let Some(level) = level else { return };
     let dt = time.delta_secs();
     for (i, s) in doors.states.iter_mut().enumerate() {
+        if s.target != s.heard {
+            s.heard = s.target;
+            let d = &level.doors[i];
+            for cue in door_sounds(&level.actors[d.actor].class, s.target) {
+                sound.write(crate::audio::Sound::at(*cue, d.pos + Vec3::Y));
+            }
+        }
         let before = s.open;
         step(s, &level.doors[i], dt);
         if before != s.open || !cache.has_dynamic(i) {
@@ -539,6 +549,20 @@ pub(super) fn move_doors(
         if let Some(s) = doors.states.get(*d) {
             *t = part_transform(&level.doors[*d].parts[*p], s.open);
         }
+    }
+}
+
+/// What a door class plays starting to open or close (the door BPs' PlaySoundAtLocation).
+/// Wooden doors and the lever play nothing.
+pub fn door_sounds(class: &str, opening: bool) -> &'static [&'static str] {
+    match (class, opening) {
+        ("BP_KeycardDoor_C" | "BP_KeycardDoor_Child_C" | "BP_KeypadDoor_C", true) => &["door_lock_open_02_Cue"],
+        ("BP_KeycardDoor_C" | "BP_KeycardDoor_Child_C" | "BP_KeypadDoor_C", false) => &["door_lock_close_01_Cue"],
+        ("BP_LaboratorySlidingDoor_C" | "BP_LaboratorySecureDoors_C", true) => &["door_lock_open_02_Cue"],
+        ("BP_HangarDoor_C", true) => &["door_lock_open_02_Cue", "metal_gate_automatic_door_squeak_05_Cue"],
+        ("BP_HangarDoor_C", false) => &["metal_gate_automatic_door_squeak_05_Cue"],
+        ("BP_WarehouseDoors_C", _) => &["metal_gate_automatic_door_squeak_05_Cue"],
+        _ => &[],
     }
 }
 
@@ -616,7 +640,12 @@ pub(crate) fn interact_doors(
     mut notify: MessageWriter<Notify>,
     mut noise: MessageWriter<crate::gameplay::zombies::Noise>,
     // (Bevy systems take at most 16 parameters.)
-    (mut codes, mut power, mut garages): (MessageReader<crate::gameplay::keypad::KeypadCode>, Option<ResMut<super::power::Power>>, ResMut<super::garage::Garages>),
+    (mut codes, mut power, mut garages, mut sound): (
+        MessageReader<crate::gameplay::keypad::KeypadCode>,
+        Option<ResMut<super::power::Power>>,
+        ResMut<super::garage::Garages>,
+        MessageWriter<crate::audio::Sound>,
+    ),
 ) {
     let Some(level) = level else { return };
     for c in codes.read() {
@@ -791,6 +820,8 @@ pub(crate) fn interact_doors(
                 Some(c) => {
                     c.durability = Some(c.durability.unwrap_or(100.0) - need);
                     noise.write(crate::gameplay::zombies::Noise { at: p, range: 75.0 });
+                    // BP_LockedDoor's NoiseAudio: WoodBreak_cue.
+                    sound.write(crate::audio::Sound::at("WoodBreak_cue", d.pos + Vec3::Y));
                     s.locked = false;
                     s.open_now(None);
                 }
@@ -837,6 +868,14 @@ pub(crate) fn interact_doors(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn doors_sound_like_their_blueprints() {
+        assert_eq!(door_sounds("BP_KeycardDoor_C", true), ["door_lock_open_02_Cue"]);
+        assert_eq!(door_sounds("BP_KeypadDoor_C", false), ["door_lock_close_01_Cue"]);
+        assert!(door_sounds("BP_HangarDoor_C", true).contains(&"metal_gate_automatic_door_squeak_05_Cue"));
+        assert!(door_sounds("BP_LockedDoor_C", true).is_empty(), "wooden doors are silent");
+    }
 
     fn part(motion: Motion) -> DoorPart {
         DoorPart { mesh: 0, base: Transform::default(), motion }

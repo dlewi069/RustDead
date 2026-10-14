@@ -417,12 +417,57 @@ impl Power {
 }
 
 pub(super) fn setup_power(mut commands: Commands, level: Option<Res<super::Level>>) {
-    commands.insert_resource(level.map(|l| Power::from_actors(&l.actors)).unwrap_or_default());
+    commands.insert_resource(level.as_ref().map(|l| Power::from_actors(&l.actors)).unwrap_or_default());
+    // The actors' looping AudioComponents.
+    let Some(level) = level else { return };
+    let mut police = 0;
+    for a in &level.actors {
+        let Some((cue, volume, active)) = ambient_sound(&a.class) else { continue };
+        let mut e = commands.spawn((Transform::from_translation(a.position() + Vec3::Y), crate::audio::AmbientLoop { cue: cue.into(), volume, active }, DespawnOnExit(crate::menus::AppState::InGame)));
+        if a.class == "BP_PowerGenerator_C" {
+            e.insert(GeneratorHum(police));
+            police += 1;
+        }
+    }
+}
+
+/// An actor class's looping AudioComponent: (cue, VolumeMultiplier, playing from the start).
+/// BP_BarrelFire / BP_Campfire: SC_CampFire at 0.5; BP_Generator (camps): its engine loop at
+/// 0.25; BP_PowerGenerator: the engine loop at 0.5 once turned on (bAutoActivate off).
+pub fn ambient_sound(class: &str) -> Option<(&'static str, f32, bool)> {
+    match class {
+        "BP_BarrelFire_C" | "BP_Campfire_C" | "BP_EasterEgg_Campfire_C" => Some(("SC_CampFire", 0.5, true)),
+        "BP_Generator_C" => Some(("engine_generator_loop_01_Cue", 0.25, true)),
+        "BP_PowerGenerator_C" => Some(("engine_generator_loop_01_Cue", 0.5, false)),
+        _ => None,
+    }
+}
+
+/// The police generator's hum (index into `Power::power_generators`).
+#[derive(Component)]
+pub(super) struct GeneratorHum(usize);
+
+/// The hum follows the generator's Turn On / Turn Off.
+pub(super) fn generator_hum(power: Option<Res<Power>>, mut hums: Query<(&GeneratorHum, &mut crate::audio::AmbientLoop)>) {
+    let Some(power) = power else { return };
+    for (g, mut l) in &mut hums {
+        let on = power.power_generators.get(g.0).is_some_and(|p| p.on);
+        if l.active != on {
+            l.active = on;
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn fires_and_generators_sound() {
+        assert_eq!(ambient_sound("BP_BarrelFire_C"), Some(("SC_CampFire", 0.5, true)));
+        assert_eq!(ambient_sound("BP_PowerGenerator_C"), Some(("engine_generator_loop_01_Cue", 0.5, false)), "off until started");
+        assert_eq!(ambient_sound("BP_LockedDoor_C"), None);
+    }
 
     fn net() -> Power {
         let sw = |state, lights: &[&str], linked: Vec<usize>| Switch { pos: Vec3::ZERO, state, lights: lights.iter().map(|s| s.to_string()).collect(), linked };

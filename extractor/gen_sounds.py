@@ -41,6 +41,9 @@ CUES = [
     *[f"bullet_impact_body_thump_0{i}_Cue" for i in range(1, 9)],
     # Player_AnimBP's footsteps by physical surface (walk/crouch and sprint sets).
     *[f"{m}{g}_Cue" for m in ("Concrete", "Dirt", "Grass", "Rock", "Metal", "Water", "Wood", "Sand", "Snow") for g in ("", "Sprint")],
+    # Doors (the door BPs' PlaySoundAtLocation), the locked door's crowbar, fires, generators.
+    "door_lock_open_02_Cue", "door_lock_close_01_Cue", "metal_gate_automatic_door_squeak_05_Cue", "MetalDoorImpact_Cue",
+    "WoodBreak_cue", "SC_CampFire", "engine_generator_loop_01_Cue", "LightHum_Cue",
     "ZombieBreathLoopCue", "ZombieGrowlShort", "ZombieDeathShort", "HoundCue", "HoundAttackCue", "UI_click_sound_Cue",
 ]
 

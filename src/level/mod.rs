@@ -69,7 +69,7 @@ impl Plugin for LevelPlugin {
             .add_systems(
                 Update,
                 (
-                    (doors::load_doors, doors::spawn_doors, doors::move_doors, garage::move_garages, power::status_lamps).chain().after(resolve_props),
+                    (doors::load_doors, doors::spawn_doors, doors::move_doors, garage::move_garages, power::status_lamps, power::generator_hum).chain().after(resolve_props),
                     doors::interact_doors.after(crate::gameplay::interact::search_containers),
                 )
                     .run_if(in_state(AppState::InGame)),

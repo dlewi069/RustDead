@@ -303,6 +303,8 @@ def sounds_play(ctx):
     has("08i_melee", lambda k: k.startswith("whoosh"), "melee swing")
     has("08ic_throw", lambda k: k.startswith("explosion"), "explosion")
     has("08m_hound", lambda k: k in ("ZombieBreathLoopCue", "HoundCue"), "zombie voice")
+    has("08s_keypad", lambda k: k == "door_lock_open_02_Cue", "keypad door lock")
+    has("08vb_garage", lambda k: k == "engine_generator_loop_01_Cue", "generator hum")
 
 
 def body_parts_move_in_step(ctx):

@@ -12,9 +12,10 @@
 //! - "N POINTS" over SkillPointsBackground, and RESET POINTS (ResetTree; the game asks first in
 //!   ResetSkillsSelect, ours doesn't).
 //!
-//! Positions are the widgets' CanvasPanelSlot / Overlay paddings on the 1920 x 1080 canvas. Inside
-//! each passive row the bar and level texts are laid out more simply than the widget's nested
-//! overlays (ours).
+//! Positions are the widgets' CanvasPanelSlot / Overlay paddings on the 1920 x 1080 canvas (a
+//! centred Overlay child moves by the whole padding difference, Slate's AlignChild). Inside each
+//! passive row the bar and level texts are laid out more simply than the widget's nested overlays
+//! (ours).
 
 use bevy::picking::hover::Hovered;
 use bevy::prelude::*;
@@ -97,6 +98,19 @@ fn tree_origin() -> Vec2 {
     Vec2::new(0.0, 540.0) - TREE_ALIGN * Vec2::new(width, TREE_HEIGHT)
 }
 
+/// Slate's AlignChild for a centred Overlay slot: (allotted - child) / 2 + padding before - padding
+/// after, on each axis. The child's top left within an overlay of `allotted` size; `pad` is
+/// (left, top, right, bottom).
+fn overlay_centred(allotted: Vec2, child: Vec2, pad: Vec4) -> Vec2 {
+    (allotted - child) / 2.0 + Vec2::new(pad.x - pad.z, pad.y - pad.w)
+}
+
+/// Where a tab button's centre lands in the Buttons overlay (1921.9 x 1081.1 from (0, -0.54)).
+fn tab_centre(left: f32, bottom: f32) -> Vec2 {
+    let overlay = Vec2::new(1921.9219, 1081.081);
+    Vec2::new(0.0, -0.5405) + overlay_centred(overlay, Vec2::ZERO, Vec4::new(left, 0.0, 0.0, bottom))
+}
+
 /// SkillTreeWidgetIcon's tint for an Enum_SkillType.
 pub fn kind_colour(kind: u8) -> Color {
     match kind {
@@ -164,19 +178,16 @@ fn build(mut commands: Commands, mut journal: ResMut<Journal>, game: Res<Current
     add(&mut commands, page);
     let fill = commands.spawn((rel(Vec2::ZERO, PAGE), img("Skills/SkillsPageBlank"), Pickable::IGNORE)).id();
     commands.entity(page).add_child(fill);
-    let centred = |size: Vec2, l: f32, t: f32, r: f32, b: f32| PAGE / 2.0 + Vec2::new((l - r) / 2.0, (t - b) / 2.0) - size / 2.0;
+    let centred = |size: Vec2, l: f32, t: f32, r: f32, b: f32| overlay_centred(PAGE, size, Vec4::new(l, t, r, b));
     let frame = Vec2::new(700.0, 411.0);
     let frame_at = centred(frame, 0.0, 0.0, 42.5, 344.0);
     let f = commands.spawn((rel(frame_at, frame), img("Skills/SkillLvlArea"), Pickable::IGNORE)).id();
     commands.entity(page).add_child(f);
-    for (i, (skill, w, l, r, bottom)) in ROWS.into_iter().enumerate() {
+    for (skill, w, l, r, bottom) in ROWS {
         let p = state.passive.get(skill);
         let size = Vec2::new(w, 40.0);
-        // The rows' heights are the widget's; the two columns are spread over the frame (the
-        // slots' paddings put them 172 px apart, narrower than the rows: ours).
-        let y = centred(size, l, 0.0, r, bottom).y;
-        let x = frame_at.x + if i < 6 { 40.0 } else { frame.x / 2.0 + 10.0 };
-        let row_w = frame.x / 2.0 - 50.0;
+        let row_at = centred(size, l, 0.0, r, bottom);
+        let row_w = w;
         let next = (p.level + 1).min(MAX_LEVEL);
         let bar_x = row_w * 0.46;
         let bar_w = row_w * 0.40;
@@ -184,7 +195,7 @@ fn build(mut commands: Commands, mut journal: ResMut<Journal>, game: Res<Current
         let name = format!("{}:", if skill == Passive::FirstAid { "FIRST AID" } else { skill.name() });
         let row = commands
             .spawn((
-                rel(Vec2::new(x, y), Vec2::new(row_w, 40.0)),
+                rel(row_at, Vec2::new(row_w, 40.0)),
                 Pickable::IGNORE,
                 children![
                     (Node { position_type: PositionType::Absolute, left: Val::Px(0.0), top: Val::Px(4.0), ..default() }, children![text(name, 20.0)]),
@@ -208,11 +219,19 @@ fn build(mut commands: Commands, mut journal: ResMut<Journal>, game: Res<Current
     }
     let b = commands.spawn(marker("BlueMarker", -192.04, -520.0)).id();
     add(&mut commands, b);
-    // JournalUI's tab buttons (the Buttons overlay, centred, by padding).
-    for (label, size, left, bottom) in [("INFO", 36.0, 156.0, 193.0), ("SKILLS", 32.0, 130.0, 36.0), ("QUESTS", 34.0, 112.0, -125.0)] {
+    // JournalUI's tab buttons: the Buttons overlay (1921.9 x 1081.1 from (0, -0.54)), each
+    // centred by its padding and turned (RenderTransform -80°, SKILLS -82°) to run up its tab.
+    for (label, size, left, bottom, angle) in [("INFO", 36.0, 156.0, 193.0, -80.0), ("SKILLS", 32.0, 130.0, 36.0, -82.0), ("QUESTS", 34.0, 112.0, -125.0, -80.0)] {
         let box_size = Vec2::new(200.0, 60.0);
-        let centre = Vec2::new(961.0, 540.0) + Vec2::new(left / 2.0, -bottom / 2.0);
-        let b = commands.spawn((at(centre - box_size / 2.0, box_size), Pickable::IGNORE, children![(Node { width: Val::Percent(100.0), justify_content: JustifyContent::Center, ..default() }, children![text(label.to_string(), size)])])).id();
+        let centre = tab_centre(left, bottom);
+        let b = commands
+            .spawn((
+                at(centre - box_size / 2.0, box_size),
+                turn(angle),
+                Pickable::IGNORE,
+                children![(Node { width: Val::Percent(100.0), height: Val::Percent(100.0), justify_content: JustifyContent::Center, align_items: AlignItems::Center, ..default() }, children![text(label.to_string(), size)])],
+            ))
+            .id();
         add(&mut commands, b);
     }
 
@@ -368,6 +387,20 @@ mod tests {
         // The tree's SizeBox: 640 wide, alignment -0.5 -> 320 px in; 0.175 of 670 above the middle.
         let t = tree_origin();
         assert!((t.x - 320.0).abs() < 0.1 && (t.y - (540.0 - 117.25)).abs() < 0.1, "{t}");
+    }
+
+    #[test]
+    fn tabs_sit_on_their_bookmarks() {
+        // INFO: padding left 156 / bottom 193 from the Buttons overlay's centre (Slate moves a
+        // centred child by the whole padding difference), which is where RedMarker's tab is
+        // drawn (~1106, 343 once the marker's 6° turn is applied).
+        let c = tab_centre(156.0, 193.0);
+        assert!((c.x - (960.96 + 156.0)).abs() < 0.1 && (c.y - (540.0 - 193.0)).abs() < 0.1, "{c}");
+        assert!(c.distance(Vec2::new(1106.0, 343.0)) < 20.0);
+        // Fitness and Reloading sit side by side without overlapping.
+        let f = overlay_centred(PAGE, Vec2::new(310.0, 40.0), Vec4::new(0.0, 0.0, 225.0, 500.0));
+        let r = overlay_centred(PAGE, Vec2::new(350.0, 40.0), Vec4::new(120.0, 0.0, 0.0, 500.0));
+        assert!(f.x + 310.0 <= r.x + 1.0, "{f} {r}");
     }
 
     #[test]

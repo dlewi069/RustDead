@@ -25,7 +25,8 @@ comment (see `menus/settings.rs::default_value`).
 - `SD_MENU_SHOTS=<dir> cargo run` tours every menu page plus the world (spawn view, a walk with W
   held, a container search, the CRAFTING tab, the split dialog, the dressed survivor, a rifle drawn
   and fired at a zombie, side-on with the rifle in hand, a roamer shoved (V) then stomped looking down, a frag grenade thrown (G) at a roamer (the survivor steps 8 m back while it's in the air: the blast is 85-115 within 10 m), a Molotov setting a roamer burning, a zombie hound, a creator face close-up, a corpse opened as loot, a thunderstorm and a dust storm, a door opened with F, the keypad door's note and its code typed in, a ladder climbed and stepped off at the top, a lab generator switched on, the police briefcase searched (the generator key) then the police generator fuelled and started and the lever pulled (the garage gate folds up), a crouch walk, an 8 m fall in heavy armor, the flashlight at midnight, sitting down, the journal's tech tree). In-game steps
-  close any menu stray input opens (logged as "opened during"), writes PNGs, logs FPS/positions/shot
+  close any menu stray input opens (logged as "opened during"), keep the survivor's health full
+  (`keep_alive`: roaming zombies used to kill them), writes PNGs, logs FPS/positions/shot
   hits and exits (`src/menus/autoshot.rs`). `SD_START=<n>` pins the PlayerStart; `SD_BURST=08g_armed,...` also saves a frame every 0.25 s of those steps. Use it to check
   changes visually.
 - Dev builds use `opt-level = 1` (deps at 3); the map is too heavy for unoptimised Bevy.
@@ -250,7 +251,10 @@ comment (see `menus/settings.rs::default_value`).
   bullet_impact_body_thump_01-08), melee whoosh and Body_Flesh hits, explosions, zombie breath
   loops / attack growls / death (hounds: HoundCue / HoundAttackCue), footsteps by surface
   (`footsteps.rs`: the dominant paint layer's PhysMaterial, props = Concrete), flashlight, whistle,
-  UI clicks (every `Activate`). Not yet: music, ambience, weather, reload/equip/door/lever sounds.
+  UI clicks (every `Activate`), doors (`doors::door_sounds`: keycard/keypad lock open/close, lab
+  doors, hangar/warehouse squeak; the crowbar's WoodBreak), and `AmbientLoop`s placed from the
+  level's actors (`power::ambient_sound`: fires' SC_CampFire, camp generators, the police
+  generator's hum while on). Not yet: music, weather, reload/equip/lever/radio/siren sounds.
 - `src/progression/passive.rs`: PassiveSkillsComponent decompiled (see Skill trees below);
   `GameState::passive` (saved). Level-ups queue in `level_ups`, which `notify.rs` announces.
 - `src/{ai,combat,crafting,economy,engine,items,looting,persistence,progression,survival,vehicles,world}`:

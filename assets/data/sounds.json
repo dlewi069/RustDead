@@ -1159,6 +1159,104 @@
    ],
    "volume": 0.75
   },
+  "LightHum_Cue": {
+   "attenuation": "GunshotsPistolSuppressed",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.9,
+      1.1
+     ],
+     "volume": [
+      0.25,
+      0.5
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Light/Wavs/light_fluorescent_hum_flicker_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.9,
+      1.1
+     ],
+     "volume": [
+      0.25,
+      0.5
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Light/Wavs/light_fluorescent_hum_flicker_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.9,
+      1.1
+     ],
+     "volume": [
+      0.25,
+      0.5
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Light/Wavs/light_fluorescent_hum_flicker_03.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.9,
+      1.1
+     ],
+     "volume": [
+      0.25,
+      0.5
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Light/Wavs/light_fluorescent_hum_flicker_04.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.9,
+      1.1
+     ],
+     "volume": [
+      0.25,
+      0.5
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Light/Wavs/light_fluorescent_hum_flicker_05.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.9,
+      1.1
+     ],
+     "volume": [
+      0.25,
+      0.5
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Light/Wavs/light_fluorescent_hum_flicker_06.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
   "M-249_01_Cue": {
    "attenuation": "GunshotsRifle",
    "class": "EffectsAudio",
@@ -1176,6 +1274,74 @@
      ],
      "waves": [
       "game/SurrounDead/Content/Audio/Premium_Weapons_Bullets_SFX/WAV/Machinegun/M-249/M-249_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "MetalDoorImpact_Cue": {
+   "attenuation": "DoorOpeningClosing",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Doors/Wavs/metal_gate_fence_impact_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Doors/Wavs/metal_gate_fence_impact_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Doors/Wavs/metal_gate_fence_impact_03.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Doors/Wavs/metal_gate_fence_impact_04.wav"
      ],
      "weight": 1.0
     }
@@ -1545,6 +1711,29 @@
     }
    ],
    "volume": 0.75
+  },
+  "SC_CampFire": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Sounds/Wav/S_CampFire.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 1.0
   },
   "SMG_Single_Shot_3_Cue": {
    "attenuation": "GunshotsRifle",
@@ -2391,6 +2580,13 @@
    ],
    "volume": 0.1
   },
+  "WoodBreak_cue": {
+   "attenuation": "Radio",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [],
+   "volume": 0.5
+  },
   "WoodSprint_Cue": {
    "attenuation": "FootSteps",
    "class": "EffectsAudio",
@@ -2870,6 +3066,29 @@
    ],
    "volume": 0.75
   },
+  "door_lock_close_01_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Doors/Wavs/door_lock_close_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.25
+  },
   "door_lock_fail_03_Cue": {
    "attenuation": null,
    "class": "EffectsAudio",
@@ -2892,6 +3111,52 @@
     }
    ],
    "volume": 0.75
+  },
+  "door_lock_open_02_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Doors/Wavs/door_lock_open_02.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.25
+  },
+  "engine_generator_loop_01_Cue": {
+   "attenuation": "Generator",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Ambiences/Urban_Tones_Backgrounds/Wavs/engine_generator_loop_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.25
   },
   "explosion_large_06_Cue": {
    "attenuation": "GunshotsSniper",
@@ -3168,6 +3433,29 @@
     }
    ],
    "volume": 0.5
+  },
+  "metal_gate_automatic_door_squeak_05_Cue": {
+   "attenuation": "DoorOpeningClosing",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Doors/Wavs/metal_gate_automatic_door_squeak_05.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
   },
   "whoosh_weapon_knife_swing_01_Cue": {
    "attenuation": "BulletImpact",

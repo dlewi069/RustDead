@@ -885,17 +885,17 @@ fn tour_ladder(
 }
 
 /// Zombies and hounds roam into the later steps and can kill the survivor, which drops the
-/// clothes and ends in the death pose; the tour tops health up (damage checks read the log).
+/// clothes and ends in the death pose; the tour keeps health full (damage checks read the log,
+/// and one frame's hits can't take 100).
 fn keep_alive(tour: Res<Tour>, mut game: ResMut<CurrentGame>) {
     if TOUR.get(tour.step).map(|s| s.0) != Some(AppState::InGame) {
         return;
     }
     if let Some(st) = game.state.as_mut()
         && st.survival.health > 0.0
-        && st.survival.health < 50.0
+        && st.survival.health < st.survival.max_health
     {
-        info!("autoshot healed from {:.0}", st.survival.health);
-        st.survival.health = 100.0;
+        st.survival.health = st.survival.max_health;
     }
 }
 

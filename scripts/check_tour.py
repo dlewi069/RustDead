@@ -104,7 +104,9 @@ def keypad_opens_the_door(ctx):
 
 def clothing_hides_the_body(ctx):
     # 08d_dressed wears the winter coat: BodyPartVisibility hides torso and arms under it.
-    shown = re.findall(r"body parts shown: ([\w ]*)", ctx.log)
+    # The state when its screenshot was taken (a death later in the tour drops the clothes).
+    cut = ctx.log.find("08d_dressed.png")
+    shown = re.findall(r"body parts shown: ([\w ]*)", ctx.log[: cut if cut >= 0 else len(ctx.log)])
     if not shown:
         ctx.err("08d_dressed: body parts never updated for the clothing")
     elif any(p in shown[-1].split() for p in ("Torso", "Arms")):

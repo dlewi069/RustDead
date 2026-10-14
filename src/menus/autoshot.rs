@@ -107,7 +107,7 @@ impl Plugin for AutoshotPlugin {
             .add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default())
             // Keys it taps go in after the input update, so Update sees them just pressed.
             .add_systems(PreUpdate, tour_sit.after(bevy::input::InputSystems))
-            .add_systems(Update, tour_journal.after(tour).before(crate::gameplay::journal::toggle))
+            .add_systems(Update, (tour_journal.after(tour).before(crate::gameplay::journal::toggle), keep_alive))
             .add_systems(Update, (tour, tour_combat.before(crate::gameplay::combat::CombatSet), tour_lockpick, tour_hound, tour_medical, tour_weather, tour_corpse, tour_face, tour_door.after(tour).before(crate::level::doors::interact_doors), tour_keypad.after(tour).before(crate::level::doors::interact_doors), tour_ladder.after(tour), tour_power.after(tour).before(crate::level::doors::interact_doors), tour_police.after(tour).before(crate::gameplay::interact::search_containers), tour_shove.after(tour), tour_throw.after(tour), tour_crouch.after(tour), tour_flashlight.after(tour).before(crate::gameplay::flashlight::press_l), log_fps, nan_bones, part_phase));
     }
 }
@@ -881,6 +881,21 @@ fn tour_ladder(
         *logged = 2;
         let d = &ladders.defs[i];
         info!("autoshot ladder top climbing {} above {:.2} ahead {:.2}", body.climbing, me.translation.y - top, (me.translation - d.pos).dot(d.x));
+    }
+}
+
+/// Zombies and hounds roam into the later steps and can kill the survivor, which drops the
+/// clothes and ends in the death pose; the tour tops health up (damage checks read the log).
+fn keep_alive(tour: Res<Tour>, mut game: ResMut<CurrentGame>) {
+    if TOUR.get(tour.step).map(|s| s.0) != Some(AppState::InGame) {
+        return;
+    }
+    if let Some(st) = game.state.as_mut()
+        && st.survival.health > 0.0
+        && st.survival.health < 50.0
+    {
+        info!("autoshot healed from {:.0}", st.survival.health);
+        st.survival.health = 100.0;
     }
 }
 

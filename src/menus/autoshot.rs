@@ -425,6 +425,7 @@ fn part_phase(
     root: Query<&Children, (With<crate::models::CharacterModel>, With<crate::level::KinematicBody>)>,
     parts: Query<(&crate::models::anim::PartPlayer, &AnimationPlayer)>,
     game: Res<CurrentGame>,
+    played: Res<crate::audio::Played>,
     mut last: Local<usize>,
 ) {
     if tour.step == *last {
@@ -439,6 +440,8 @@ fn part_phase(
     if let Some(spread) = crate::models::anim::phase_spread(&lib, crate::models::anim::AnimSet::Survivor, kids.iter().filter_map(|e| parts.get(e).ok())) {
         info!("autoshot parts {} spread {spread:.3}", step.2);
     }
+    // The sounds started so far, by cue.
+    info!("autoshot sounds {} {}", step.2, played.0.iter().map(|(k, n)| format!("{k}={n}")).collect::<Vec<_>>().join(" "));
     // The passive skills' XP so far (crouched steps: Sneaking, hits survived: Toughness).
     if let Some(st) = game.state.as_ref() {
         use crate::progression::passive::Passive;

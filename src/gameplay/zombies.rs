@@ -179,6 +179,21 @@ impl ZombieKind {
     pub fn class(self) -> &'static ZombieClass {
         zombie_classes().get(self.0 as usize).map_or(&*FALLBACK, |c| &c.1)
     }
+    /// AttackSound (BP_MasterZombie: ZombieGrowlShort; BP_Zombie_Dog: HoundAttackCue).
+    pub fn attack_sound(self) -> &'static str {
+        if self.shape() == Shape::Hound { "HoundAttackCue" } else { "ZombieGrowlShort" }
+    }
+
+    /// DeathSound (the hound has none).
+    pub fn death_sound(self) -> Option<&'static str> {
+        (self.shape() != Shape::Hound).then_some("ZombieDeathShort")
+    }
+
+    /// The Zombie_Cue AudioComponent's loop (BP_Zombie_Dog: HoundCue).
+    pub fn voice(self) -> &'static str {
+        if self.shape() == Shape::Hound { "HoundCue" } else { "ZombieBreathLoopCue" }
+    }
+
     pub fn shape(self) -> Shape {
         match self.class_name() {
             "BP_Zombie_Dog_C" => Shape::Hound,
@@ -232,7 +247,7 @@ impl ZombieKind {
 pub fn plugin(app: &mut App) {
     app.add_message::<Noise>().add_systems(
         Update,
-        (adopt, (perceive, act).chain().run_if(in_state(MenuScreen::None)))
+        (adopt, (perceive, act).chain().run_if(in_state(MenuScreen::None)), zombie_voices)
             .chain()
             .run_if(in_state(AppState::InGame)),
     );
@@ -454,5 +469,25 @@ mod tests {
         face(&mut t, Vec3::NEG_Z, 0.1);
         let turned = Transform::default().rotation.angle_between(t.rotation).to_degrees();
         assert!((turned - 27.5).abs() < 0.5, "{turned}");
+    }
+}
+
+/// Zombie_Cue: each living zombie in earshot breathes (VolumeMultiplier 0.5, the "Zombies"
+/// attenuation); `audio` stops the loop out of earshot or when `Voiced` goes (death).
+#[allow(clippy::type_complexity)]
+pub fn zombie_voices(
+    mut commands: Commands,
+    camera: Query<&GlobalTransform, With<super::PlayerCamera>>,
+    zombies: Query<(Entity, &Transform, &LevelZombie), (Without<super::Dead>, Without<crate::audio::Voiced>)>,
+    mut sound: MessageWriter<crate::audio::Sound>,
+) {
+    let Ok(ear) = camera.single() else { return };
+    let ear = ear.translation();
+    for (e, t, z) in &zombies {
+        // The Zombies attenuation reaches 2 + 30 m.
+        if t.translation.distance(ear) < 30.0 {
+            commands.entity(e).insert(crate::audio::Voiced);
+            sound.write(crate::audio::Sound { cue: z.kind.voice().into(), at: Some(t.translation), volume: 0.5, attenuation: Some("Zombies".into()), follow: Some(e) });
+        }
     }
 }

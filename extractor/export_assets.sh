@@ -9,6 +9,7 @@
 #   export_assets.sh --menu-data  regenerate assets/data/menus.json (committed)
 #   export_assets.sh --ai         regenerate assets/data/zombies.json (committed): zombie classes
 #   export_assets.sh --items      regenerate assets/data/items.json (committed): items, loot tables, containers
+#   export_assets.sh --sounds     assets/data/sounds.json + decoded waves (needs vgmstream-cli)
 #   export_assets.sh --all        everything above
 set -euo pipefail
 
@@ -185,6 +186,12 @@ if has --items; then
         xargs -a "$HERE/mappings/item_meshes.txt" -n 300 "$SDX" mesh "$OUT" | grep -c '^ok' | xargs echo "item meshes:"
     fi
     python3 "$HERE/gen_materials.py"
+fi
+
+# Sounds the port plays: assets/data/sounds.json (committed) and decoded waves in assets/game/
+# (gen_sounds.py; Bink Audio needs vgmstream-cli). Run after --items (it reads the guns' cues).
+if has --sounds || has --all; then
+    python3 "$HERE/gen_sounds.py"
 fi
 
 # Regenerate assets/data/menus.json (committed) from the menu widget blueprints.

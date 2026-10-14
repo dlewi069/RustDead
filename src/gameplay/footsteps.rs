@@ -6,8 +6,13 @@
 //! - crouched: 50 cm, or 150 cm crouch-sprinting;
 //! - otherwise 750 cm.
 //!
-//! Each crouched step also gives 0.2-0.4 Sneaking XP (AddXP_Sneaking). The surface sounds
-//! themselves aren't played.
+//! Each crouched step also gives 0.2-0.4 Sneaking XP (AddXP_Sneaking).
+//!
+//! The step's sound (Player_AnimBP): a 5 cm sphere trace 125 cm down, its surface type picks
+//! `<Surface>Sprint_Cue` sprinting or `<Surface>_Cue` otherwise, at volume 0.05 (0.025 crouched).
+//! Ours: on the landscape the surface is the dominant paint layer's PhysMaterial (sounds.json
+//! `terrain_surfaces`); on props it's the default, Concrete (props' physical materials aren't
+//! exported).
 
 use bevy::prelude::*;
 
@@ -35,6 +40,36 @@ pub fn footstep_range(state: Locomotion) -> f32 {
         Locomotion::CrouchSprint => 1.5,
         s if s.crouched() => 0.5,
         _ => 7.5,
+    }
+}
+
+/// The footstep cue for a surface and gait.
+pub fn step_cue(surface: &str, state: Locomotion) -> String {
+    if state == Locomotion::Sprint { format!("{surface}Sprint_Cue") } else { format!("{surface}_Cue") }
+}
+
+/// The landscape's paint layers (terrain.json order = terrain_weights.png channels).
+pub struct Surfaces {
+    layers: Vec<String>,
+    weights: Option<crate::level::grass::Weights>,
+}
+
+impl Surfaces {
+    fn load(terrain: &crate::level::Terrain) -> Self {
+        #[derive(serde::Deserialize)]
+        struct Layers {
+            layers: Vec<String>,
+        }
+        let dir = crate::level::LEVEL_DIR;
+        let layers = std::fs::read_to_string(format!("{dir}/terrain.json")).ok().and_then(|t| serde_json::from_str::<Layers>(&t).ok()).map(|l| l.layers).unwrap_or_default();
+        Self { layers, weights: crate::level::grass::Weights::load(dir, terrain) }
+    }
+
+    /// The surface of the most-painted layer at x/z (unpainted: the first layer's, a guess).
+    pub fn at<'a>(&self, map: &'a std::collections::HashMap<String, String>, x: f32, z: f32) -> &'a str {
+        let Some(w) = &self.weights else { return "Concrete" };
+        let best = (0..self.layers.len()).max_by(|&a, &b| w.get(a, x, z).total_cmp(&w.get(b, x, z))).unwrap_or(0);
+        self.layers.get(best).and_then(|l| map.get(l)).map_or("Concrete", String::as_str)
     }
 }
 
@@ -68,6 +103,7 @@ fn footsteps(
     mut steps: ResMut<Footsteps>,
     mut noise: MessageWriter<Noise>,
     mut game: ResMut<crate::menus::CurrentGame>,
+    (sounds, terrain, mut surfaces, mut sound): (Res<crate::audio::SoundDb>, Option<Res<crate::level::Terrain>>, Local<Option<Surfaces>>, MessageWriter<crate::audio::Sound>),
     player: Query<(&Transform, &Animated, &Locomotion, Option<&Stance>, &KinematicBody), (With<CharacterModel>, Without<LevelZombie>)>,
 ) {
     let Ok((t, Animated(set), &state, stance, body)) = player.single() else { return };
@@ -96,6 +132,14 @@ fn footsteps(
             }
         }
         noise.write(Noise { at: t.translation, range });
+        if let Some(terrain) = terrain.as_deref() {
+            let surfaces = surfaces.get_or_insert_with(|| Surfaces::load(terrain));
+            let on_landscape = terrain.ground_under(t.translation).is_some_and(|h| (t.translation.y - h).abs() < 0.3);
+            let surface = if on_landscape { surfaces.at(&sounds.terrain_surfaces, t.translation.x, t.translation.z) } else { "Concrete" };
+            let mut s = crate::audio::Sound::at(step_cue(surface, state), t.translation);
+            s.volume = if state.crouched() { 0.025 } else { 0.05 };
+            sound.write(s);
+        }
         steps.last_range = Some(range);
         steps.count += n as u32;
     }
@@ -115,6 +159,13 @@ mod tests {
         // Across the loop: 0.68 in this lap, 0.29 in the next.
         assert_eq!(notifies_passed(&times, 0.8, 0.6, 1.1), 2);
         assert_eq!(notifies_passed(&times, 0.8, 0.0, 8.0), 20);
+    }
+
+    #[test]
+    fn step_cues_follow_gait_and_surface() {
+        assert_eq!(step_cue("Grass", Locomotion::Sprint), "GrassSprint_Cue");
+        assert_eq!(step_cue("Concrete", Locomotion::Run), "Concrete_Cue");
+        assert_eq!(step_cue("Dirt", Locomotion::CrouchWalk), "Dirt_Cue");
     }
 
     #[test]

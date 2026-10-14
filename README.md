@@ -1,6 +1,6 @@
 # SurrounDead — Rust Survival Engine
 
-**Estimated Port Completion: ~55%** (2026-10-15; the breakdown is in the Obsidian note "SurrounDead in Rust" and below)
+**Estimated Port Completion: ~57%** (2026-10-15; the breakdown is in the Obsidian note "SurrounDead in Rust" and below)
 *The playable port is the Bevy app in `src/level`, `src/gameplay`, `src/menus` and `src/models`, built from the game's own extracted data, art and decompiled Blueprints. The figure weighs each area of the original game by size and counts how much of it the port does like the game; areas with nothing yet (NPCs and traders, vehicles, animals, fishing, base building, audio) count as zero.*
 
 | Area | Weight | Done |
@@ -17,7 +17,7 @@
 | Vehicles | 5 | 0% |
 | Animals, fishing, harvesting, base building | 6 | 0% |
 | Map, journal info/quests, radial menu | 3 | 20% |
-| Audio | 5 | 2% |
+| Audio | 5 | 35% |
 | Particles and effects | 3 | 5% |
 
 (The sections below describe the earlier simulation layer, most of which the Bevy port doesn't use.)

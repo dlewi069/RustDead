@@ -96,6 +96,7 @@ fn main() {
                 }),
         )
         .add_plugins((MenuPlugin, ModelsPlugin, LevelPlugin, GameplayPlugin))
+        .add_plugins(surroundead::audio::plugin)
         .add_systems(OnEnter(AppState::InGame), setup_world)
         .add_systems(Update, grab_cursor)
         .add_systems(
@@ -178,6 +179,7 @@ fn setup_world(
         CameraController::default(),
         Camera3d::default(),
         PlayerCamera,
+        surroundead::audio::Listener,
         // Eye adaptation (gameplay/daynight.rs) drives this.
         bevy::camera::Exposure::default(),
         DistanceFog {

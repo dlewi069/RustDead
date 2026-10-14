@@ -125,7 +125,7 @@ pub fn plugin(app: &mut App) {
         );
 }
 
-pub fn press_l(keys: Res<ButtonInput<KeyCode>>, game: Res<CurrentGame>, db: Res<ItemDb>, mut light: ResMut<Flashlight>, mut notify: MessageWriter<Notify>) {
+pub fn press_l(keys: Res<ButtonInput<KeyCode>>, game: Res<CurrentGame>, db: Res<ItemDb>, mut light: ResMut<Flashlight>, mut notify: MessageWriter<Notify>, mut sound: MessageWriter<crate::audio::Sound>) {
     if !keys.just_pressed(KeyCode::KeyL) {
         return;
     }
@@ -134,8 +134,12 @@ pub fn press_l(keys: Res<ButtonInput<KeyCode>>, game: Res<CurrentGame>, db: Res<
         Toggle::On => {
             light.on = true;
             light.timer = 0.0;
+            sound.write(crate::audio::Sound::ui("Turning_Flashlight_On_Cue"));
         }
-        Toggle::Off => light.on = false,
+        Toggle::Off => {
+            light.on = false;
+            sound.write(crate::audio::Sound::ui("Turning_Flashlight_Off_3_Cue"));
+        }
         Toggle::Refused(why) => {
             notify.write(Notify::new(why));
         }

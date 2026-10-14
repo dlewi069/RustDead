@@ -100,7 +100,7 @@ fn one() -> f32 {
 }
 
 /// What `BP_FirearmPickup` reads off the weapon's `BP_WeaponsPickupComponent`.
-#[derive(Deserialize, Clone, Copy, Debug, Default)]
+#[derive(Deserialize, Clone, Debug, Default)]
 pub struct FirearmData {
     /// `Enum_Firearms` value: 0 pistol, 1 SMG, 2 rifle, 3 marksman, 4 shotgun, 5 grenade
     /// launcher, 6 rocket launcher, 7 crossbow, 8 flare gun.
@@ -127,6 +127,9 @@ pub struct FirearmData {
     /// `ResetRecoilDivider`: the reset takes back kick / this.
     #[serde(default)]
     pub reset_recoil_divider: f32,
+    /// FirearmSound: the shot's SoundCue.
+    #[serde(default)]
+    pub sound: Option<String>,
 }
 
 impl FirearmData {

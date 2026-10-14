@@ -322,7 +322,7 @@ fn detonate(
     mut zombies: Query<(&Transform, &KinematicBody, &mut Health, Option<&mut UpperAction>), (With<LevelZombie>, Without<Dead>)>,
     player: Query<(&Transform, &KinematicBody), (With<CharacterModel>, Without<LevelZombie>)>,
     mut noise: MessageWriter<Noise>,
-    mut numbers: MessageWriter<DamageNumber>,
+    (mut numbers, mut sound): (MessageWriter<DamageNumber>, MessageWriter<crate::audio::Sound>),
 ) {
     for (e, t, th) in &thrown {
         let at = t.translation;
@@ -355,6 +355,7 @@ fn detonate(
                 ));
                 commands.entity(e).despawn();
                 info!("{} exploded at {at}: {} zombies in {radius} m", th.item, hit.len());
+                sound.write(crate::audio::Sound::at("explosion_large_06_Cue", at));
                 // SpawnFloatingDamageText per zombie hit, in white.
                 numbers.write_batch(hit.iter().map(|&damage| DamageNumber { damage, colour: super::damage_numbers::BLAST }));
             }

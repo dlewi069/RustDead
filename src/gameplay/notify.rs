@@ -11,11 +11,17 @@ use crate::menus::widgets::{MenuFont, label_colored};
 pub struct Notify {
     pub text: String,
     pub secs: f32,
+    /// The text's colour (CreateNotificationUI's Colour: red for the horde beacon's).
+    pub color: Color,
 }
 
 impl Notify {
     pub fn new(text: impl Into<String>) -> Self {
-        Self { text: text.into(), secs: 2.0 }
+        Self { text: text.into(), secs: 2.0, color: Color::WHITE }
+    }
+
+    pub fn colored(self, color: Color) -> Self {
+        Self { color, ..self }
     }
 }
 
@@ -41,7 +47,7 @@ fn announce_level_ups(mut game: ResMut<crate::menus::CurrentGame>, mut notify: M
     for (skill, level) in std::mem::take(&mut state.passive.level_ups) {
         let text = crate::progression::passive::PassiveSkills::level_up_message(skill, level);
         info!("{text}");
-        notify.write(Notify { text, secs: 6.0 });
+        notify.write(Notify { text, secs: 6.0, color: Color::WHITE });
     }
 }
 
@@ -73,7 +79,7 @@ fn show(mut commands: Commands, mut msgs: MessageReader<Notify>, font: Res<MenuF
             .spawn((
                 Node { padding: UiRect::axes(Val::Px(16.0), Val::Px(8.0)), ..default() },
                 BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.6)),
-                children![label_colored(&font, n.text, 16.0, Color::WHITE)],
+                children![label_colored(&font, n.text, 16.0, n.color)],
             ))
             .id();
         commands.entity(root).add_child(line);

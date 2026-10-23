@@ -22,6 +22,8 @@ struct SwingTimer(f32, f32);
 pub struct PlayerVitals {
     /// Seconds since death, while dead.
     dead_for: Option<f32>,
+    /// Respawns so far this session (each is a new pawn: `stats.rs`).
+    pub respawns: u32,
 }
 
 #[derive(Component)]
@@ -191,8 +193,8 @@ fn tick_vitals(
         let d = d / tough;
         inventory.as_mut().map_or(d, |inv| super::equipment::armor_damage(inv, &db, d, wear))
     };
-    // Crouch Sprint runs ToggleSprint too: it drains like a sprint.
-    let sprinting = player.iter().any(|l| matches!(l, Locomotion::Sprint | Locomotion::CrouchSprint));
+    // Crouch Sprint and SwimFast run ToggleSprint too: they drain like a sprint.
+    let sprinting = player.iter().any(|l| matches!(l, Locomotion::Sprint | Locomotion::CrouchSprint | Locomotion::SwimFast));
     let rates = NeedRates {
         hunger: difficulty(&store, "Player", "HUNGER DEPLETION MULTIPLIER"),
         thirst: difficulty(&store, "Player", "THIRST DEPLETION MULTIPLIER"),
@@ -283,16 +285,25 @@ fn zombie_attacks(
     mut game: ResMut<CurrentGame>,
     vitals: Res<PlayerVitals>,
     player: Query<&Transform, (With<CharacterModel>, With<KinematicBody>)>,
-    mut zombies: Query<(Entity, &Transform, &LevelZombie, &Locomotion, Option<&mut SwingTimer>), Without<super::combat::Dead>>,
+    mut zombies: Query<(Entity, &Transform, &LevelZombie, &Locomotion, Option<&mut SwingTimer>, Has<super::world_events::BloodMoonBoost>), Without<super::combat::Dead>>,
     mut sound: MessageWriter<crate::audio::Sound>,
 ) {
     let Ok(p) = player.single() else { return };
     if vitals.is_dead() || game.state.is_none() {
         return;
     }
-    let mult = difficulty(&store, "AI", "ZOMBIE DAMAGE MULTIPLIER");
-    for (e, t, z, loco, timer) in &mut zombies {
-        if *loco != Locomotion::Attack || t.translation.distance(p.translation) > super::zombies::MELEE_RANGE + 0.3 {
+    let zombie_mult = difficulty(&store, "AI", "ZOMBIE DAMAGE MULTIPLIER");
+    for (e, t, z, loco, timer, roused) in &mut zombies {
+        use super::world_events::BloodMoonBoost;
+        // The animals' DamageToDo goes through ScalingDamageMultiplier only (a no-op unless
+        // LEVEL SCALING ENABLED?, which isn't ported). The Blood Moon doubles a zombie's.
+        let mult = if z.kind.animal().is_some() { 1.0 } else { zombie_mult } * if roused { BloodMoonBoost::DAMAGE } else { 1.0 };
+        // Animals: MeleeAttackDistance between capsule centres (the player's 82 cm up).
+        let out_of_reach = match z.kind.animal() {
+            Some(a) => z.kind.centre(t).distance(p.translation + Vec3::Y * 0.82) > a.reach + super::animals::REACH_SLACK,
+            None => t.translation.distance(p.translation) > super::zombies::MELEE_RANGE + 0.3,
+        };
+        if *loco != Locomotion::Attack || out_of_reach {
             continue;
         }
         let Some(mut timer) = timer else {
@@ -303,37 +314,48 @@ fn zombie_attacks(
         // The class's DamageToDo per hit, a swing every TimeBetweenAttacks.
         if timer.1 == 0.0 {
             let (lo, hi) = z.kind.attack_interval();
-            timer.1 = rand::Rng::gen_range(&mut rand::thread_rng(), lo..hi);
+            // The Blood Moon's Attack Speed x1.75 (ours: the swings come that much faster).
+            let rate = if roused { BloodMoonBoost::ATTACK_SPEED } else { 1.0 };
+            timer.1 = rand::Rng::gen_range(&mut rand::thread_rng(), lo..hi) / rate;
         }
         if timer.0 >= timer.1 {
             timer.0 = 0.0;
             timer.1 = 0.0;
             let c = z.kind.class();
             // AttackSound (ZombieGrowlShort; the hound's HoundAttackCue) at the zombie.
-            sound.write(crate::audio::Sound::at(z.kind.attack_sound(), t.translation + Vec3::Y));
-            let taken = take_hit(&mut game, &db, &store, c.damage * mult);
-            let Some(state) = game.state.as_mut() else { return };
-            // (The old simulation's take_damage also rolled "infection", which the game hasn't got.)
-            state.survival.health = (state.survival.health - taken).max(0.0);
-            // `Medical Effects` rolls: Chance for Bleed / Heavy Bleed / Broken Bone (MedicalComponent
-            // runs them), then Chance for Rad Damage adds Radiation Damage.
-            let roll = |p: f32| rand::random::<f32>() < p;
-            let (bleed, heavy, bone) = (roll(c.bleed), roll(c.heavy_bleed), roll(c.broken_bone));
-            let mut rng = rand::thread_rng();
-            if bleed {
-                state.effects.add_bleed(&mut rng);
+            if let Some(cue) = z.kind.attack_sound() {
+                sound.write(crate::audio::Sound::at(cue, t.translation + Vec3::Y));
             }
-            if heavy {
-                state.effects.add_heavy_bleed(&mut rng);
-            }
-            if bone {
-                state.effects.add_broken_bone(&mut rng);
-            }
-            state.survival.bleeding = state.effects.bleeding();
-            if roll(c.rad_chance) {
-                state.survival.radiation = (state.survival.radiation + c.rad_damage).min(100.0);
-            }
+            zombie_hit(&mut game, &db, &store, c, mult);
         }
+    }
+}
+
+/// A zombie class's hit landing on the survivor: its DamageToDo × `mult` through
+/// [`take_hit`], then the `Medical Effects` rolls (Chance for Bleed / Heavy Bleed / Broken
+/// Bone; MedicalComponent runs them) and Chance for Rad Damage adding Radiation Damage. (A
+/// boss's Event_OnHit: ApplyMedicalEffect(20, 10, 0) and ApplyRadiationDamage(100 %, 16), the
+/// same fields.)
+pub(crate) fn zombie_hit(game: &mut CurrentGame, db: &super::ItemDb, store: &SettingsStore, c: &super::zombies::ZombieClass, mult: f32) {
+    let taken = take_hit(game, db, store, c.damage * mult);
+    let Some(state) = game.state.as_mut() else { return };
+    // (The old simulation's take_damage also rolled "infection", which the game hasn't got.)
+    state.survival.health = (state.survival.health - taken).max(0.0);
+    let roll = |p: f32| rand::random::<f32>() < p;
+    let (bleed, heavy, bone) = (roll(c.bleed), roll(c.heavy_bleed), roll(c.broken_bone));
+    let mut rng = rand::thread_rng();
+    if bleed {
+        state.effects.add_bleed(&mut rng);
+    }
+    if heavy {
+        state.effects.add_heavy_bleed(&mut rng);
+    }
+    if bone {
+        state.effects.add_broken_bone(&mut rng);
+    }
+    state.survival.bleeding = state.effects.bleeding();
+    if roll(c.rad_chance) {
+        state.survival.radiation = (state.survival.radiation + c.rad_damage).min(100.0);
     }
 }
 
@@ -365,6 +387,10 @@ fn death_and_respawn(
             vitals.dead_for = Some(0.0);
             *loco = Locomotion::Dead;
             *overlay = GameOverlay::None;
+            // BP_PlayerController.Death_PlayerStats.
+            if super::stats::reset_on_death(&store) {
+                state.stats.reset_on_death();
+            }
             commands.spawn((
                 Node { position_type: PositionType::Absolute, width: Val::Percent(100.0), top: Val::Percent(40.0), justify_content: JustifyContent::Center, ..default() },
                 DeathBanner,
@@ -392,6 +418,7 @@ fn death_and_respawn(
                 }
             }
             vitals.dead_for = None;
+            vitals.respawns += 1;
             *loco = Locomotion::Idle;
             for b in &banners {
                 commands.entity(b).despawn();

@@ -44,10 +44,37 @@ CUES = [
     # Doors (the door BPs' PlaySoundAtLocation), the locked door's crowbar, fires, generators.
     "door_lock_open_02_Cue", "door_lock_close_01_Cue", "metal_gate_automatic_door_squeak_05_Cue", "MetalDoorImpact_Cue",
     "WoodBreak_cue", "SC_CampFire", "engine_generator_loop_01_Cue", "LightHum_Cue",
+    # BP_TurretAIComponent's FireSound on the bandit and survivor turrets.
+    "M16_Single_Shot_2_Cue",
+    # BP_EventManager's world events: BP_Event_JetActor's Audio, SpawnExplosion's cue.
+    "RandomJet_Cue", "explosions_Cue",
+    # BP_PrefabSpawner's SoundOnSpawn (a dynamic random event appearing).
+    "explosion_deep_low_1_Cue",
     # BP_AmbientSoundController: day and night ambience.
     "birds__1__Cue", "night_and_crickets_ambient_loop_Cue",
-    "ZombieBreathLoopCue", "ZombieGrowlShort", "ZombieDeathShort", "HoundCue", "HoundAttackCue", "UI_click_sound_Cue",
+    # Music (audio/music.rs): BP_Audio_Area's exploration/combat music and ambient beds,
+    # BP_AudioPoint's sounds, and the MainMenu level's AmbientSound.
+    "Main_ExplorationMusic", "CombatMusic_Cue", "SubwayMusic_Cue", "SafeZoneWAV_Cue", "AmbBunker1WAV_Cue",
+    "Underground_Cue", "ShipWreck_Background_Cue", "MainMenuMusic",
+    "ZombieBreathLoopCue", "ZombieGrowlShort", "ZombieDeathShort", "HoundCue",
+    # BP_ZombieBoss's Zombie_Cue.
+    "ZombieBossBreathLoopCue", "HoundAttackCue", "UI_click_sound_Cue",
+    # AirdropAircraft's engine (its AudioComponent overrides the attenuation with "Aircraft").
+    "AirCraft_Cue",
+    # The harvestable objects' hit sounds (their Sound) and BP_HarvestableObject_Tree's fall.
+    "ChopWoodRandom_Cue", "MineStoneRandom_Cue", "HitScrapMetalRandom_Cue", "TreeFallingRandomCue",
+    # TrashObject's hit and break.
+    "HittingTrash_Cue", "WoodBreaking_Cue",
+    # BP_FishingRodPickup's CatchFish.
+    "FishReelIN_Cue",
+    # BP_VehicleMaster: VehicleHitAudio and Horn; its EngineSound (a crossfade, see CROSSFADES).
+    "VehicleCollision_Cue", "Cue_Horn", "MasterVehicle_Audio",
+    # BuildingComponent.SpawnBuild's S_Build_Cue; Buildable_HordeBeacon's last-wave sound.
+    "S_Build_Cue", "metal_med_impact_01_Cue",
 ]
+
+# Attenuation assets set on audio components rather than on their cues.
+COMPONENT_ATTENUATIONS = {"Aircraft"}
 
 # The montages behind the survivor's actions (models/anim.rs AnimSet::actions): their PlaySound
 # notifies sound as the action plays.
@@ -135,9 +162,10 @@ def flatten(nodes, name, scale_vol=(1.0, 1.0), scale_pitch=(1.0, 1.0)):
     return [x for k in kids for x in flatten(nodes, k, scale_vol, scale_pitch)]
 
 
-def attenuation(tmp, stems):
+def attenuation(tmp, stems, named=()):
+    """The SoundAttenuation assets in Audio/Attenuation/, plus any others cues name (`named`)."""
     out = {}
-    pkgs = [p for s, p in stems.items() if "/Audio/Attenuation/" in p]
+    pkgs = [p for s, p in stems.items() if "/Audio/Attenuation/" in p or s in named]
     dump(tmp, pkgs)
     for pkg in pkgs:
         for e in load(tmp, pkg):
@@ -228,6 +256,36 @@ def action_sounds(tmp, stems):
     return out
 
 
+# UDS's weather MetaSounds (gameplay/weather_sounds.rs): their wave arrays and wave players.
+WEATHER_METASOUNDS = ["UDS_Rain_Loop", "UDS_Wind_Loop", "UDS_Distant_Thunder_Loop", "UDS_Close_Thunder", "UDS_Global_WeatherSounds"]
+
+
+def weather_sounds(tmp, stems):
+    """Each weather MetaSound's WaveAsset:Array variables and Wave Player wave literals, as
+    {"<MetaSound>.<variable or node>": [wave packages]}, plus their SoundClass."""
+    pkgs = [stems[m] for m in WEATHER_METASOUNDS if m in stems]
+    dump(tmp, pkgs)
+    out, cls = {}, None
+    def waves(lit):
+        return [o["ObjectPath"].rsplit(".", 1)[0] for o in (lit or {}).get("AsUObject") or [] if isinstance(o, dict) and o.get("ObjectPath")]
+    for m, pkg in zip(WEATHER_METASOUNDS, pkgs):
+        src = next((e for e in load(tmp, pkg) if e["Type"].startswith("MetaSound")), None)
+        if not src:
+            continue
+        p = src["Properties"]
+        cls = cls or name_of(p.get("SoundClassObject"))
+        graph = p["RootMetaSoundDocument"]["RootGraph"]["Graph"]
+        for v in graph.get("Variables") or []:
+            if v.get("TypeName") == "WaveAsset:Array":
+                out[f"{m}.{v['Name']}"] = waves(v.get("Literal"))
+        for n in graph.get("Nodes") or []:
+            for lit in n.get("InputLiterals") or []:
+                w = waves(lit.get("Value"))
+                if w:
+                    out[f"{m}.{n['Name']}"] = w
+    return {"class": cls, "waves": out}
+
+
 def decode(tmp, pkgs):
     """SdExport audio -> .binka (or .ogg/.wav) -> assets/game/<path>.wav. Returns the waves made."""
     todo = [p for p in pkgs if not (GAME / (p + ".wav")).exists()]
@@ -265,12 +323,16 @@ def main():
     for it in items.values():
         fa = it.get("firearm") or {}
         wanted += [fa.get(k) for k in ("sound", "suppressed_sound", "chamber_sound") if fa.get(k)]
+    # The animals' voices (Deer_Noises, WolfCue, BearCue) and snarls (zombies.json `animal`).
+    for c in json.loads((DATA / "zombies.json").read_text())["classes"].values():
+        a = c.get("animal") or {}
+        wanted += [a[k] for k in ("voice", "snarl") if a.get(k)]
     tmp = tempfile.mkdtemp()
     actions = action_sounds(tmp, stems)
     wanted += [n["cue"] for v in actions.values() for n in v]
     wanted = sorted(set(wanted))
     dump(tmp, [stems[w] for w in wanted if w in stems])
-    cues, waves = {}, set()
+    cues, waves, crossfades = {}, set(), {}
     for w in wanted:
         pkg = stems.get(w)
         if not pkg:
@@ -281,6 +343,21 @@ def main():
         cue = next((e for e in exports if e["Type"] == "SoundCue"), None)
         if cue:
             p = cue.get("Properties") or {}
+            first = nodes.get(name_of(p.get("FirstNode"))) or {}
+            if first.get("Type") == "SoundNodeParamCrossFade":
+                # Each input plays as its own looping cue `<cue>#<i>`; `crossfades` keeps the
+                # fade ranges over the parameter (MasterVehicle_Audio: 'RPM' = the mph).
+                fp = first.get("Properties") or {}
+                inputs = []
+                for i, (k, c) in enumerate(zip(fp.get("ChildNodes") or [], fp.get("CrossFadeInput") or [])):
+                    sub = f"{w}#{i}"
+                    cues[sub] = {"class": name_of(p.get("SoundClassObject")), "attenuation": name_of(p.get("AttenuationSettings")),
+                                 "volume": p.get("VolumeMultiplier", 0.75), "pitch": p.get("PitchMultiplier", 1.0), "variants": flatten(nodes, name_of(k))}
+                    waves.update(x for v in cues[sub]["variants"] for x in v["waves"])
+                    inputs.append({"cue": sub, "fade_in": [c.get("FadeInDistanceStart", 0.0), c.get("FadeInDistanceEnd", 0.0)],
+                                   "fade_out": [c.get("FadeOutDistanceStart", 0.0), c.get("FadeOutDistanceEnd", 0.0)], "volume": c.get("Volume", 1.0)})
+                crossfades[w] = {"param": fp.get("ParamName"), "inputs": inputs}
+                continue
             variants = flatten(nodes, name_of(p.get("FirstNode")))
             cues[w] = {
                 "class": name_of(p.get("SoundClassObject")),
@@ -299,13 +376,16 @@ def main():
                        "variants": [{"waves": [pkg], "weight": 1.0, "volume": [1.0, 1.0], "pitch": [1.0, 1.0], "loop": bool(p.get("bLooping"))}]}
         for v in cues[w]["variants"]:
             waves.update(v["waves"])
+    weather = weather_sounds(tmp, stems)
+    waves.update(w for ws in weather["waves"].values() for w in ws)
     made = decode(tmp, sorted(waves))
+    weather["waves"] = {k: ["game/" + x + ".wav" for x in ws if (GAME / (x + ".wav")).exists()] for k, ws in weather["waves"].items()}
     # The runtime loads waves by asset path.
     for c in cues.values():
         for v in c["variants"]:
             v["waves"] = ["game/" + x + ".wav" for x in v["waves"] if (GAME / (x + ".wav")).exists()]
         c["variants"] = [v for v in c["variants"] if v["waves"]]
-    out = {"cues": cues, "attenuation": attenuation(tmp, stems), "classes": CLASS_SETTINGS, "terrain_surfaces": terrain_surfaces(tmp, stems), "action_sounds": actions}
+    out = {"cues": cues, "attenuation": attenuation(tmp, stems, {c["attenuation"] for c in cues.values() if c["attenuation"]} | COMPONENT_ATTENUATIONS), "classes": CLASS_SETTINGS, "terrain_surfaces": terrain_surfaces(tmp, stems), "action_sounds": actions, "crossfades": crossfades, "weather": weather}
     (DATA / "sounds.json").write_text(json.dumps(out, indent=1, sort_keys=True))
     print(f"sounds: {len(cues)} cues, {len(waves)} waves ({made} decoded now)")
     shutil.rmtree(tmp, ignore_errors=True)

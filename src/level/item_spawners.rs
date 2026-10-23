@@ -43,7 +43,7 @@ fn ue_vec(json: &str, keys: [&str; 3]) -> Option<Vec3> {
 }
 
 /// A spawner component's world transform: `rel` (UE cm) and `yaw` (UE degrees) on the actor.
-fn component_world(a: &ActorInfo, rel: Vec3, yaw: f32) -> Transform {
+pub(crate) fn component_world(a: &ActorInfo, rel: Vec3, yaw: f32) -> Transform {
     let t = &a.transform;
     // The actor's UE X, Z, Y axes in Bevy space (see `doors::find`).
     let (x, z, y) = (Vec3::new(t[0], t[1], t[2]).normalize_or(Vec3::X), Vec3::new(t[3], t[4], t[5]).normalize_or(Vec3::Y), Vec3::new(t[6], t[7], t[8]).normalize_or(Vec3::Z));
@@ -53,7 +53,7 @@ fn component_world(a: &ActorInfo, rel: Vec3, yaw: f32) -> Transform {
 }
 
 /// A spawn point component's (relative location, relative yaw), or the template's.
-fn point(a: &ActorInfo, name: &str, template: Vec3) -> (Vec3, f32) {
+pub(crate) fn point(a: &ActorInfo, name: &str, template: Vec3) -> (Vec3, f32) {
     let prop = |k: &str| a.props.as_ref().and_then(|m| m.get(&format!("{name}.{k}")));
     let rel = prop("RelativeLocation").and_then(|j| ue_vec(j, ["X", "Y", "Z"])).unwrap_or(template);
     let yaw = prop("RelativeRotation").and_then(|j| ue_vec(j, ["Pitch", "Yaw", "Roll"])).map_or(0.0, |r| r.y);

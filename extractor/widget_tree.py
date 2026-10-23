@@ -75,12 +75,16 @@ def walk(key, depth):
         if sd:
             print(f"{ind}    [{sd}]")
     kids = children.get(key, [])
-    order = [ref_key(r) for r in (e or {}).get("Properties", {}).get("Slots", [])]
-    if order:
-        # panel "Slots" holds slot objects in visual order; map each slot to its content
-        slot_to_content = {f"{s['Type']}'{s['Name']}": c for c, s in slots.items()}
-        ordered = [slot_to_content[o] for o in order if o in slot_to_content and slot_to_content[o] in kids]
-        kids = ordered + [k for k in kids if k not in ordered]
+    # A panel's "Slots" lists its slot objects in visual (draw) order. Slot names repeat across
+    # panels (OverlaySlot_3 in two overlays), so each is resolved by its ObjectPath's export index.
+    ordered = []
+    for r in (e or {}).get("Properties", {}).get("Slots", []):
+        idx = r.get("ObjectPath", "").rsplit(".", 1)[-1]
+        slot = exports[int(idx)] if idx.isdigit() and int(idx) < len(exports) else None
+        content = slot and slot.get("Properties", {}).get("Content")
+        if content and ref_key(content) in kids and ref_key(content) not in ordered:
+            ordered.append(ref_key(content))
+    kids = ordered + [k for k in kids if k not in ordered]
     for c in kids:
         walk(c, depth + 1)
     # single-content containers (Border, Button, ScaleBox, SizeBox) keep children in Slot objects too

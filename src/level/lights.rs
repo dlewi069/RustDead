@@ -4,7 +4,7 @@
 //!
 //! - `BP_ResortLight`: on from 17:59 to 05:59 (its Time of Day >= 1799 / <= 599 check), else off.
 //! - Fires (`BP_BarrelFire`, `BP_Campfire`, `BP_CookingStation`, `BP_EasterEgg_Campfire`): lit, with
-//!   a flame flicker (their particle flames aren't drawn).
+//!   a flame flicker (the flames themselves are `gameplay::particles` level emitters).
 //! - `BP_FlickeringLight(Sparks)`: the LightFlicker timeline, approximated by random dips.
 //! - Lab lights (`BP_LaboratoryLight(2/3)`): lit while their switch is On (`power`), at the
 //!   class's `Intensity` 2000 (unitless: 3.2 cd). Some instances set 1.5 with exponent falloff,

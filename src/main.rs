@@ -102,7 +102,7 @@ fn main() {
         .add_systems(
             Update,
             (
-                player_movement.run_if(player_in_control),
+                player_movement.run_if(surroundead::gameplay::on_foot).after(surroundead::gameplay::vault::VaultSet),
                 camera_controls.run_if(player_in_control),
                 sync_player_to_save,
                 respawn_player,
@@ -203,6 +203,10 @@ fn player_movement(
     stun: Res<surroundead::gameplay::survival::LandingStun>,
     camera_query: Query<&CameraController>,
     mut query: Query<(&mut Player, &mut KinematicBody, &mut Transform, &mut Locomotion)>,
+    roll: Res<surroundead::gameplay::roll::Roll>,
+    swim: Res<surroundead::gameplay::swim::Swim>,
+    vault: Res<surroundead::gameplay::vault::Vault>,
+    fishing: Res<surroundead::gameplay::fishing::Fishing>,
 ) {
     let camera_yaw = camera_query.iter().next().map(|c| c.yaw).unwrap_or(0.0);
     let stamina = game.state.as_ref().map_or(100.0, |s| s.survival.stamina);
@@ -224,6 +228,64 @@ fn player_movement(
                 body.climbing = false;
             }
             let next = if dir != 0.0 { Locomotion::Climb } else { Locomotion::ClimbIdle };
+            if *loco != next {
+                *loco = next;
+            }
+            continue;
+        }
+        // Rolling (IsPlayerRolling?): the roll's root motion moves them (gameplay/roll.rs).
+        if roll.active() {
+            continue;
+        }
+        // Vaulting (gameplay/vault.rs): its montages move them, and the press that started it
+        // doesn't jump (the BP's Flying movement mode).
+        if vault.active() {
+            continue;
+        }
+        // Swimming (gameplay/swim.rs): W/S along the camera's whole forward (looking down dives),
+        // A/D along its right, Space rises under water (IA_FloatUpwards); 3 m/s, Shift = SwimFast
+        // (5 m/s x FitnessSwimmingMultiplier, a sprint for stamina). Never above the afloat height.
+        if body.swimming {
+            use surroundead::gameplay::swim::{FLOAT, SWIM_FAST, SWIM_SPEED};
+            player.sitting = false;
+            player.crouched = false;
+            body.height = STANDING_HEIGHT;
+            let (yaw, pitch) = camera_query.iter().next().map_or((0.0, 0.0), |c| (c.yaw, c.pitch));
+            let look = -Vec3::new(yaw.sin() * pitch.cos(), pitch.sin(), yaw.cos() * pitch.cos());
+            let right = Vec3::new(yaw.cos(), 0.0, -yaw.sin());
+            let axis = |pos: [KeyCode; 2], neg: [KeyCode; 2]| keyboard_input.any_pressed(pos) as i32 as f32 - keyboard_input.any_pressed(neg) as i32 as f32;
+            let mut dir = look * axis([KeyCode::KeyW, KeyCode::ArrowUp], [KeyCode::KeyS, KeyCode::ArrowDown]) + right * axis([KeyCode::KeyD, KeyCode::ArrowRight], [KeyCode::KeyA, KeyCode::ArrowLeft]);
+            if swim.underwater && keyboard_input.pressed(KeyCode::Space) {
+                dir += right.cross(look);
+            }
+            if keyboard_input.any_just_pressed(shift) && stamina > 0.5 {
+                player.exhausted = false;
+            } else if stamina <= 0.0 {
+                player.exhausted = true;
+            }
+            let moving = dir.length_squared() > 1e-6;
+            let fast = moving && !player.exhausted && stamina > 0.0 && keyboard_input.any_pressed(shift);
+            if moving {
+                let fitness_swim = game.state.as_ref().map_or(1.0, |s| s.passive.fitness_swimming);
+                let speed = if fast { SWIM_FAST * fitness_swim } else { SWIM_SPEED };
+                let d = dir.normalize();
+                let before = transform.translation.y;
+                transform.translation += d * speed * time.delta_secs();
+                if let Some(s) = swim.surface {
+                    transform.translation.y = transform.translation.y.min((s - FLOAT).max(before));
+                }
+                let flat = d.with_y(0.0);
+                if flat.length_squared() > 1e-6 {
+                    let target = Quat::from_rotation_y(flat.x.atan2(flat.z));
+                    transform.rotation = transform.rotation.slerp(target, 8.0 * time.delta_secs());
+                }
+            }
+            let next = match (swim.underwater, moving, fast) {
+                (true, true, _) => Locomotion::SwimUnder,
+                (_, false, _) => Locomotion::SwimIdle,
+                (false, true, true) => Locomotion::SwimFast,
+                (false, true, false) => Locomotion::Swim,
+            };
             if *loco != next {
                 *loco = next;
             }
@@ -269,8 +331,9 @@ fn player_movement(
         } else if stamina <= 0.0 && matches!(*loco, Locomotion::Sprint | Locomotion::CrouchSprint) {
             player.exhausted = true;
         }
-        // A hard landing (OnLanded) disables movement for a moment.
-        let stunned = stun.0 > 0.0;
+        // A hard landing (OnLanded) disables movement for a moment; so does a line in the water
+        // (CastRod's SetCharacterMovementEnabled(false)).
+        let stunned = stun.0 > 0.0 || fishing.active;
         let mut moving = None;
         let mut raw_direction = Vec3::ZERO;
         let mut aim_dir = Vec3::ZERO;
@@ -387,6 +450,8 @@ fn camera_controls(
     mut pitch_request: ResMut<surroundead::gameplay::combat::CameraPitchRequest>,
     mut recoil: ResMut<surroundead::gameplay::recoil::Recoil>,
     mut rays: surroundead::level::collision::PropRays,
+    driving: Res<surroundead::gameplay::vehicles::Driving>,
+    build: Res<surroundead::gameplay::building::BuildMode>,
 ) {
     let Ok((player_transform, body)) = player_query.single() else {
         return;
@@ -409,10 +474,17 @@ fn camera_controls(
     if let Some(pitch) = pitch_request.0.take() {
         controller.pitch = pitch;
     }
-    if mouse_scroll.delta.y != 0.0 {
+    // In build mode the wheel turns the build.
+    if mouse_scroll.delta.y != 0.0 && !build.on() {
         controller.distance = (controller.distance - mouse_scroll.delta.y * 0.5).clamp(1.5, 6.0);
     }
-    let (arm, side) = if armed.aiming { (AIM_ARM, AIM_SIDE * armed.shoulder) } else { (controller.distance, 0.0) };
+    let (arm, side) = if armed.aiming {
+        (AIM_ARM, AIM_SIDE * armed.shoulder)
+    } else if driving.active() {
+        (controller.distance.max(surroundead::gameplay::vehicles::VEHICLE_ARM), 0.0)
+    } else {
+        (controller.distance, 0.0)
+    };
     let ease = (12.0 * time.delta_secs()).min(1.0);
     controller.arm += (arm - controller.arm) * ease;
     controller.side += (side - controller.side) * ease;

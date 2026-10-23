@@ -194,6 +194,8 @@ pub struct Generator {
     pub switches: Vec<usize>,
     /// Actor indices of its sliding doors.
     pub doors: Vec<usize>,
+    /// QuestArgument: turning it on completes PowerOnGenerator with it (`gameplay::quests`).
+    pub quest_argument: String,
 }
 
 /// A `BP_PowerGenerator`.
@@ -334,6 +336,8 @@ impl Power {
                 on: flag(a, "TurnedOn?", false),
                 switches: list.iter().filter_map(|n| switch_ix.get(n.as_str()).copied()).collect(),
                 doors: list.iter().filter(|n| n.starts_with("BP_LaboratorySlidingDoor_C")).filter_map(|n| by_name.get(n.as_str()).copied()).collect(),
+                // The class default "LaboratoryBunker"; the second generator's is overridden.
+                quest_argument: prop(a, "QuestArgument").and_then(|j| serde_json::from_str::<String>(&j).ok()).unwrap_or_else(|| "LaboratoryBunker".into()),
             });
         }
         for a in actors.iter().filter(|a| a.class == "BP_PowerGenerator_C") {
@@ -472,7 +476,7 @@ mod tests {
     fn net() -> Power {
         let sw = |state, lights: &[&str], linked: Vec<usize>| Switch { pos: Vec3::ZERO, state, lights: lights.iter().map(|s| s.to_string()).collect(), linked };
         let mut p = Power {
-            generators: vec![Generator { pos: Vec3::ZERO, on: false, switches: vec![0, 1], doors: vec![7] }],
+            generators: vec![Generator { pos: Vec3::ZERO, on: false, switches: vec![0, 1], doors: vec![7], quest_argument: String::new() }],
             switches: vec![sw(SwitchState::Warning, &["L1", "L2"], vec![1]), sw(SwitchState::Warning, &["L3"], vec![0]), sw(SwitchState::Off, &["L4"], vec![])],
             lit: HashMap::new(),
             power_generators: Vec::new(),

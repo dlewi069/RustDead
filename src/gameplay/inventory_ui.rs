@@ -27,6 +27,7 @@ use super::equipment::{GridRef, PlayerInventory, Slot, WORN_GRIDS};
 use super::icons::ItemIcons;
 use super::interact::{Containers, GameOverlay, insert_growing, player_inv};
 use super::items::{Grid, ItemDb, Placed, Stack, footprint};
+use super::traders::{self, TraderClass};
 use crate::menus::widgets::{MenuFont, label_colored};
 use crate::menus::{AppState, CurrentGame};
 use crate::models::{CharacterModel, model};
@@ -119,9 +120,14 @@ enum Action {
     Use,
     /// `Jig.Context.ReadBook`: a skill book (+250 XP) or magazine (the skill's XP boost).
     Read,
+    /// `Jig.Context.ScanLaptop`: used up, and the laptop event manager starts a quest (`quests.rs`).
+    ScanLaptop,
     Drop,
     /// `Jig.Context.Unload`: a weapon's magazine out, or a magazine's rounds out.
     Unload,
+    /// `Jig.Context.Place` (ContextPlaceItem): build mode with the item (`building.rs`), which
+    /// uses it up when it's placed.
+    Place,
 }
 
 #[derive(Component)]
@@ -166,21 +172,130 @@ struct SplitDialog {
     value: u32,
 }
 
-/// The CRAFTING tab's grids as last built, for tooltips and selection.
+/// The crafting grids as last built (the CRAFTING tab or a crafting station), for tooltips and
+/// selection.
 #[derive(Resource, Default)]
 struct CraftView {
     craft: Grid,
-    /// Craft grid item index -> index into the "Player" recipes.
+    /// The DT_CraftingTableTypes row shown ("Player", "CraftingWorkbench").
+    table: String,
+    /// Craft grid item index -> index into that table's recipes.
     recipe_of: Vec<usize>,
     required: Grid,
+}
+
+/// A crafting station: opened at once (OnExecuteInteract), its BP_JigMultiplayer's widget over
+/// SetItemsToCraft(n), an Enum_CraftingTableTypes row of DT_CraftingTableTypes.
+pub struct Station {
+    pub class: &'static str,
+    /// ContainerName: the prompt's and the column's title.
+    pub name: &'static str,
+    pub table: &'static str,
+    /// The widget's Button_81 (GetText: "<verb> Selected Item x{CountIndex}").
+    pub verb: &'static str,
+    /// Its toast: "{done}, XP Given: {LVL}".
+    pub done: &'static str,
+}
+
+/// BP_CraftingStation (the level's 5 workbenches, W_CraftingWorkbenchUI, SetItemsToCraft(0) =
+/// CraftingWorkbench) and BP_CookingStation (5 in the level, W_CampfireUI, SetItemsToCraft(1) =
+/// Campfire: cooked meat and fish, boiled water).
+pub const STATIONS: [Station; 2] = [
+    Station { class: "BP_CraftingStation_C", name: "Crafting Station", table: "CraftingWorkbench", verb: "Craft", done: "Item Crafted" },
+    Station { class: "BP_CookingStation_C", name: "Cooking Station", table: "Campfire", verb: "Prepare", done: "Item Prepared" },
+];
+pub const STATION: &str = STATIONS[0].class;
+#[cfg(test)]
+const STATION_TABLE: &str = STATIONS[0].table;
+
+pub fn station(class: &str) -> Option<&'static Station> {
+    STATIONS.iter().find(|s| s.class == class)
+}
+
+/// The crafting UI showing `table`: its button verb and toast (the CRAFTING tab's are a workbench's).
+fn station_words(table: &str) -> (&'static str, &'static str) {
+    STATIONS.iter().find(|s| s.table == table).map_or(("Craft", "Item Crafted"), |s| (s.verb, s.done))
+}
+
+/// The crafting UIs' response: "Item Crafted, XP Given: {LVL}" after LevellingComponent.AddXP
+/// (x XP MULTIPLIER) of CurrentLevel x 5, times CountIndex on the CRAFTING tab
+/// (W_PlayerCraftingUI) but not at a workbench (W_CraftingWorkbenchUI). It runs once per crafted
+/// item, so crafting n at once on the tab gives n x (level x 5 x n): as the bytecode reads.
+pub fn craft_xp(level: u32, times: u32, player_tab: bool, xp_mult: f32) -> f32 {
+    level.max(1) as f32 * 5.0 * if player_tab { times as f32 } else { 1.0 } * xp_mult
+}
+
+/// Button_81 ("Craft Selected Item"): the selected recipe x the chosen amount, then each craft's
+/// XP and toast. Gives back the toasts.
+fn craft_selected(ctx: &mut Ctx, ui: &mut UiState) -> Vec<String> {
+    let mut toasts = Vec::new();
+    let times = ui.craft_times;
+    let Some(i) = ui.recipe else { return toasts };
+    if !ctx.craft(i, times) {
+        return toasts;
+    }
+    let player_tab = ctx.craft.table == "Player";
+    let xp_mult = ctx.xp_mult;
+    if let Some(st) = ctx.game.state.as_mut() {
+        for _ in 0..times {
+            let xp = craft_xp(st.progression.level, times, player_tab, xp_mult);
+            st.progression.add_xp(xp.round() as u64);
+            toasts.push(format!("{}, XP Given: {}", station_words(&ctx.craft.table).1, xp.trunc()));
+        }
+    }
+    if let Some(n) = ctx.notice.take() {
+        toasts.push(n.to_string());
+    }
+    ui.craft_times = 1;
+    toasts
+}
+
+/// Screenshot tour (08zt_workbench): select `item`'s recipe in the crafting view on screen and
+/// press Craft Selected Item; logs the table, the item's count before and after and the toasts.
+pub(crate) fn tour_craft(world: &mut World, item: &str) {
+    let mut state = bevy::ecs::system::SystemState::<(InvData, ResMut<UiState>)>::new(world);
+    let Ok((mut data, mut ui)) = state.get_mut(world) else { return };
+    let table = data.craft.table.clone();
+    ui.recipe = data.db.recipes.get(&table).and_then(|r| r.iter().position(|r| r.item == item));
+    ui.craft_times = 1;
+    let before = player_inv(&mut data.game).count(item);
+    let toasts = {
+        let (mut ctx, _) = data.ctx(Vec3::ZERO);
+        craft_selected(&mut ctx, &mut ui)
+    };
+    let after = player_inv(&mut data.game).count(item);
+    info!("autoshot craft table {table} {item} {before} -> {after} toasts {toasts:?}");
+    for t in toasts {
+        data.notify.write(super::notify::Notify::new(t));
+    }
+    data.dirty.0 = true;
+    state.apply(world);
+}
+
+/// Registers the crafting stations as container classes (`interact::collect_containers`).
+fn register_station(mut db: ResMut<ItemDb>) {
+    for s in &STATIONS {
+        db.containers.insert(s.class.into(), super::items::ContainerDef { name: s.name.into(), table: None, hold: 0.0, lockpick: false, noise: 0.0, mesh: None, airdrop: None });
+    }
 }
 
 /// Items lying on the ground (dropped by the player). World models are spawned/despawned by
 /// [`sync_ground_models`].
 #[derive(Resource, Default)]
-struct Ground {
+pub(crate) struct Ground {
     items: Vec<(Vec3, Stack, Option<Entity>)>,
     despawn: Vec<Entity>,
+}
+
+impl Ground {
+    /// Something left on the ground at `at` (a quest crate's weapon).
+    pub(crate) fn drop_at(&mut self, at: Vec3, stack: Stack) {
+        self.items.push((at, stack, None));
+    }
+
+    pub(crate) fn stacks(&self) -> impl Iterator<Item = (Vec3, &Stack)> {
+        self.items.iter().map(|(p, s, _)| (*p, s))
+    }
 }
 
 /// The vicinity grid's item order -> index into [`Ground::items`].
@@ -208,6 +323,7 @@ pub fn plugin(app: &mut App) {
         .init_resource::<VicinityView>()
         .init_resource::<UiState>()
         .init_resource::<CraftView>()
+        .add_systems(Startup, register_station)
         .add_systems(OnEnter(AppState::InGame), |mut g: ResMut<Ground>, mut s: ResMut<UiState>| {
             g.items.clear();
             *s = UiState::default();
@@ -244,6 +360,31 @@ pub(crate) fn tour_page(world: &mut World, page: TourPage) {
         }
     }
     world.resource_mut::<Dirty>().0 = true;
+}
+
+/// Screenshot tour (08zj_trade): Ctrl+click's quick move on the open trader's first item (a
+/// buy), or on the survivor's first pocket item that isn't money (a sale). Logs what changed
+/// hands: the item, the survivor's money and the trader's before and after, and any refusal.
+pub(crate) fn tour_trade(world: &mut World, sell: bool) {
+    let mut state = bevy::ecs::system::SystemState::<InvData>::new(world);
+    let Ok(mut data) = state.get_mut(world) else { return };
+    let GameOverlay::Loot(key) = *data.overlay else { return };
+    let Some(currency) = data.traders.get(&data.tdb, key).and_then(|(_, c)| c.currency.clone()) else { return };
+    let r = if sell {
+        let pockets = &player_inv(&mut data.game).pockets;
+        let Some(index) = pockets.items.iter().position(|p| p.stack.item != currency) else { return };
+        ItemRef { loc: Loc::Player(GridRef::Pockets), index }
+    } else {
+        ItemRef { loc: Loc::Loot(key), index: 0 }
+    };
+    let Some((stack, _)) = data.ctx(Vec3::ZERO).0.peek(r) else { return };
+    let money = |d: &mut InvData| (player_inv(&mut d.game).count(&currency), d.traders.get(&d.tdb, key).map_or(0.0, |(t, _)| t.money));
+    let (m0, t0) = money(&mut data);
+    let notice = data.act(Vec3::ZERO, |ctx| ctx.quick_move(r, Some(key)));
+    let (m1, t1) = money(&mut data);
+    info!("autoshot trade {} {} x{} price {} money {m0} -> {m1} trader {t0} -> {t1} notice {:?}", if sell { "sell" } else { "buy" }, stack.item, stack.count, traders::stack_price(&data.db, &stack), notice);
+    data.dirty.0 = true;
+    state.apply(world);
 }
 
 // ---------------------------------------------------------------- moving items around
@@ -423,13 +564,17 @@ impl Ctx<'_> {
         }
     }
 
-    /// Craft the selected "Player" recipe `times` times; products go to the inventory.
+    /// Craft the selected recipe of the shown table `times` times; products go to the
+    /// inventory, or the ground when they don't fit ("Crafted item dropped").
     fn craft(&mut self, recipe: usize, times: u32) -> bool {
         let db = self.db;
-        let Some(recipe) = db.recipes.get("Player").and_then(|r| r.get(recipe)) else { return false };
+        let Some(recipe) = db.recipes.get(&self.craft.table).and_then(|r| r.get(recipe)) else { return false };
         match self.inv().craft(db, recipe, times) {
             Some(made) => {
-                self.to_player(made);
+                if let Some(rest) = self.inv().insert(db, made) {
+                    self.drop_on_ground(rest);
+                    self.notice = Some("Crafted item dropped");
+                }
                 true
             }
             None => false,
@@ -523,6 +668,8 @@ impl Ctx<'_> {
 
     fn act(&mut self, action: Action, r: ItemRef) {
         match action {
+            // Handled by the menu click (it leaves the item where it is).
+            Action::Place => {}
             Action::Unload => {
                 let db = self.db;
                 let Some(stack) = self.stack_mut(r) else { return };
@@ -566,6 +713,14 @@ impl Ctx<'_> {
                     super::medical::consume(&mut state.survival, &mut state.effects, &mut state.passive, def);
                     stack.count -= 1;
                 }
+                if stack.count > 0 {
+                    self.restore(r, stack, placed);
+                }
+            }
+            Action::ScanLaptop => {
+                // ContextScanLaptop: CallRandomEvent, then JigComp_CallServerConsumeRequest(1).
+                let Some((mut stack, placed)) = self.take(r) else { return };
+                stack.count -= 1;
                 if stack.count > 0 {
                     self.restore(r, stack, placed);
                 }
@@ -657,6 +812,8 @@ struct Build<'a> {
     assets: &'a AssetServer,
     /// REQUIRED ITEMS the survivor doesn't carry enough of (drawn red).
     missing: Vec<String>,
+    /// The trader open in the loot column (its key and class): its items show their price.
+    vendor: Option<(usize, TraderClass)>,
 }
 
 impl Build<'_> {
@@ -673,6 +830,12 @@ impl Build<'_> {
             rarity_colour(def.map_or("", |d| d.rarity.as_str()))
         };
         let icon = self.icons.get(&stack.item, self.db, self.images);
+        // JSI_Slot's PriceCount (ShowPrices = the vendor's container): the unit price. The
+        // widget has it top-left at 8; here it sits bottom-left, under the name.
+        let price = match (&self.vendor, r.loc) {
+            (Some((key, class)), Loc::Loot(k)) if k == *key => traders::price_tag(class, traders::unit_price(self.db, stack)),
+            _ => String::new(),
+        };
         let picture = match (rotated, node.width, node.height) {
             (true, Val::Px(w), Val::Px(h)) => rotated_picture(w, h),
             _ => (Node { position_type: PositionType::Absolute, width: Val::Percent(100.0), height: Val::Percent(100.0), ..default() }, UiTransform::default()),
@@ -690,6 +853,7 @@ impl Build<'_> {
                     Node { position_type: PositionType::Absolute, right: Val::Px(3.0), bottom: Val::Px(2.0), ..default() },
                     Pickable::IGNORE,
                 ),
+                (label_colored(self.font, price, 8.0, Color::WHITE), Node { position_type: PositionType::Absolute, left: Val::Px(3.0), bottom: Val::Px(2.0), ..default() }, Pickable::IGNORE),
             ],
         ))
         .id()
@@ -805,7 +969,7 @@ fn rebuild(
     assets: Res<AssetServer>,
     player: Query<&Transform, (With<CharacterModel>, With<crate::level::KinematicBody>)>,
 ) {
-    let InvData { db, game, containers, ground, view, dirty, craft, .. } = &mut data;
+    let InvData { db, game, containers, ground, view, dirty, craft, traders: trader_list, tdb, store, .. } = &mut data;
     let db: &ItemDb = db;
     if !overlay.is_open() {
         ui.split = None;
@@ -827,7 +991,11 @@ fn rebuild(
         return;
     }
     let c = &mut commands;
-    let mut b = Build { font: &font, db, icons: &mut icons, images: &mut images, assets: &assets, missing: Vec::new() };
+    let vendor = match *overlay {
+        GameOverlay::Loot(k) => trader_list.get(tdb, k).map(|(t, c)| (k, c.clone(), t.money)),
+        _ => None,
+    };
+    let mut b = Build { font: &font, db, icons: &mut icons, images: &mut images, assets: &assets, missing: Vec::new(), vendor: vendor.as_ref().map(|(k, c, _)| (*k, c.clone())) };
     let root = c
         .spawn((
             Node { position_type: PositionType::Absolute, width: Val::Percent(100.0), height: Val::Percent(100.0), justify_content: JustifyContent::Center, align_items: AlignItems::Center, ..default() },
@@ -873,11 +1041,29 @@ fn rebuild(
         let grid = b.grid(c, &g, Loc::Vicinity);
         c.entity(loot).add_children(&[t, grid]);
     } else if let Some(a) = loot_actor
+        && let Some(st) = containers.list.iter().find(|c| c.0 == a).and_then(|c| station(&c.2))
+    {
+        // The station's widget in the content area, under its ContainerName.
+        let t = c.spawn(title(&font, &st.name.to_uppercase(), 15.0, ())).id();
+        let body = c.spawn(Node { flex_direction: FlexDirection::Column, align_items: AlignItems::Center, ..default() }).id();
+        c.entity(loot).add_children(&[t, body]);
+        let inv = player_inv(game).clone();
+        build_crafting(c, &mut b, &inv, &mut ui, craft, body, st.table);
+    } else if let Some(a) = loot_actor
         && let Some(g) = containers.searched.get(&a)
     {
         let t = c.spawn(title(&font, &g.name.to_uppercase(), 15.0, ())).id();
+        c.entity(loot).add_child(t);
+        // W_TraderUI: CurrencyText (16, 10 px in) over the trader's container. It's collapsed
+        // only for a trader that buys nothing while traders have a set amount.
+        if let Some((_, class, money)) = &vendor
+            && (class.selling || !traders::limited(store))
+        {
+            let ct = c.spawn((label_colored(&font, traders::currency_text(class, *money), 16.0, Color::WHITE), Node { align_self: AlignSelf::FlexStart, margin: UiRect::left(Val::Px(10.0)), ..default() })).id();
+            c.entity(loot).add_child(ct);
+        }
         let grid = b.grid(c, g, Loc::Loot(a));
-        c.entity(loot).add_children(&[t, grid]);
+        c.entity(loot).add_child(grid);
     }
     let tabs = c.spawn(Node { width: Val::Percent(100.0), ..default() }).id();
     let vt = c.spawn(title(&font, "VICINITY", 16.0, LootTab::Vicinity)).id();
@@ -899,8 +1085,13 @@ fn rebuild(
         ..default()
     });
     let inv = player_inv(game).clone();
+    // One crafting view at a time: a station's takes the place of the CRAFTING tab.
+    let station_open = loot_actor.is_some_and(|a| containers.list.iter().any(|c| c.0 == a && station(&c.2).is_some()));
+    if station_open {
+        ui.crafting = false;
+    }
     if ui.crafting {
-        build_crafting(c, &mut b, &inv, &mut ui, craft, eq);
+        build_crafting(c, &mut b, &inv, &mut ui, craft, eq, "Player");
     }
     for (ri, slots) in Slot::ROWS.iter().enumerate().filter(|_| !ui.crafting) {
         let r = c.spawn(Node { justify_content: JustifyContent::Center, align_items: AlignItems::Center, ..default() }).id();
@@ -1001,9 +1192,15 @@ fn rebuild(
 
 /// `W_PlayerCraftingUI`: CRAFTABLE ITEMS (10x10), REQUIRED ITEMS (7x3, for the chosen amount),
 /// then `[<] Craft Selected Item [>]`.
-fn build_crafting(c: &mut Commands, b: &mut Build, inv: &PlayerInventory, ui: &mut UiState, view: &mut CraftView, parent: Entity) {
+#[allow(clippy::too_many_arguments)]
+fn build_crafting(c: &mut Commands, b: &mut Build, inv: &PlayerInventory, ui: &mut UiState, view: &mut CraftView, parent: Entity, table: &str) {
     let db = b.db;
-    let recipes = db.recipes.get("Player").map(Vec::as_slice).unwrap_or(&[]);
+    if view.table != table {
+        view.table = table.to_string();
+        ui.recipe = None;
+        ui.craft_times = 1;
+    }
+    let recipes = db.recipes.get(table).map(Vec::as_slice).unwrap_or(&[]);
     view.craft = Grid::new("Craftable", 10, 10);
     view.recipe_of.clear();
     for (i, r) in recipes.iter().enumerate() {
@@ -1043,8 +1240,8 @@ fn build_crafting(c: &mut Commands, b: &mut Build, inv: &PlayerInventory, ui: &m
     };
     let less = arrow(c, 13, CraftButton::Less);
     let more = arrow(c, 14, CraftButton::More);
-    // TextBlock_75 is bound to GetText; the amount suffix is our reading of what it shows.
-    let text = if times > 1 { format!("Craft Selected Item x{times}") } else { "Craft Selected Item".to_string() };
+    // TextBlock_75 is bound to GetText: "<verb> Selected Item " + "x" + CountIndex.
+    let text = format!("{} Selected Item x{times}", station_words(table).0);
     let craft = c
         .spawn((
             Node { padding: UiRect::axes(Val::Px(14.0), Val::Px(6.0)), border_radius: BorderRadius::all(Val::Px(4.0)), ..default() },
@@ -1308,6 +1505,11 @@ struct InvData<'w> {
     craft: ResMut<'w, CraftView>,
     store: Res<'w, crate::menus::settings::SettingsStore>,
     notify: MessageWriter<'w, super::notify::Notify>,
+    overlay: Res<'w, GameOverlay>,
+    traders: ResMut<'w, traders::Traders>,
+    tdb: Res<'w, traders::TraderDb>,
+    scans: MessageWriter<'w, super::quests::ScanLaptop>,
+    builds: MessageWriter<'w, super::building::LaunchBuild>,
 }
 
 impl InvData<'_> {
@@ -1326,6 +1528,42 @@ impl InvData<'_> {
             },
             &mut self.dirty,
         )
+    }
+
+    /// Run an inventory action. With a trader open it's a trade: settled by
+    /// [`traders::settle`], or put back as it was when the trader refuses. Gives back the
+    /// message to show, if any.
+    fn act(&mut self, player: Vec3, f: impl FnOnce(&mut Ctx)) -> Option<&'static str> {
+        let key = match *self.overlay {
+            GameOverlay::Loot(k) if traders::is_trader(k) => Some(k),
+            _ => None,
+        };
+        let before = key.and_then(|k| Some((self.containers.searched.get(&k)?.clone(), self.game.inventory.clone(), self.ground.items.clone())));
+        let notice = {
+            let (mut ctx, _) = self.ctx(player);
+            f(&mut ctx);
+            ctx.notice
+        };
+        let (Some(k), Some((grid0, inv0, ground0))) = (key, before) else { return notice };
+        let limited = traders::limited(&self.store);
+        let InvData { db, game, containers, traders: list, tdb, ground, .. } = self;
+        let (Some(t), Some(grid)) = (list.list.get_mut(k - traders::TRADER_KEYS), containers.searched.get_mut(&k)) else { return notice };
+        let Some(class) = tdb.classes.get(&t.class) else { return notice };
+        let settled = traders::settle(db, traders::Deal { class, money: &mut t.money, limited }, &grid0.items, grid, player_inv(game));
+        match settled {
+            Ok(()) => notice,
+            Err(why) => {
+                *grid = grid0;
+                game.inventory = inv0;
+                // Ground models the action spawned go, the ones it took stay.
+                let kept: Vec<Entity> = ground0.iter().filter_map(|g| g.2).collect();
+                ground.despawn.retain(|e| !kept.contains(e));
+                let added: Vec<Entity> = ground.items.iter().filter_map(|g| g.2).filter(|e| !kept.contains(e)).collect();
+                ground.despawn.extend(added);
+                ground.items = ground0;
+                (!why.is_empty()).then_some(why)
+            }
+        }
     }
 }
 
@@ -1424,17 +1662,23 @@ fn on_drop(
         dirty.0 = true;
         return;
     }
-    if let Ok(cell) = cells.get(target) {
-        ctx.drop_onto_cell(src, *cell, rotated);
-    } else if let Ok(SlotWidget(slot)) = slots.get(target) {
-        ctx.drop_onto_slot(src, *slot);
-    } else if let Some((t, ..)) = item_target {
-        ctx.drop_onto_item(src, t, cell, rotated);
-    } else {
-        // Outside every panel: drop it on the ground.
-        ctx.act(Action::Drop, src);
+    let (on_cell, on_slot) = (cells.get(target).ok().copied(), slots.get(target).ok().map(|s| s.0));
+    let notice = data.act(here, |ctx| {
+        if let Some(c) = on_cell {
+            ctx.drop_onto_cell(src, c, rotated);
+        } else if let Some(slot) = on_slot {
+            ctx.drop_onto_slot(src, slot);
+        } else if let Some((t, ..)) = item_target {
+            ctx.drop_onto_item(src, t, cell, rotated);
+        } else {
+            // Outside every panel: drop it on the ground.
+            ctx.act(Action::Drop, src);
+        }
+    });
+    data.dirty.0 = true;
+    if let Some(n) = notice {
+        data.notify.write(super::notify::Notify::new(n));
     }
-    dirty.0 = true;
 }
 
 /// Everything on the inventory screen that reacts to clicks.
@@ -1480,7 +1724,9 @@ fn on_click(
     if let Ok(b) = split_buttons.get(target) {
         if let (SplitButton::Confirm, Some(d)) = (b, ui.split) {
             let here = player.single().map(|t| t.translation).unwrap_or_default();
-            data.ctx(here).0.split(d.src, d.cell, d.value, d.rotated);
+            if let Some(n) = data.act(here, |ctx| ctx.split(d.src, d.cell, d.value, d.rotated)) {
+                data.notify.write(super::notify::Notify::new(n));
+            }
         }
         ui.split = None;
         data.dirty.0 = true;
@@ -1513,32 +1759,52 @@ fn on_click(
     if let Ok(b) = buttons.get(target) {
         let recipe = ui.recipe;
         let (mut ctx, dirty) = data.ctx(here);
-        let most = recipe.and_then(|i| ctx.db.recipes.get("Player")?.get(i)).map_or(1, |r| ctx.inv().craftable(r).max(1));
+        let most = recipe.and_then(|i| ctx.db.recipes.get(&ctx.craft.table)?.get(i)).map_or(1, |r| ctx.inv().craftable(r).max(1));
+        let mut toasts = Vec::new();
         match b {
             CraftButton::Less => ui.craft_times = ui.craft_times.saturating_sub(1).max(1),
             CraftButton::More => ui.craft_times = (ui.craft_times + 1).min(most),
-            CraftButton::Craft => {
-                if let Some(i) = recipe
-                    && ctx.craft(i, ui.craft_times)
-                {
-                    ui.craft_times = 1;
-                }
-            }
+            CraftButton::Craft => toasts = craft_selected(&mut ctx, &mut ui),
         }
         dirty.0 = true;
+        for t in toasts {
+            data.notify.write(super::notify::Notify::new(t));
+        }
         return;
     }
-    let (mut ctx, dirty) = data.ctx(here);
-    let db = ctx.db;
-    if let Ok(MenuOption(action, r)) = options.get(target) {
-        ctx.act(*action, *r);
-        let notice = ctx.notice.take();
-        dirty.0 = true;
+    if let Ok(&MenuOption(action, r)) = options.get(target) {
+        if action == Action::Place {
+            // ContextPlaceItem: Event_LaunchBuildMode(the item's data asset), then ToggleInventory.
+            let item = data.ctx(here).0.peek(r).map(|p| p.0.item.clone());
+            if let Some(item) = item {
+                data.builds.write(super::building::LaunchBuild { item });
+            }
+            return;
+        }
+        let notice = data.act(here, |ctx| ctx.act(action, r));
+        if action == Action::ScanLaptop {
+            data.scans.write(super::quests::ScanLaptop);
+        }
+        data.dirty.0 = true;
         if let Some(n) = notice {
             data.notify.write(super::notify::Notify::new(n));
         }
         return;
     }
+    if ev.button == PointerButton::Primary
+        && keys.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight])
+        && let Ok(&r) = items.get(target)
+        && !r.loc.display_only()
+    {
+        let notice = data.act(here, |ctx| ctx.quick_move(r, loot_open));
+        data.dirty.0 = true;
+        if let Some(n) = notice {
+            data.notify.write(super::notify::Notify::new(n));
+        }
+        return;
+    }
+    let (mut ctx, dirty) = data.ctx(here);
+    let db = ctx.db;
     let Ok(r) = items.get(target).copied() else { return };
     if r.loc == Loc::Craft {
         if ev.button == PointerButton::Primary {
@@ -1552,10 +1818,6 @@ fn on_click(
         return;
     }
     match ev.button {
-        PointerButton::Primary if keys.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight]) => {
-            ctx.quick_move(r, loot_open);
-            dirty.0 = true;
-        }
         PointerButton::Secondary if !menu_open => {
             // JigContextMenuW: the options this item supports.
             let item = ctx.peek(r).map(|p| p.0.item);
@@ -1574,6 +1836,9 @@ fn on_click(
                 if def.context.iter().any(|c| c == "ReadBook") {
                     opts.push(("Read", Action::Read));
                 }
+                if def.context.iter().any(|c| c == "ScanLaptop") && r.loc != Loc::Vicinity {
+                    opts.push(("Scan Laptop", Action::ScanLaptop));
+                }
             }
             if let Some((stack, _)) = ctx.peek(r)
                 && r.loc != Loc::Vicinity
@@ -1590,6 +1855,10 @@ fn on_click(
             }
             if r.loc != Loc::Vicinity {
                 opts.push(("Drop", Action::Drop));
+            }
+            // Ours: only from the survivor's own grids (SpawnBuild consumes it from there).
+            if def.context.iter().any(|c| c == "Place") && matches!(r.loc, Loc::Player(_)) {
+                opts.push(("Place", Action::Place));
             }
             let at = cursor(&windows, &scale).unwrap_or_default();
             let menu = commands
@@ -1630,7 +1899,13 @@ mod tests {
     }
 
     fn with_ctx(db: &ItemDb, f: impl FnOnce(&mut Ctx)) -> (CurrentGame, Containers, Ground) {
-        let (mut game, mut containers, mut ground, view, craft) = (CurrentGame::default(), Containers::default(), Ground::default(), VicinityView::default(), CraftView::default());
+        with_table(db, "Player", f)
+    }
+
+    /// With the crafting view on a DT_CraftingTableTypes row.
+    fn with_table(db: &ItemDb, table: &str, f: impl FnOnce(&mut Ctx)) -> (CurrentGame, Containers, Ground) {
+        let craft = CraftView { table: table.into(), ..default() };
+        let (mut game, mut containers, mut ground, view) = (CurrentGame::default(), Containers::default(), Ground::default(), VicinityView::default());
         {
             let mut ctx = Ctx { db, game: &mut game, containers: &mut containers, ground: &mut ground, view: &view, craft: &craft, player: Vec3::ZERO, xp_mult: 1.0, notice: None };
             f(&mut ctx);
@@ -1654,6 +1929,19 @@ mod tests {
         let readable: Vec<_> = db.items.values().filter(|d| d.context.iter().any(|c| c == "ReadBook")).map(|d| d.id.clone()).collect();
         assert_eq!(readable.len(), 20);
         assert!(readable.iter().all(|id| read_book(&mut PassiveSkills::default(), id).is_some()), "{readable:?}");
+    }
+
+    #[test]
+    fn scanning_a_laptop_uses_it_up() {
+        let Some(db) = db() else { return };
+        assert!(db.items["DA_MilitaryIntelLaptop"].context.iter().any(|c| c == "ScanLaptop"));
+        let (game, ..) = with_ctx(&db, |ctx| {
+            ctx.inv().insert(&db, db.stack("DA_MilitaryIntelLaptop", 1));
+            let r = ItemRef { loc: Loc::Player(GridRef::Pockets), index: 0 };
+            ctx.act(Action::ScanLaptop, r);
+        });
+        let mut game = game;
+        assert_eq!(player_inv(&mut game).count("DA_MilitaryIntelLaptop"), 0);
     }
 
     #[test]
@@ -1752,6 +2040,23 @@ mod tests {
         });
         let inv = player_inv(&mut game);
         assert_eq!((inv.count("DA_Cloth"), inv.count("DA_Rags")), (0, 4));
+    }
+
+    #[test]
+    fn crafting_stations_use_the_workbench_table_and_give_xp() {
+        let Some(db) = db() else { return };
+        let nails = db.recipes[STATION_TABLE].iter().position(|r| r.item == "DA_Nails").unwrap();
+        assert_eq!(db.recipes[STATION_TABLE].len(), 14);
+        let (mut game, _, _) = with_table(&db, STATION_TABLE, |ctx| {
+            ctx.inv().pockets.place_at(&db, db.stack("DA_ScrapMetal", 10), 0, 0).unwrap();
+            assert!(ctx.craft(nails, 2));
+        });
+        let inv = player_inv(&mut game);
+        assert_eq!((inv.count("DA_ScrapMetal"), inv.count("DA_Nails")), (0, 10));
+        // Level 4: 20 XP a craft at a workbench; the CRAFTING tab multiplies by the count.
+        assert_eq!(craft_xp(4, 3, false, 1.0), 20.0);
+        assert_eq!(craft_xp(4, 3, true, 1.0), 60.0);
+        assert_eq!(craft_xp(4, 1, true, 1.5), 30.0);
     }
 
     #[test]

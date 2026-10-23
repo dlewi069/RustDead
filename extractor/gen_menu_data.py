@@ -111,7 +111,7 @@ def page(rel, keys):
                 if inner.get("Type") == "TextBlock":
                     row["keys"] = [text_of(inner["Properties"].get("Text"))]
         elif ctype == "DefaultCheckBoxSetting_C":
-            row["kind"] = "check"
+            row.update(kind="check", cvar=cp.get("CVarName"))
         elif ctype == "StyledSliderSetting_C":
             row.update(kind="slider", min=cp.get("LeftValue", 0.0), max=cp.get("RightValue", 1.0),
                        digits=cp.get("LabelFractionalDigits", 0), multiplier=cp.get("LabelMultiplier", 1.0),
@@ -250,6 +250,25 @@ def main():
                     on = any(v is True and len(k) > 4 and k in label for k, v in defaults.items())
                     r["default"] = 1.0 if on else 0.0
         print(f"difficulty defaults from Save_Difficulties: {matched}")
+    # SD_GameInstance registers every setting's CVar with its starting value
+    # (RegisterFloatCVarSetting('Difficulty.VehicleChance', 30.0, ...),
+    # RegisterBoolCVarSetting('Game.PlayerJournalStatsReset', true, ...)): sliders and checks
+    # Save_Difficulties doesn't cover take it.
+    gi = ROOT / "Blueprints/SD_GameInstance.json"
+    if gi.exists():
+        code = subprocess.run([sys.executable, str(Path(__file__).with_name("kismet.py")), str(gi)], capture_output=True, text=True).stdout
+        registered = {m[1]: float(m[2]) for m in re.finditer(r"Register(?:Float|Int)CVarSetting\('([^']+)', (-?[\d.]+)", code)}
+        flags = {m[1]: m[2] == "true" for m in re.finditer(r"RegisterBoolCVarSetting\('([^']+)', (true|false)", code)}
+        filled = checks = 0
+        for p in data["settings"] + data["difficulty"]:
+            for r in p["rows"]:
+                if r.get("kind") == "slider" and r.get("default") is None and r.get("cvar") in registered:
+                    r["default"] = registered[r["cvar"]]
+                    filled += 1
+                elif r.get("kind") == "check" and r.get("default") is None and r.get("cvar") in flags:
+                    r["default"] = 1.0 if flags[r["cvar"]] else 0.0
+                    checks += 1
+        print(f"defaults from SD_GameInstance: {filled} sliders, {checks} checks")
     data["difficulty_presets"] = difficulty_presets(data)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, indent=1))

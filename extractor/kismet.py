@@ -37,7 +37,7 @@ def e(x):
     g = x.get
     if t in ("EX_LocalVariable", "EX_InstanceVariable", "EX_LocalOutVariable", "EX_DefaultVariable", "EX_ClassSparseDataVariable"):
         return var(g("Variable"))
-    if t in ("EX_IntConst", "EX_FloatConst", "EX_DoubleConst", "EX_ByteConst", "EX_Int64Const", "EX_UInt64Const", "EX_IntConstByte"):
+    if t in ("EX_IntConst", "EX_FloatConst", "EX_DoubleConst", "EX_ByteConst", "EX_Int64Const", "EX_UInt64Const", "EX_IntConstByte", "EX_SkipOffsetConst"):
         return str(g("Value"))
     if t in ("EX_StringConst", "EX_UnicodeStringConst"):
         return json.dumps(g("Value"))

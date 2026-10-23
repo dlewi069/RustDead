@@ -20,10 +20,11 @@
 //!   is set burning (`burning.rs`).
 //!
 //! Ours: the body is a point of the capsule's radius (no tumbling, no rolling; contacts are
-//! impulses with Coulomb friction), it comes to rest below 0.3 m/s, and the blast and fire are
-//! lights standing in for FX_Explosion_New / FX_MolotovEffect. Not ported:
-//! Skill_DemolitionExpert (x1.5 damage, no tech tree yet), the radial force on loose props,
-//! camera shake, scorch decals, sounds.
+//! impulses with Coulomb friction), it comes to rest below 0.3 m/s. The blast and the fire play
+//! FX_Explosion_New / FX_MolotovEffect (`particles.rs`), with lights standing in for their Light
+//! modules. Not ported: the radial force on loose props, camera shake, scorch decals.
+
+use std::f32::consts::TAU;
 
 use bevy::prelude::*;
 use rand::Rng;
@@ -33,6 +34,7 @@ use super::damage_numbers::DamageNumber;
 use super::combat::{Armed, Dead, Health, PlayerCamera};
 use super::equipment::Slot;
 use super::items::{ItemDb, ThrowableDef};
+use super::particles::Fx;
 use super::zombies::Noise;
 use crate::level::{KinematicBody, LevelZombie, Terrain};
 use crate::menus::settings::SettingsStore;
@@ -149,7 +151,7 @@ pub fn plugin(app: &mut App) {
         .add_systems(OnEnter(AppState::InGame), |mut t: ResMut<Throwing>| t.0 = None)
         .add_systems(
             Update,
-            start_throw.after(super::combat::CombatSet).run_if(in_state(AppState::InGame)).run_if(in_state(MenuScreen::None)).run_if(super::player_in_control),
+            start_throw.after(super::combat::CombatSet).run_if(in_state(AppState::InGame)).run_if(in_state(MenuScreen::None)).run_if(super::on_foot).run_if(super::swim::not_swimming).run_if(super::building::not_building),
         )
         .add_systems(Update, (release, fly, detonate, burn, fade_flashes).chain().run_if(in_state(AppState::InGame)).run_if(in_state(MenuScreen::None)));
 }
@@ -322,8 +324,9 @@ fn detonate(
     mut zombies: Query<(&Transform, &KinematicBody, &mut Health, Option<&mut UpperAction>), (With<LevelZombie>, Without<Dead>)>,
     player: Query<(&Transform, &KinematicBody), (With<CharacterModel>, Without<LevelZombie>)>,
     mut noise: MessageWriter<Noise>,
-    (mut numbers, mut sound): (MessageWriter<DamageNumber>, MessageWriter<crate::audio::Sound>),
+    (mut numbers, mut sound, mut fx): (MessageWriter<DamageNumber>, MessageWriter<crate::audio::Sound>, MessageWriter<Fx>),
 ) {
+    let mut rng = rand::thread_rng();
     for (e, t, th) in &thrown {
         let at = t.translation;
         let Some(effect) = effect(&th.def.class) else {
@@ -335,6 +338,8 @@ fn detonate(
         match effect {
             Effect::Fire if th.touched.is_some_and(|at| th.age >= at + SMASH_TO_FIRE) => {
                 noise.write(Noise { at, range: 10.0 });
+                // FX_MolotovEffect at a random yaw, Deactivate()d when the fire ends.
+                fx.write(Fx::at("FX_MolotovEffect", at).yawed(rng.gen_range(0.0..TAU)).stop_after(FIRE_SECS));
                 commands.spawn((
                     Transform::from_translation(at + Vec3::Y * 0.5),
                     PointLight { color: Color::srgb(1.0, 0.55, 0.2), intensity: 400_000.0, range: 12.0, ..default() },
@@ -347,6 +352,9 @@ fn detonate(
             Effect::Blast { radius, noise: heard } if th.age >= th.def.fuse => {
                 noise.write(Noise { at, range: heard });
                 let hit = hurt_around(at, radius, (th.def.min_damage * demo, th.def.max_damage * demo), &mut zombies, &player, &mut game, &db, &store);
+                // FX_Explosion_New at a random yaw, scaled by Random Vector In Range(1, 2) (each
+                // axis its own roll).
+                fx.write(Fx::at("FX_Explosion_New", at).yawed(rng.gen_range(0.0..TAU)).scaled(random_scale(1.0, 2.0, &mut rng)));
                 commands.spawn((
                     Transform::from_translation(at + Vec3::Y * 1.0),
                     PointLight { color: Color::srgb(1.0, 0.75, 0.4), intensity: 4_000_000.0, range: radius * 2.5, ..default() },
@@ -361,6 +369,8 @@ fn detonate(
             }
             Effect::Noise(heard) if th.age >= th.def.fuse => {
                 noise.write(Noise { at, range: heard });
+                // The noise maker's pop: FX_Explosion_New at 0.1-0.2 scale.
+                fx.write(Fx::at("FX_Explosion_New", at).yawed(rng.gen_range(0.0..TAU)).scaled(random_scale(0.1, 0.2, &mut rng)));
                 commands.spawn((Transform::from_translation(at + Vec3::Y * 0.3), PointLight { color: Color::srgb(1.0, 0.9, 0.6), intensity: 300_000.0, range: 6.0, ..default() }, Flash(0.2), DespawnOnExit(AppState::InGame)));
                 commands.entity(e).despawn();
                 info!("{} went off at {at}", th.item);
@@ -368,6 +378,11 @@ fn detonate(
             _ => {}
         }
     }
+}
+
+/// UBPP_FunctionLibrary's Random Vector In Range: each axis rolled between `lo` and `hi`.
+pub fn random_scale(lo: f32, hi: f32, rng: &mut impl Rng) -> Vec3 {
+    Vec3::from_array(std::array::from_fn(|_| rng.gen_range(lo..=hi)))
 }
 
 /// BP_MasterThrowable.SkillCheck: x1.5 with Skill_DemolitionExpert.
@@ -468,6 +483,14 @@ mod tests {
         assert_eq!(bounce(Vec3::new(1.0, 2.0, 0.0), Vec3::Y), Vec3::new(1.0, 2.0, 0.0));
         // Off a wall.
         assert!((bounce(Vec3::new(-5.0, 0.0, 0.0), Vec3::X).x - 1.5).abs() < 1e-4);
+    }
+
+    #[test]
+    fn blast_scales_roll_each_axis() {
+        let mut rng = rand::thread_rng();
+        let rolls: Vec<Vec3> = (0..50).map(|_| random_scale(1.0, 2.0, &mut rng)).collect();
+        assert!(rolls.iter().all(|s| s.min_element() >= 1.0 && s.max_element() <= 2.0));
+        assert!(rolls.iter().any(|s| s.x != s.y), "Random Vector In Range rolls X, Y and Z apart");
     }
 
     #[test]

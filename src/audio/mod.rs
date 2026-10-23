@@ -9,6 +9,8 @@
 //!   computed once for one-shots and every frame for loops ([`Emitter`]); there's no stereo
 //!   panning, occlusion or low-pass filtering.
 
+pub mod music;
+
 use std::collections::HashMap;
 
 use bevy::audio::{PlaybackMode, Volume};
@@ -72,7 +74,48 @@ pub struct SoundDb {
     /// A sequence's AnimNotify_PlaySound (its montage's, in sequence time): reloads' mag out/in.
     #[serde(default)]
     pub action_sounds: HashMap<String, Vec<NotifySound>>,
+    /// SoundNodeParamCrossFade cues: each input is its own looping cue, faded by the parameter.
+    #[serde(default)]
+    pub crossfades: HashMap<String, Crossfade>,
+    /// UDS's weather MetaSounds' waves (`gameplay::weather_sounds`).
+    #[serde(default)]
+    pub weather: WeatherSoundData,
 }
+
+/// Each weather MetaSound's wave arrays, as "<MetaSound>.<variable or node>", and their class.
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct WeatherSoundData {
+    pub class: Option<String>,
+    #[serde(default)]
+    pub waves: HashMap<String, Vec<String>>,
+}
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct Crossfade {
+    pub param: Option<String>,
+    pub inputs: Vec<CrossfadeInput>,
+}
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct CrossfadeInput {
+    pub cue: String,
+    pub fade_in: [f32; 2],
+    pub fade_out: [f32; 2],
+    pub volume: f32,
+}
+
+impl CrossfadeInput {
+    /// SoundNodeParamCrossFade: 0 -> Volume over FadeInDistanceStart..End, Volume -> 0 over
+    /// FadeOutDistanceStart..End (an empty fade-in range is full from its start).
+    pub fn gain(&self, param: f32) -> f32 {
+        let ramp = |x: f32, [a, b]: [f32; 2]| if b <= a { if x >= a { 1.0 } else { 0.0 } } else { ((x - a) / (b - a)).clamp(0.0, 1.0) };
+        self.volume * ramp(param, self.fade_in) * (1.0 - ramp(param, self.fade_out))
+    }
+}
+
+/// A live volume factor for the loops following this entity (a crossfade input's gain).
+#[derive(Component, Clone, Copy, Debug)]
+pub struct LoopGain(pub f32);
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct NotifySound {
@@ -149,6 +192,7 @@ pub fn plugin(app: &mut App) {
         .add_message::<Sound>()
         .add_observer(click)
         .add_systems(Update, (action_sounds, ambient_loops, play, follow).chain());
+    music::plugin(app);
 }
 
 /// ButtonWidget's click: UI_click_sound_Cue on every button press.
@@ -304,15 +348,19 @@ fn ambient_loops(
 fn follow(
     mut commands: Commands,
     mut emitters: Query<(Entity, &mut Emitter, Option<&mut AudioSink>)>,
-    targets: Query<(&GlobalTransform, Has<Voiced>)>,
+    targets: Query<(&GlobalTransform, Has<Voiced>, Option<&LoopGain>)>,
     listener: Query<&GlobalTransform, With<Listener>>,
     fallback: Query<&GlobalTransform, With<Camera3d>>,
 ) {
     let Some(ear) = listener.iter().next().or(fallback.iter().next()).map(|t| t.translation()) else { return };
     for (e, mut em, sink) in &mut emitters {
+        let mut gain = 1.0;
         if let Some(f) = em.follow {
             match targets.get(f) {
-                Ok((t, true)) => em.at = t.translation(),
+                Ok((t, true, g)) => {
+                    em.at = t.translation();
+                    gain = g.map_or(1.0, |g| g.0);
+                }
                 _ => {
                     commands.entity(e).despawn();
                     continue;
@@ -326,7 +374,7 @@ fn follow(
             }
         }
         if let Some(mut sink) = sink {
-            sink.set_volume(Volume::Linear(em.base * attenuate(em.at.distance(ear), &em.att)));
+            sink.set_volume(Volume::Linear(em.base * gain * attenuate(em.at.distance(ear), &em.att)));
         }
     }
 }
@@ -349,6 +397,18 @@ mod tests {
     }
 
     #[test]
+    fn crossfades_ramp_in_and_out() {
+        let idle = CrossfadeInput { cue: String::new(), fade_in: [0.0, 0.0], fade_out: [15.0, 25.0], volume: 1.0 };
+        let low = CrossfadeInput { cue: String::new(), fade_in: [0.5, 20.0], fade_out: [40.0, 50.0], volume: 1.0 };
+        assert_eq!(idle.gain(0.0), 1.0);
+        assert!((idle.gain(20.0) - 0.5).abs() < 1e-6);
+        assert_eq!(idle.gain(30.0), 0.0);
+        assert_eq!(low.gain(0.0), 0.0);
+        assert_eq!(low.gain(30.0), 1.0);
+        assert!((low.gain(45.0) - 0.5).abs() < 1e-6);
+    }
+
+    #[test]
     fn variants_are_picked_by_weight() {
         let v = |w: f32, name: &str| Variant { waves: vec![name.into()], weight: w, volume: [1.0, 1.0], pitch: [1.0, 1.0], looping: false };
         let cue = Cue { class: None, attenuation: None, volume: 1.0, pitch: 1.0, variants: vec![v(1.0, "a"), v(3.0, "b")] };
@@ -363,7 +423,7 @@ mod tests {
         if db.cues.is_empty() {
             return;
         }
-        for c in ["S_EmptyFire_Cue", "GunJam_Cue", "Head_shot_1_Cue", "ZombieBreathLoopCue", "UI_click_sound_Cue", "explosion_large_06_Cue"] {
+        for c in ["S_EmptyFire_Cue", "GunJam_Cue", "Head_shot_1_Cue", "ZombieBreathLoopCue", "UI_click_sound_Cue", "explosion_large_06_Cue", "FishReelIN_Cue"] {
             assert!(db.cues.get(c).is_some_and(|c| !c.variants.is_empty()), "{c}");
         }
         assert_eq!(db.classes.get("EffectsAudio").map(String::as_str), Some("EFFECTS"));

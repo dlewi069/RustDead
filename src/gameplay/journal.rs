@@ -1,7 +1,7 @@
-//! The journal's Skills page: JournalUI + Journal_SkillsUI (widget trees; IA_Journal = J).
+//! The journal: JournalUI + Journal_SkillsUI (widget trees; IA_Journal = J).
 //!
-//! - The notebook page (SkillsPageBlank) with its bookmark tabs (INFO, SKILLS, QUESTS); only the
-//!   Skills page is ported, so the other tabs do nothing.
+//! - The notebook page (SkillsPageBlank) with its bookmark tabs (INFO, SKILLS, QUESTS); INFO is
+//!   `journal/info.rs`, QUESTS `journal/quests.rs`.
 //! - The passive skills (PassiveSkillsComponent) in the SkillLvlArea frame: name, level -> next
 //!   level, the XP bar and "XP / MaxXP", and "x2" while the skill's magazine boost is running.
 //! - The tech tree (SkillTree: TreeSize 640 x 1000, 70 px slots at the nodes' editor positions,
@@ -26,6 +26,10 @@ use crate::menus::widgets::{MenuFont, pt};
 use crate::menus::{AppState, CurrentGame, MenuScreen};
 use crate::progression::passive::{MAX_LEVEL, Passive};
 use crate::progression::tech::TechDb;
+
+mod info;
+mod quests;
+pub use quests::{ConfirmButton, FolderButton, ForgetButton, QuestEntry};
 
 const TEX: &str = "game/SurrounDead/Content/UI/Widgets/Journal";
 const FONT: &str = "game/Blueprints/PluginsAndAssets/Font/F_ESRPG__RU_EN_.ttf";
@@ -55,9 +59,31 @@ const ROWS: [(Passive, f32, f32, f32, f32); 10] = [
 #[derive(Resource, Default)]
 pub struct Journal {
     open: bool,
-    /// Rebuild the page (opened, a skill unlocked, points reset).
+    /// Rebuild the page (opened, a skill unlocked, points reset, a tab clicked).
     dirty: bool,
+    /// The page on top. JournalUI is made once a session and starts on INFO (OnInitialized).
+    pub page: Page,
+    /// The QUESTS page: the quest shown, the Quest Log folder in front, FORGET's confirmation.
+    pub quest: Option<String>,
+    pub log_tab: bool,
+    pub confirm_forget: bool,
 }
+
+/// JournalUI's pages: the clicked tab's page gets ZOrder 1, the others 0.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Page {
+    #[default]
+    Info,
+    Skills,
+    /// Journal_QuestsUI (`journal/quests.rs`).
+    Quests,
+}
+
+/// A bookmark tab's button (InfoButton, SkillsButton, QuestsButton).
+#[derive(Component, Clone, Copy)]
+pub struct TabButton(pub Page);
+#[derive(Component)]
+struct TabLabel;
 
 #[derive(Component)]
 struct JournalUi;
@@ -76,10 +102,13 @@ struct TechTooltip;
 struct Tree(TechDb);
 
 pub fn plugin(app: &mut App) {
+    quests::plugin(app);
     app.init_resource::<Journal>()
         .insert_resource(Tree(TechDb::load()))
         .add_observer(on_click)
-        .add_systems(Update, (toggle, build, tooltip).chain().run_if(in_state(AppState::InGame)));
+        .add_observer(on_tab)
+        .add_systems(OnEnter(AppState::InGame), |mut j: ResMut<Journal>| *j = Journal::default())
+        .add_systems(Update, ((toggle, build, tooltip).chain(), hover_tabs, info::update_clock).run_if(in_state(AppState::InGame)));
 }
 
 /// The top-left of the page overlay (design px, from the canvas's left middle).
@@ -133,11 +162,19 @@ pub fn toggle(keys: Res<ButtonInput<KeyCode>>, screen: Res<State<MenuScreen>>, m
     if open != journal.open {
         journal.open = open;
         journal.dirty = true;
+        journal.confirm_forget = false;
     }
 }
 
 #[allow(clippy::too_many_arguments)]
-fn build(mut commands: Commands, mut journal: ResMut<Journal>, game: Res<CurrentGame>, tree: Res<Tree>, assets: Res<AssetServer>, uis: Query<Entity, With<JournalUi>>) {
+fn build(
+    mut commands: Commands,
+    mut journal: ResMut<Journal>,
+    game: Res<CurrentGame>,
+    (tree, data, qdb): (Res<Tree>, Res<crate::menus::MenuData>, Res<super::quests::QuestDb>),
+    (assets, menu_font): (Res<AssetServer>, Res<MenuFont>),
+    uis: Query<Entity, With<JournalUi>>,
+) {
     if !journal.dirty {
         return;
     }
@@ -147,13 +184,6 @@ fn build(mut commands: Commands, mut journal: ResMut<Journal>, game: Res<Current
     }
     let (Some(state), true) = (game.state.as_ref(), journal.open) else { return };
     let font: Handle<Font> = assets.load(FONT);
-    let img = |p: &str| ImageNode::new(assets.load(format!("{TEX}/{p}.png")));
-    let text = |s: String, size: f32| (Text::new(s), TextFont { font: font.clone().into(), font_size: pt(size), ..default() }, TextColor(INK), Pickable::IGNORE);
-    // RenderTransform angles (UMG degrees, clockwise on screen).
-    let turn = |deg: f32| UiTransform::from_rotation(Rot2::degrees(deg));
-    // A box at `top_left` of `size` inside a parent (px from the parent's top left).
-    let rel = |top_left: Vec2, size: Vec2| Node { position_type: PositionType::Absolute, left: Val::Px(top_left.x), top: Val::Px(top_left.y), width: Val::Px(size.x), height: Val::Px(size.y), ..default() };
-
     let root = commands
         .spawn((
             Node { position_type: PositionType::Absolute, width: Val::Percent(100.0), height: Val::Percent(100.0), ..default() },
@@ -166,6 +196,47 @@ fn build(mut commands: Commands, mut journal: ResMut<Journal>, game: Res<Current
     let add = |commands: &mut Commands, b: Entity| {
         commands.entity(root).add_child(b);
     };
+    match journal.page {
+        Page::Info => info::build(&mut commands, root, &game, &data, &assets, &font, &menu_font.0),
+        Page::Skills => build_skills(&mut commands, root, state, &tree, &assets, &font),
+        Page::Quests => quests::build(&mut commands, root, &journal, &state.quest_log, &qdb, &assets, &font),
+    }
+    // JournalUI's tab buttons (the Buttons overlay, ZOrder 2: over every page): each centred by
+    // its padding in the 1921.9 x 1081.1 overlay from (0, -0.54) and turned (RenderTransform
+    // -80°, SKILLS -82°) to run up its tab.
+    for (page, label, size, left, bottom, angle) in [(Page::Info, "INFO", 36.0, 156.0, 193.0, -80.0), (Page::Skills, "SKILLS", 32.0, 130.0, 36.0, -82.0), (Page::Quests, "QUESTS", 34.0, 112.0, -125.0, -80.0)] {
+        let box_size = Vec2::new(200.0, 60.0);
+        let centre = tab_centre(left, bottom);
+        let b = commands
+            .spawn((
+                at(centre - box_size / 2.0, box_size),
+                UiTransform::from_rotation(Rot2::degrees(angle)),
+                Button,
+                Hovered::default(),
+                TabButton(page),
+                children![(
+                    Node { width: Val::Percent(100.0), height: Val::Percent(100.0), justify_content: JustifyContent::Center, align_items: AlignItems::Center, ..default() },
+                    Pickable::IGNORE,
+                    children![(Text::new(label), TextFont { font: font.clone().into(), font_size: pt(size), ..default() }, TextColor(INK), UiTransform::default(), TabLabel, Pickable::IGNORE)],
+                )],
+            ))
+            .id();
+        add(&mut commands, b);
+    }
+}
+
+/// Journal_SkillsUI: the passive skills, the tech tree, the points and the tooltip.
+fn build_skills(commands: &mut Commands, root: Entity, state: &crate::engine::GameState, tree: &Tree, assets: &AssetServer, font: &Handle<Font>) {
+    let img = |p: &str| ImageNode::new(assets.load(format!("{TEX}/{p}.png")));
+    let text = |s: String, size: f32| (Text::new(s), TextFont { font: font.clone().into(), font_size: pt(size), ..default() }, TextColor(INK), Pickable::IGNORE);
+    // RenderTransform angles (UMG degrees, clockwise on screen).
+    let turn = |deg: f32| UiTransform::from_rotation(Rot2::degrees(deg));
+    // A box at `top_left` of `size` inside a parent (px from the parent's top left).
+    let rel = |top_left: Vec2, size: Vec2| Node { position_type: PositionType::Absolute, left: Val::Px(top_left.x), top: Val::Px(top_left.y), width: Val::Px(size.x), height: Val::Px(size.y), ..default() };
+    let add = |commands: &mut Commands, b: Entity| {
+        commands.entity(root).add_child(b);
+    };
+    let mut commands = commands.reborrow();
     // The other pages' bookmarks behind the page, the Skills one in front of it (each turned 6°).
     let marker = |name: &str, x: f32, y: f32| (at(Vec2::new(x, 540.0 + y), Vec2::new(1920.0, 1080.0)), img(&format!("Markers/{name}")), turn(6.0), Pickable::IGNORE);
     let b = commands.spawn(marker("RedMarker", -189.0, -540.0)).id();
@@ -219,21 +290,6 @@ fn build(mut commands: Commands, mut journal: ResMut<Journal>, game: Res<Current
     }
     let b = commands.spawn(marker("BlueMarker", -192.04, -520.0)).id();
     add(&mut commands, b);
-    // JournalUI's tab buttons: the Buttons overlay (1921.9 x 1081.1 from (0, -0.54)), each
-    // centred by its padding and turned (RenderTransform -80°, SKILLS -82°) to run up its tab.
-    for (label, size, left, bottom, angle) in [("INFO", 36.0, 156.0, 193.0, -80.0), ("SKILLS", 32.0, 130.0, 36.0, -82.0), ("QUESTS", 34.0, 112.0, -125.0, -80.0)] {
-        let box_size = Vec2::new(200.0, 60.0);
-        let centre = tab_centre(left, bottom);
-        let b = commands
-            .spawn((
-                at(centre - box_size / 2.0, box_size),
-                turn(angle),
-                Pickable::IGNORE,
-                children![(Node { width: Val::Percent(100.0), height: Val::Percent(100.0), justify_content: JustifyContent::Center, align_items: AlignItems::Center, ..default() }, children![text(label.to_string(), size)])],
-            ))
-            .id();
-        add(&mut commands, b);
-    }
 
     // The tech tree (SizeBox_0, turned 5°): lines under the icons.
     let tree_box = commands.spawn((at(tree_origin(), Vec2::new(640.0, TREE_HEIGHT)), turn(5.0), Pickable::IGNORE)).id();
@@ -308,6 +364,38 @@ fn build(mut commands: Commands, mut journal: ResMut<Journal>, game: Res<Current
         ))
         .id();
     add(&mut commands, b);
+}
+
+/// A tab clicked: its page on top (Quests isn't ported, so its tab does nothing).
+fn on_tab(ev: On<Activate>, tabs: Query<&TabButton>, game: Res<CurrentGame>, mut journal: ResMut<Journal>) {
+    if let Ok(t) = tabs.get(ev.entity)
+        && t.0 != journal.page
+    {
+        journal.page = t.0;
+        journal.dirty = true;
+        // Journal_QuestsUI.Initialize: Show Quest(the last quest in progress).
+        if t.0 == Page::Quests
+            && let Some(log) = game.state.as_ref().map(|s| &s.quest_log)
+            && let Some(q) = quests::last_active(log)
+        {
+            journal.quest = Some(q);
+        }
+    }
+}
+
+/// The tabs' hover: the label at 1.1 and UI_click_sound (OnHovered), back to 1 on leaving.
+#[allow(clippy::type_complexity)]
+fn hover_tabs(tabs: Query<(&Hovered, &Children), (With<TabButton>, Changed<Hovered>)>, kids: Query<&Children>, mut labels: Query<&mut UiTransform, With<TabLabel>>, mut sound: MessageWriter<crate::audio::Sound>) {
+    for (h, children) in &tabs {
+        if h.get() {
+            sound.write(crate::audio::Sound::ui("UI_click_sound_Cue"));
+        }
+        for c in children.iter().flat_map(|c| kids.get(c).into_iter().flatten().copied().chain([c])) {
+            if let Ok(mut t) = labels.get_mut(c) {
+                t.scale = Vec2::splat(if h.get() { 1.1 } else { 1.0 });
+            }
+        }
+    }
 }
 
 /// SkillTreeTooltip: the hovered skill's name (in its type's colour), cost and description.

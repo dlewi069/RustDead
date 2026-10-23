@@ -27,6 +27,7 @@ use rand::Rng;
 use super::equipment::Slot;
 use super::interact::{GameOverlay, player_inv};
 use super::items::{ItemDb, Stack};
+use super::particles::Fx;
 use super::survival::difficulty;
 use super::zombies::{Shape, ZombieKind};
 use crate::level::{KinematicBody, LevelZombie, Terrain};
@@ -119,12 +120,38 @@ pub struct Dead {
     upright: Quat,
     /// Feet height when it died.
     ground: f32,
+    /// Seconds until the corpse goes.
+    lasts: f32,
+    fall: Fall,
+}
+
+/// How a corpse goes down in place of the game's ragdoll.
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Fall {
+    /// Over backwards (zombies).
+    Back,
+    /// Onto its side (four legs).
+    Side,
+    /// Its death clip lays it down (the rabbit's death montage, the hound's).
+    Clip,
 }
 
 impl Dead {
-    /// Dying where `t` stands.
+    /// A zombie dying where `t` stands.
     pub fn at(t: &Transform) -> Self {
-        Self { secs: 0.0, upright: t.rotation, ground: t.translation.y }
+        Self { secs: 0.0, upright: t.rotation, ground: t.translation.y, lasts: CORPSE_SECS, fall: Fall::Back }
+    }
+
+    /// A zombie class dying where `t` stands: animals lie on their side (or play their death
+    /// montage) and stay for their Delay (600 s) before K2_DestroyActor.
+    pub fn of(t: &Transform, kind: ZombieKind) -> Self {
+        match (kind.shape(), kind.animal()) {
+            (_, Some(a)) => Self { lasts: a.corpse_secs, fall: if a.death.is_some() { Fall::Clip } else { Fall::Side }, ..Self::at(t) },
+            (Shape::Hound, _) => Self { fall: Fall::Clip, ..Self::at(t) },
+            // BP_ZombieBoss's death: Delay(1200) then K2_DestroyActor.
+            _ if kind.boss().is_some() => Self { lasts: kind.boss().map_or(CORPSE_SECS, |b| b.corpse_secs), ..Self::at(t) },
+            _ => Self::at(t),
+        }
     }
 }
 
@@ -134,7 +161,7 @@ const FALL_SECS: f32 = 0.6;
 
 /// A weapon model held or holstered on the survivor.
 #[derive(Component)]
-struct HeldWeapon;
+pub struct HeldWeapon(pub Slot);
 
 #[derive(Component)]
 struct Tracer(f32);
@@ -179,13 +206,16 @@ pub fn plugin(app: &mut App) {
         .add_systems(OnEnter(AppState::InGame), (|mut a: ResMut<Armed>| *a = Armed::default(), spawn_ammo_box))
         .add_systems(
             Update,
-            (draw_and_aim, set_stance, reload, fire, kill_zombies)
+            (draw_and_aim, set_stance, reload, fire)
                 .chain()
                 .in_set(CombatSet)
                 .run_if(in_state(AppState::InGame))
                 .run_if(in_state(MenuScreen::None))
-                .run_if(super::player_in_control),
+                .run_if(super::on_foot)
+                .run_if(super::building::not_building),
         )
+        // Deaths count whatever the survivor is doing (a zombie run over, a grenade's blast).
+        .add_systems(Update, kill_zombies.after(CombatSet).after(super::vehicles::VehicleSet).run_if(in_state(AppState::InGame)).run_if(in_state(MenuScreen::None)))
         .add_systems(Update, (give_zombies_health, hold_weapons, fade_tracers, rot_corpses, update_ammo_box).run_if(in_state(AppState::InGame)));
 }
 
@@ -194,14 +224,32 @@ fn is_firearm(kind: &str) -> bool {
 }
 
 /// The drawn weapon's stack, if it's still equipped.
-fn drawn<'a>(armed: &Armed, game: &'a mut CurrentGame) -> Option<&'a mut Stack> {
+pub(crate) fn drawn<'a>(armed: &Armed, game: &'a mut CurrentGame) -> Option<&'a mut Stack> {
     player_inv(game).equipped.get_mut(&armed.drawn?)
 }
 
-fn draw_and_aim(keys: Res<ButtonInput<KeyCode>>, mouse: Res<ButtonInput<MouseButton>>, db: Res<ItemDb>, mut armed: ResMut<Armed>, mut game: ResMut<CurrentGame>) {
+#[allow(clippy::too_many_arguments)]
+fn draw_and_aim(
+    keys: Res<ButtonInput<KeyCode>>,
+    mouse: Res<ButtonInput<MouseButton>>,
+    db: Res<ItemDb>,
+    mut armed: ResMut<Armed>,
+    mut game: ResMut<CurrentGame>,
+    swim: Res<super::swim::Swim>,
+    fishing: Res<super::fishing::Fishing>,
+) {
+    // Swimming: nothing in hand (OnRep_IsSwimming? empties the active slot; drawing checks IsSwimming).
+    if swim.swimming {
+        armed.drawn = None;
+        armed.aiming = false;
+        armed.reload = None;
+        return;
+    }
     let inv = player_inv(&mut game);
-    for (key, slot) in [(KeyCode::Digit1, Slot::Primary), (KeyCode::Digit2, Slot::Secondary), (KeyCode::Digit3, Slot::Sidearm), (KeyCode::Digit4, Slot::Melee)] {
-        if keys.just_pressed(key) && inv.equipped.contains_key(&slot) {
+    // 9 = IA_FishingRod (EquipFishingRod). Nothing changes hands while the line is out
+    // (CurrentlyFishing? blocks the Equip* events).
+    for (key, slot) in [(KeyCode::Digit1, Slot::Primary), (KeyCode::Digit2, Slot::Secondary), (KeyCode::Digit3, Slot::Sidearm), (KeyCode::Digit4, Slot::Melee), (KeyCode::Digit9, Slot::FishingRod)] {
+        if keys.just_pressed(key) && inv.equipped.contains_key(&slot) && !fishing.active {
             armed.drawn = if armed.drawn == Some(slot) { None } else { Some(slot) };
             armed.reload = None;
             // Semi when the weapon has it, else whatever it has.
@@ -209,7 +257,7 @@ fn draw_and_aim(keys: Res<ButtonInput<KeyCode>>, mouse: Res<ButtonInput<MouseBut
             armed.auto = !modes.contains(&"Semi") && modes.contains(&"Auto");
         }
     }
-    if keys.just_pressed(KeyCode::Backslash) {
+    if keys.just_pressed(KeyCode::Backslash) && !fishing.active {
         armed.drawn = None;
     }
     // Unequipped from the inventory: nothing in hand any more.
@@ -226,7 +274,8 @@ fn draw_and_aim(keys: Res<ButtonInput<KeyCode>>, mouse: Res<ButtonInput<MouseBut
             armed.auto = !armed.auto;
         }
     }
-    armed.aiming = def.is_some() && mouse.pressed(MouseButton::Right);
+    // (The rod has no aim: Event_AimFirearm / the melee block need a weapon.)
+    armed.aiming = def.is_some_and(|d| d.kind != "FishingRod") && mouse.pressed(MouseButton::Right);
     if armed.aiming {
         if keys.just_pressed(KeyCode::KeyQ) {
             armed.shoulder = -1.0;
@@ -243,6 +292,9 @@ fn set_stance(armed: Res<Armed>, db: Res<ItemDb>, mut game: ResMut<CurrentGame>,
         Some("MainFirearm") => Stance::Rifle,
         Some("Sidearm") => Stance::Pistol,
         Some("Melee") => Stance::Melee,
+        // Svr_UpdateCombatState(3) in EquipFishingRod; which blendspace 3 is isn't read, the
+        // one-handed melee set is a guess.
+        Some("FishingRod") => Stance::Melee,
         _ => Stance::Unarmed,
     };
     for mut s in &mut player {
@@ -488,32 +540,64 @@ fn ray_hits_prone(origin: Vec3, dir: Vec3, t: &Transform) -> Option<(f32, bool)>
 /// Where a ray first meets a zombie of `kind`: (distance, headshot).
 fn ray_hits(origin: Vec3, dir: Vec3, t: &Transform, kind: ZombieKind) -> Option<(f32, bool)> {
     match kind.shape() {
+        Shape::Upright if kind.boss().is_some() => ray_hits_upright(origin, dir, t.translation, t.scale, BOSS_BULK),
         Shape::Upright => ray_hits_zombie(origin, dir, t.translation),
         Shape::Prone => ray_hits_prone(origin, dir, t),
         Shape::Hound => ray_hits_hound(origin, dir, t),
+        Shape::Animal => kind.animal().and_then(|a| ray_hits_animal(origin, dir, t, a.bounds?, a.scale)),
+    }
+}
+
+/// An animal: a body capsule along its length at 60 % of its height (as thick as it's wide, or
+/// a quarter of its height) and a head sphere at the front, from the mesh's bind-pose bounds
+/// (glb space, +Z forward). The proportions are ours; the game traces its physics asset.
+pub fn ray_hits_animal(origin: Vec3, dir: Vec3, t: &Transform, [lo, hi]: [[f32; 3]; 2], scale: f32) -> Option<(f32, bool)> {
+    let at = |v: Vec3| t.translation + t.rotation * (v * scale);
+    let half_width = (hi[0] - lo[0]) * 0.5;
+    let r = half_width.max(hi[1] * 0.25);
+    let y = hi[1] * 0.6;
+    let body = ray_capsule(origin, dir, at(Vec3::new(0.0, y, lo[2] + r)), at(Vec3::new(0.0, y, (hi[2] - r).max(lo[2] + r))), r * scale);
+    let head_r = half_width * 0.8;
+    let head = ray_sphere(origin, dir, at(Vec3::new(0.0, hi[1] * 0.85, hi[2] - head_r)), head_r * scale);
+    match (head, body) {
+        (Some(h), Some(b)) if b < h => Some((b, false)),
+        (Some(h), _) => Some((h, true)),
+        (None, Some(b)) => Some((b, false)),
+        _ => None,
     }
 }
 
 /// Where a ray first meets a zombie: (distance, headshot).
 fn ray_hits_zombie(origin: Vec3, dir: Vec3, feet: Vec3) -> Option<(f32, bool)> {
+    ray_hits_upright(origin, dir, feet, Vec3::ONE, 1.0)
+}
+
+/// The boss meshes are about 1.3x as thick as the common zombies' in their bind pose (0.6 m
+/// front to back against 0.35 m); their body and head are widened by this (ours).
+const BOSS_BULK: f32 = 1.3;
+
+/// [`ray_hits_zombie`] for a body drawn at `scale` (heights by y, widths by x) and `bulk` times
+/// as thick.
+fn ray_hits_upright(origin: Vec3, dir: Vec3, feet: Vec3, scale: Vec3, bulk: f32) -> Option<(f32, bool)> {
+    let (radius, top, head_r) = (BODY_RADIUS * scale.x * bulk, BODY_TOP * scale.y, HEAD_RADIUS * scale.x * bulk);
     // Head sphere.
-    let head = feet + Vec3::Y * HEAD_CENTRE;
+    let head = feet + Vec3::Y * HEAD_CENTRE * scale.y;
     let to = head - origin;
     let along = to.dot(dir);
-    let head_hit = (along > 0.0 && (to - dir * along).length() < HEAD_RADIUS).then_some(along);
+    let head_hit = (along > 0.0 && (to - dir * along).length() < head_r).then_some(along);
     // Body: vertical capsule axis from the feet to BODY_TOP, as a cylinder in plan.
     let flat = Vec2::new(dir.x, dir.z);
     let rel = Vec2::new(feet.x - origin.x, feet.z - origin.z);
     let body_hit = (flat.length_squared() > 1e-6).then(|| {
         let a = flat.length_squared();
         let b = -2.0 * rel.dot(flat);
-        let c = rel.length_squared() - BODY_RADIUS * BODY_RADIUS;
+        let c = rel.length_squared() - radius * radius;
         let disc = b * b - 4.0 * a * c;
         (disc >= 0.0).then(|| (-b - disc.sqrt()) / (2.0 * a))
     });
     let body_hit = body_hit.flatten().filter(|&t| {
         let y = origin.y + dir.y * t;
-        t > 0.0 && y >= feet.y && y <= feet.y + BODY_TOP
+        t > 0.0 && y >= feet.y && y <= feet.y + top
     });
     match (head_hit, body_hit) {
         (Some(h), Some(b)) if b < h => Some((b, false)),
@@ -537,7 +621,7 @@ pub(crate) fn terrain_hit(terrain: Option<&Terrain>, origin: Vec3, dir: Vec3, ma
     None
 }
 
-fn store_bool(store: &SettingsStore, page: &str, label: &str) -> bool {
+pub(crate) fn store_bool(store: &SettingsStore, page: &str, label: &str) -> bool {
     store.find(&row_key("difficulty", page, label)) == Some(Value::Bool(true))
 }
 
@@ -557,12 +641,16 @@ fn fire(
     mut player: PlayerAnim,
     lib: Res<AnimLibrary>,
     mut zombies: Query<(&Transform, &LevelZombie, &mut Health, Option<&mut UpperAction>), (Without<Dead>, Without<CharacterModel>)>,
-    (mut noise, mut notify, mut numbers, mut recoil, mut sound): (
+    safe: Res<super::zones::SafeZones>,
+    (mut noise, mut notify, mut numbers, mut recoil, mut sound, mut swings, mut fx, mut shots): (
         MessageWriter<super::zombies::Noise>,
         MessageWriter<super::notify::Notify>,
         MessageWriter<super::damage_numbers::DamageNumber>,
         ResMut<super::recoil::Recoil>,
         MessageWriter<crate::audio::Sound>,
+        MessageWriter<super::harvest::Swing>,
+        MessageWriter<Fx>,
+        MessageWriter<super::turrets::Shot>,
     ),
 ) {
     armed.cooldown = (armed.cooldown - time.delta_secs()).max(0.0);
@@ -575,7 +663,8 @@ fn fire(
     let stance = *stance;
     let auto = armed.auto;
     let trigger = if auto { mouse.pressed(MouseButton::Left) } else { mouse.just_pressed(MouseButton::Left) };
-    if !trigger || armed.cooldown > 0.0 || armed.reloading() {
+    // BP_PlayerCharacter's primary action: nothing in a safe zone (GameInstance.InSafeZone?).
+    if !trigger || armed.cooldown > 0.0 || armed.reloading() || safe.active() {
         return;
     }
     let headshot_mode = store_bool(&store, "General", "HEADSHOT MODE ENABLED?");
@@ -657,6 +746,9 @@ fn fire(
         }
         debug!("shot from {origin} along {dir}: ground at {wall:.1} m, hit {:?}", best.as_ref().map(|b| (b.0, b.1)));
         let end = best.as_ref().map_or(origin + dir * wall, |b| origin + dir * b.0);
+        let hit_zombie = best.is_some();
+        // Damage_Object on what the round meets (the turrets): the gun's FirearmDamage.
+        shots.write(super::turrets::Shot { origin, dir, reach: best.as_ref().map_or(wall, |b| b.0), damage: weapon.stat(&db, "FirearmDamage").unwrap_or(30.0) });
         if let Some((d, head, mut h, a)) = best {
             let base = weapon.stat(&db, "FirearmDamage").unwrap_or(30.0);
             // DamageMultiplier (and HEADSHOT MODE's quarter on the body), EffectiveDamage, then
@@ -666,14 +758,31 @@ fn fire(
             // Trace_Headshot: Head_shot_1-5; Trace_BodyImpact: bullet_impact_body_thump_01-08.
             let cue = if head { format!("Head_shot_{}_Cue", rng.gen_range(1..=5)) } else { format!("bullet_impact_body_thump_0{}_Cue", rng.gen_range(1..=8)) };
             sound.write(crate::audio::Sound::at(cue, origin + dir * d));
+            // Trace_BodyImpact: FX_BloodBodyImpact; Trace_Headshot: FX_BloodHeadshot at 0.6.
+            let blood = if head { Fx::at("FX_BloodHeadshot", origin + dir * d).scaled(Vec3::splat(0.6)) } else { Fx::at("FX_BloodBodyImpact", origin + dir * d) };
+            fx.write(blood.pointing(-dir));
             // Trace_Headshot / Trace_BodyImpact: AddXP_Marksmanship 4-6 / 1-2.
             if let Some(st) = game.state.as_mut() {
                 st.passive.add_xp(Passive::Marksmanship, if head { rng.gen_range(4.0..=6.0) } else { rng.gen_range(1.0..=2.0) });
             }
             numbers.write(super::damage_numbers::DamageNumber::hit(dmg, critical));
         }
+        // A round that met the ground or a prop: FX_WorldImpact, spraying back along the shot
+        // (the impact normal isn't traced).
+        if !hit_zombie && wall < RANGE {
+            fx.write(Fx::at("FX_WorldImpact", end).pointing(-dir));
+        }
         // Tracer from the weapon (right hand, chest height) to where the round landed.
         let muzzle = me.translation + Vec3::Y * 1.35 + me.rotation * Vec3::new(-0.25, 0.0, 0.5);
+        // Svr_WeaponEffects: the weapon's MuzzleFlash at its Muzzle socket (scale 0.75), and its
+        // BrassType at the ejection port, a little behind it.
+        let aim = (end - muzzle).normalize_or(dir);
+        if let Some(flash) = &fa.muzzle_flash {
+            fx.write(Fx::at(flash.clone(), muzzle).pointing(aim).scaled(Vec3::splat(0.75)));
+        }
+        if let Some(brass) = &fa.brass {
+            fx.write(Fx::at(brass.clone(), muzzle - aim * 0.35).pointing(aim));
+        }
         let span = end - muzzle;
         if span.length() > 0.5 {
             commands.spawn((
@@ -709,7 +818,9 @@ fn fire(
             state.survival.stamina = (state.survival.stamina - drain).max(0.0);
         }
         let facing = me.rotation * Vec3::Z;
+        // The same sweep can meet a tree, a rock or a trash pile (`harvest::hit_props`).
         let base = weapon.stat(&db, "MeleeDamage").unwrap_or(20.0);
+        swings.write(super::harvest::Swing { feet: me.translation, facing: facing.with_y(0.0).normalize_or_zero(), weapon: weapon.item.clone(), damage: base });
         let mut hits: Vec<(f32, f32, Vec3, Mut<Health>, Option<Mut<UpperAction>>)> = zombies
             .iter_mut()
             .filter_map(|(t, _, h, a)| {
@@ -728,6 +839,8 @@ fn fire(
             hurt(&mut h, a, dmg, false);
             // HitBody: one of Body_Flesh_1-5.
             sound.write(crate::audio::Sound::at(format!("Body_Flesh_{}_Cue", rng.gen_range(1..=5)), at + Vec3::Y));
+            // BP_MeleePickup: FX_BloodHeadshot at the hit, scale 0.6.
+            fx.write(Fx::at("FX_BloodHeadshot", at + Vec3::Y * 1.2).pointing(me.translation - at).scaled(Vec3::splat(0.6)));
             numbers.write(super::damage_numbers::DamageNumber::hit(dmg, critical));
             // HitBody / HitHead: Client_StrengthXP(1-2), ReduceDurability(1).
             if let Some(st) = game.state.as_mut() {
@@ -750,7 +863,15 @@ fn give_zombies_health(mut commands: Commands, store: Res<SettingsStore>, added:
     for (e, z) in &added {
         // DamageComponent health +- the class's HealthDeviation (100 +- 50; hounds 125 +- 25).
         let (base, dev) = z.kind.health();
-        let hp = (base + rng.gen_range(-dev..=dev)) * mult;
+        // The animals' Health has no deviation and no ZOMBIE HEALTH MULTIPLIER
+        // (ScalingHealthMultiplier only acts with LEVEL SCALING ENABLED?, which isn't ported).
+        // The humans' AI_Health: MaxHealth x their faction's row (BANDIT HEALTH MULTIPLIER...).
+        let mult = match (z.kind.animal(), z.kind.human()) {
+            (Some(_), _) => 1.0,
+            (_, Some(h)) => h.health_row.as_deref().map_or(1.0, |row| difficulty(&store, "AI", row)),
+            _ => mult,
+        };
+        let hp = (base + if dev > 0.0 { rng.gen_range(-dev..=dev) } else { 0.0 }) * mult;
         commands.entity(e).insert(Health { hp, max: hp });
     }
 }
@@ -766,28 +887,61 @@ fn kill_zombies(
     mut commands: Commands,
     store: Res<SettingsStore>,
     mut game: ResMut<CurrentGame>,
-    mut zombies: Query<(Entity, &Health, &Transform, &mut Locomotion, Option<&LevelZombie>), Without<Dead>>,
+    mut zombies: Query<(Entity, &Health, &Transform, &mut Locomotion, Option<&LevelZombie>, Has<super::world_events::BloodMoonBoost>), Without<Dead>>,
     mut notify: MessageWriter<super::notify::Notify>,
     mut sound: MessageWriter<crate::audio::Sound>,
+    mut no_credit: ResMut<super::turrets::NoCredit>,
 ) {
     let xp_mult = difficulty(&store, "General", "XP MULTIPLIER");
     let popup = store.find(&row_key("settings", "Gameplay", "XP POP UP ENABLED?")) == Some(Value::Bool(true));
-    for (e, h, t, mut loco, z) in &mut zombies {
+    for (e, h, t, mut loco, z, roused) in &mut zombies {
         if h.hp > 0.0 {
             continue;
         }
         *loco = Locomotion::Dead;
         // No longer an obstacle (or a falling body); Zombie_Cue.Deactivate, DeathSound.
-        commands.entity(e).insert(Dead::at(t)).remove::<KinematicBody>().remove::<crate::audio::Voiced>();
+        commands.entity(e).insert(z.map_or_else(|| Dead::at(t), |z| Dead::of(t, z.kind))).remove::<KinematicBody>().remove::<crate::audio::Voiced>();
         if let Some(cue) = z.and_then(|z| z.kind.death_sound()) {
             sound.write(crate::audio::Sound::at(cue, t.translation + Vec3::Y));
         }
+        // A turret's kill (ApplyDamage from the turret, not the survivor): no XP, no count.
+        if no_credit.0.remove(&e) {
+            continue;
+        }
         if let Some(state) = game.state.as_mut() {
-            let [lo, hi] = z.map_or([5.0, 10.0], |z| z.kind.class().xp);
-            let xp = kill_xp(state.progression.level, rand::thread_rng().gen_range(lo..=hi), xp_mult);
+            let kind = z.map(|z| z.kind);
+            let boss = kind.and_then(ZombieKind::boss);
+            // BP_MasterZombie's death: ZombieKills + 1; the animals': AnimalKills + 1;
+            // BP_ZombieBoss's: BossZombieKills + 1.
+            let human = kind.and_then(ZombieKind::human);
+            if kind.is_some_and(|k| k.animal().is_some()) {
+                state.stats.animal_kills += 1;
+            } else if human.is_some() {
+                // BP_MasterBandit / Military / Scavenger's Death: HumanKills + 1.
+                state.stats.human_kills += 1;
+            } else if boss.is_some() {
+                state.stats.boss_zombie_kills += 1;
+            } else {
+                state.stats.zombie_kills += 1;
+            }
+            let mut rng = rand::thread_rng();
+            // The Blood Moon's XPMultiplier 15-25.
+            let [lo, hi] = if roused { super::world_events::BloodMoonBoost::XP } else { kind.map_or([5.0, 10.0], |k| k.class().xp) };
+            let xp = kill_xp(state.progression.level, rng.gen_range(lo..=hi), xp_mult);
             state.progression.add_xp(xp.round() as u64);
+            // A boss: RandomFloatInRange(0, 100) <= 25 adds a skill point (the tech tree's).
+            // A boss (zombie or human, Boss?): RandomFloatInRange(0, 100) <= 25 adds a skill point.
+            let skill = boss.map(|b| b.skill_point_chance).or(human.filter(|h| h.boss).map(|_| 0.25));
+            if let Some(chance) = skill
+                && rng.gen_range(0.0..=1.0) <= chance
+            {
+                state.progression.unspent_points += 1;
+                info!("boss kill: a skill point");
+            }
             if popup {
-                notify.write(super::notify::Notify::new(format!("Zombie Killed, XP Given: {}", xp.trunc())));
+                // The animals' and bosses' own toasts: "Deer Killed, XP Given: {XP}".
+                let what = boss.map(|b| b.killed.as_str()).or(kind.and_then(ZombieKind::animal).map(|a| a.killed.as_str())).or(human.map(|h| h.killed.as_str())).unwrap_or("Zombie");
+                notify.write(super::notify::Notify::new(format!("{what} Killed, XP Given: {}", xp.trunc())));
             }
         }
     }
@@ -798,12 +952,18 @@ fn rot_corpses(mut commands: Commands, time: Res<Time>, mut corpses: Query<(Enti
         loco.set_if_neq(Locomotion::Dead);
         d.secs += time.delta_secs();
         let k = (d.secs / FALL_SECS).min(1.0);
-        // Over backwards about the feet, accelerating like a fall, lifted by half the body's
-        // thickness so it lies on the ground rather than half in it.
+        // Over backwards (or onto the side) about the feet, accelerating like a fall, lifted by
+        // half the body's thickness so it lies on the ground rather than half in it.
         let fall = k * k;
-        t.rotation = d.upright * Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2 * fall);
-        t.translation.y = d.ground + 0.15 * fall;
-        if d.secs > CORPSE_SECS {
+        match d.fall {
+            Fall::Back => {
+                t.rotation = d.upright * Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2 * fall);
+                t.translation.y = d.ground + 0.15 * fall;
+            }
+            Fall::Side => t.rotation = d.upright * Quat::from_rotation_z(std::f32::consts::FRAC_PI_2 * fall),
+            Fall::Clip => {}
+        }
+        if d.secs > d.lasts {
             commands.entity(e).despawn();
         }
     }
@@ -836,7 +996,11 @@ fn hold_weapons(
     let inv = player_inv(&mut game);
     let backpack = inv.equipped.contains_key(&Slot::Backpack);
     let mut want = Vec::new();
-    for slot in [Slot::Primary, Slot::Secondary, Slot::Sidearm, Slot::Melee] {
+    for slot in [Slot::Primary, Slot::Secondary, Slot::Sidearm, Slot::Melee, Slot::FishingRod] {
+        // The rod is hidden unless it's in hand (SetActorHiddenInGame).
+        if slot == Slot::FishingRod && armed.drawn != Some(slot) {
+            continue;
+        }
         let Some(stack) = inv.equipped.get(&slot) else { continue };
         let Some(def) = db.items.get(&stack.item) else { continue };
         let Some(mesh) = def.mesh.clone() else { continue };
@@ -853,7 +1017,7 @@ fn hold_weapons(
             }
         };
         if let Some(socket) = socket {
-            want.push((socket, mesh, stack.item.clone()));
+            want.push((socket, mesh, stack.item.clone(), slot));
         }
     }
     let key: Vec<(String, String)> = want.iter().map(|w| (w.0.clone(), w.2.clone())).collect();
@@ -865,7 +1029,7 @@ fn hold_weapons(
         children.iter_descendants(me).find(|&c| names.get(c).is_ok_and(|n| n.as_str() == bone || n.as_str().strip_prefix(bone).is_some_and(|r| r.starts_with('_') && r[1..].chars().all(|c| c.is_ascii_digit()))))
     };
     let mut spawned = Vec::new();
-    for (socket, mesh, item) in &want {
+    for (socket, mesh, item, slot) in &want {
         // A name that isn't a socket is a bone (UE resolves sockets that way).
         let (bone_name, socket_tf) = match db.sockets.get(socket) {
             Some(s) => (s.bone.as_str(), s.transform.to_transform()),
@@ -875,13 +1039,13 @@ fn hold_weapons(
         let Some(bone) = bone_entity(bone_name) else { return }; // body still loading
         let offset = db.items.get(item).and_then(|d| d.equip.as_ref()).and_then(|e| e.transform).map_or(Transform::IDENTITY, |t| t.to_transform());
         let local = socket_tf * offset;
-        spawned.push((bone, local, mesh.clone()));
+        spawned.push((bone, local, mesh.clone(), *slot));
     }
     for e in &held {
         commands.entity(e).despawn();
     }
-    for (bone, local, mesh) in spawned {
-        let w = commands.spawn((model(&assets, format!("game/{mesh}.glb")), local, HeldWeapon)).id();
+    for (bone, local, mesh, slot) in spawned {
+        let w = commands.spawn((model(&assets, format!("game/{mesh}.glb")), local, HeldWeapon(slot))).id();
         commands.entity(bone).add_child(w);
     }
     *last = key;
@@ -899,7 +1063,8 @@ fn spawn_ammo_box(mut commands: Commands, font: Res<MenuFont>, assets: Res<Asset
         children![
             (
                 Node { align_self: AlignSelf::End, padding: UiRect::axes(Val::Px(10.0), Val::Px(2.0)), ..default() },
-                ImageNode::new(assets.load("game/SurrounDead/Content/UI/Textures/fade-left.png")).with_color(Color::BLACK),
+                // Stretched like the Border's brush (the default mode keeps the texture's aspect).
+                ImageNode::new(assets.load("game/SurrounDead/Content/UI/Textures/fade-left.png")).with_color(Color::BLACK).with_mode(bevy::ui::widget::NodeImageMode::Stretch),
                 children![(label_colored(&font, "", 14.0, grey), AmmoText::Name)],
             ),
             (

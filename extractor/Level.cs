@@ -42,8 +42,25 @@ static class LevelExport
     // per-instance property overrides (SpawnAmount, RespawnMethod, box extent...) as `props`.
     // Lab generators, light switches and lights, other generators: linked by actor refs.
     static bool Powered(string cls) => cls.StartsWith("BP_Laboratory") || cls.Contains("Generator") || cls.Contains("PoliceStation") || cls == "BP_Lever_C";
-    // Actors whose components are moved per instance (ladder points, item spawner points).
-    static bool Placed(string cls) => cls == "BP_Ladder_C" || cls == "BP_SpecialItemContainerSpawner_C" || cls == "BP_Keycard_Spawner_C";
+    // Actors whose components are moved per instance (ladder points, item spawner points, the
+    // military and Shakes & Cones traders' five spawn points).
+    static bool Placed(string cls) => cls == "BP_Ladder_C" || cls == "BP_SpecialItemContainerSpawner_C" || cls == "BP_Keycard_Spawner_C" || cls == "BP_MilitaryTraderSpawner_C" || cls == "BP_ShakesConesSpawner_C";
+    // The map (BP_MapData: its texture, world size and middle) and the POIs on it (BP_POIManager:
+    // the POI struct with its marker image, discovery radius...); asset refs are kept as JSON.
+    static bool Mapped(string cls) => cls == "BP_MapData_C" || cls == "BP_POIManager_C";
+    // Music and ambience (BP_Audio_Area boxes: name, priority, music lists, delays; BP_AudioPoint's
+    // Sound). Box-rooted actors also get their root's BoxExtent when the instance overrides it.
+    static bool Audio(string cls) => cls == "BP_Audio_Area_C" || cls == "BP_AudioPoint_C";
+    // BP_Event_AirdropGoToLocation: its RegionRadius (the sphere airdrop aircraft fly over);
+    // BP_EventManager: its timers and airdrop spawn distance. BP_PrefabSpawner(_Dynamic): its
+    // Prefab class, Chance, PrefabType (level/prefabs.rs).
+    static bool Events(string cls) => cls == "BP_Event_AirdropGoToLocation_C" || cls == "BP_EventManager_C" || cls.StartsWith("BP_PrefabSpawner") || cls == "BP_SettlementManager_C" || cls == "BP_SettlementCampSpawner_C";
+    // Vehicle spawners (VehicleSelection: Enum_VehicleSpawner) and the vehicle trader's.
+    static bool Vehicles(string cls) => cls.StartsWith("BP_Vehicle");
+    // Quest starters: the laptop event manager's Quests pool, BP_StartQuestArea's Quest and box.
+    static bool Quests(string cls) => cls == "BP_LaptopEventManager_C" || cls == "BP_StartQuestArea_C";
+    // Safe zones (BP_EnterSafeZone: its Name and its Sphere's radius) and water wells.
+    static bool Zones(string cls) => cls == "BP_EnterSafeZone_C" || cls == "BP_WaterWell_C" || cls == "BP_CookingStation_C";
 
     public static void WriteActors(IEnumerable<UObject> exports, string outDir)
     {
@@ -55,7 +72,7 @@ static class LevelExport
             string cls = actor.Class?.Name.Text ?? actor.ExportType;
             Dictionary<string, object?>? props = null;
             // Spawners, and the sky/weather actors whose settings drive day/night and weather.
-            if (cls.Contains("AISpawner") || cls.StartsWith("Ultra_Dynamic") || cls.StartsWith("Weather_Override") || cls.StartsWith("UDS_") || cls == "BP_SkySettings_C" || cls.Contains("Door") || Placed(cls) || Powered(cls))
+            if (cls.Contains("AISpawner") || cls.Contains("AISpawningVolume") || cls.StartsWith("Ultra_Dynamic") || cls.StartsWith("Weather_Override") || cls.StartsWith("UDS_") || cls == "BP_SkySettings_C" || cls.Contains("Door") || Placed(cls) || Powered(cls) || Mapped(cls) || Audio(cls) || Events(cls) || Vehicles(cls) || Quests(cls) || Zones(cls))
             {
                 props = new();
                 foreach (var tag in actor.Properties)
@@ -69,8 +86,11 @@ static class LevelExport
                     {
                         // Ladders, item spawners: a component moved on the instance (PlayerPostition,
                         // Spawn1...) as "<Component>.RelativeLocation" (UE cm); absent = the BP template's.
-                        if (Placed(cls) && idx.ResolvedObject?.Load() is USceneComponent sc)
-                            foreach (var p in sc.Properties.Where(p => p.Name.Text is "RelativeLocation" or "RelativeRotation"))
+                        // BP_StartQuestArea's Box: its extent and scale too.
+                        // BP_AISpawningVolume_*'s AI Spawn Volume box: its extent and scale too.
+                        bool volume = cls.Contains("AISpawningVolume");
+                        if ((Placed(cls) || Quests(cls) || volume || Zones(cls)) && idx.ResolvedObject?.Load() is USceneComponent sc)
+                            foreach (var p in sc.Properties.Where(p => p.Name.Text is "RelativeLocation" or "RelativeRotation" || ((Quests(cls) || volume || Zones(cls)) && p.Name.Text is "RelativeScale3D" or "BoxExtent" or "SphereRadius")))
                                 props[$"{tag.Name.Text}.{p.Name.Text}"] = Newtonsoft.Json.Linq.JToken.FromObject(p.Tag?.GenericValue ?? "").ToString(Newtonsoft.Json.Formatting.None);
                         // Class references (SpawnedActorClass); weather actors keep asset refs too.
                         if (idx.Name.EndsWith("_C") || weather) props[tag.Name.Text] = idx.Name;
@@ -82,6 +102,8 @@ static class LevelExport
                     props[tag.Name.Text] = json;
                 }
             }
+            if (props != null && root.ExportType == "BoxComponent" && root.Properties.FirstOrDefault(p => p.Name.Text == "BoxExtent") is { } ext)
+                props["BoxExtent"] = Newtonsoft.Json.Linq.JToken.FromObject(ext.Tag?.GenericValue ?? "").ToString(Newtonsoft.Json.Formatting.None);
             actors.Add(new { @class = cls, name = actor.Name, label = actor.ActorLabel, transform = ToBevy(root.GetAbsoluteTransform().ToMatrixWithScale()), props });
         }
         File.WriteAllText(Path.Combine(outDir, "actors.json"), JsonSerializer.Serialize(actors));
@@ -119,6 +141,33 @@ static class LevelExport
         }
         File.WriteAllText(Path.Combine(outDir, "lights.json"), JsonSerializer.Serialize(lights));
         Console.WriteLine($"lights: {lights.Count}");
+    }
+
+    // Particle emitters in the level (Emitter actors, Blueprint fires, smoke): particles.json
+    //   [ { "owner" (class), "actor", "component", "set", "template"?, "transform": [12 floats], "visible", "auto" } ]
+    // As with lights, only overridden properties are in the map: `set` names them and
+    // gen_particles.py fills the rest (Template, bVisible) from the owner Blueprint's component.
+    public static void Particles(IFileProvider provider, string pkg, string outDir)
+    {
+        var exports = provider.LoadPackage(pkg + ".umap").GetExports().ToList();
+        var list = new List<object>();
+        foreach (var c in exports.OfType<USceneComponent>().Where(e => e.ExportType == "ParticleSystemComponent"))
+        {
+            var owner = c.Outer?.Load() is AActor a ? (a.Class?.Name.Text ?? a.ExportType) : c.Outer?.Name.ToString() ?? "";
+            list.Add(new
+            {
+                owner,
+                actor = c.Outer?.Name.ToString() ?? "",
+                component = c.Name,
+                set = c.Properties.Select(t => t.Name.Text).ToArray(),
+                template = PathOf(c.GetOrDefault<FPackageIndex>("Template")),
+                transform = ToBevy(c.GetAbsoluteTransform().ToMatrixWithScale()),
+                visible = c.GetOrDefault<bool>("bVisible", true) && !c.GetOrDefault<bool>("bHiddenInGame", false),
+                auto = c.GetOrDefault<bool>("bAutoActivate", true),
+            });
+        }
+        File.WriteAllText(Path.Combine(outDir, "particles.json"), JsonSerializer.Serialize(list));
+        Console.WriteLine($"particles: {list.Count}");
     }
 
     public static void Actors(IFileProvider provider, string pkg, string outDir)
@@ -168,15 +217,46 @@ static class LevelExport
     static bool Hidden(UObject o) =>
         o.GetOrDefault("bHiddenInGame", false) || !o.GetOrDefault("bVisible", true);
 
-    public static void Run(IFileProvider provider, string pkg, string outDir)
+    // The physical surface an instanced component's BodyInstance override gives its instances
+    // (DefaultEngine.ini: SurfaceType16 = Tree, SurfaceType17 = Stone). BP_MeleePickup's hit
+    // switch turns a Tree / Stone instance into BP_HarvestableObject_Tree / _Rocks.
+    static string? HarvestSurface(UObject comp)
     {
-        Directory.CreateDirectory(outDir);
-        var exports = provider.LoadPackage(pkg + ".umap").GetExports().ToList();
+        var body = comp.GetOrDefault<CUE4Parse.UE4.Assets.Objects.FStructFallback>("BodyInstance");
+        // The melee sphere traces run on TraceTypeQuery6 = the Weapons channel; the swamp reeds
+        // (PhysMat_Tree too) ignore it, so swings pass through them.
+        if (body == null || body.GetOrDefault<FName>("CollisionEnabled").Text.EndsWith("NoCollision")) return null;
+        var responses = body.GetOrDefault<CUE4Parse.UE4.Assets.Objects.FStructFallback>("CollisionResponses")
+            ?.GetOrDefault<CUE4Parse.UE4.Assets.Objects.FStructFallback[]>("ResponseArray") ?? [];
+        if (responses.Any(r => r.GetOrDefault<FName>("Channel").Text == "Weapons" && r.GetOrDefault<FName>("Response").Text.EndsWith("ECR_Ignore"))) return null;
+        var pm = body?.GetOrDefault<FPackageIndex>("PhysMaterialOverride")?.ResolvedObject?.Load();
+        var surface = pm?.GetOrDefault<FName>("SurfaceType").Text ?? "";
+        return surface.EndsWith("SurfaceType16") ? "tree" : surface.EndsWith("SurfaceType17") ? "stone" : null;
+    }
 
+    // harvest.json  { "tree": { "<mesh>": [placement indices] }, "stone": { ... }, "trash": { ... } }: the
+    // placements (by their index in placements.json's list for the mesh) that are harvestable.
+    // `SdExport levelharvest <out> <umap>` rewrites just this file.
+    public static void Harvest(IFileProvider provider, string outDir, string pkg)
+    {
+        var exports = provider.LoadPackage(pkg + ".umap").GetExports().ToList();
+        var (_, _, harvest, _) = Collect(exports);
+        File.WriteAllText(Path.Combine(outDir, "harvest.json"), JsonSerializer.Serialize(harvest));
+        Console.WriteLine($"harvest: {string.Join(", ", harvest.Select(kv => $"{kv.Value.Values.Sum(l => l.Count)} {kv.Key}"))}");
+    }
+
+    static (Dictionary<string, List<float[]>>, List<object>, Dictionary<string, Dictionary<string, List<int>>>, int) Collect(List<UObject> exports)
+    {
         var placements = new Dictionary<string, List<float[]>>();
-        void Add(string mesh, FTransform t)
+        var harvest = new Dictionary<string, Dictionary<string, List<int>>> { ["tree"] = new(), ["stone"] = new(), ["trash"] = new() };
+        void Add(string mesh, FTransform t, string? surface = null)
         {
             if (!placements.TryGetValue(mesh, out var list)) placements[mesh] = list = new();
+            if (surface != null)
+            {
+                if (!harvest[surface].TryGetValue(mesh, out var h)) harvest[surface][mesh] = h = new();
+                h.Add(list.Count);
+            }
             list.Add(ToBevy(t.ToMatrixWithScale()));
         }
 
@@ -210,12 +290,14 @@ static class LevelExport
                 }
                 else if (comp is UInstancedStaticMeshComponent ism)
                 {
+                    var surface = HarvestSurface(ism);
                     foreach (var inst in ism.GetInstances() ?? Array.Empty<FInstancedStaticMeshInstanceData>())
-                        Add(mesh, inst.TransformData * world);
+                        Add(mesh, inst.TransformData * world, surface);
                 }
                 else
                 {
-                    Add(mesh, world);
+                    // TrashObject's mesh: a pile melee breaks for Scrap Metal (gameplay::harvest).
+                    Add(mesh, world, comp.Outer?.Class?.Name == "TrashObject_C" ? "trash" : null);
                 }
             }
             catch (Exception e)
@@ -223,7 +305,16 @@ static class LevelExport
                 Console.Error.WriteLine($"component {comp.Name}: {e.Message}");
             }
         }
+        return (placements, splines, harvest, skipped);
+    }
+
+    public static void Run(IFileProvider provider, string pkg, string outDir)
+    {
+        Directory.CreateDirectory(outDir);
+        var exports = provider.LoadPackage(pkg + ".umap").GetExports().ToList();
+        var (placements, splines, harvest, skipped) = Collect(exports);
         File.WriteAllText(Path.Combine(outDir, "placements.json"), JsonSerializer.Serialize(placements));
+        File.WriteAllText(Path.Combine(outDir, "harvest.json"), JsonSerializer.Serialize(harvest));
         File.WriteAllText(Path.Combine(outDir, "splines.json"), JsonSerializer.Serialize(splines));
         Console.WriteLine($"spline meshes: {splines.Count}");
         Console.WriteLine($"placements: {placements.Count} meshes, {placements.Values.Sum(l => l.Count)} instances ({skipped} hidden skipped)");

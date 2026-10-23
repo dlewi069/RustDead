@@ -91,6 +91,9 @@ pub struct ItemDef {
     pub context: Vec<String>,
     #[serde(default = "one")]
     pub swing_speed: f32,
+    /// Melee weapons: what their swings harvest ("tree", "rock"; `gameplay::harvest`).
+    #[serde(default)]
+    pub harvests: Vec<String>,
     #[serde(default = "one")]
     pub reload_speed: f32,
 }
@@ -127,6 +130,12 @@ pub struct FirearmData {
     /// `ResetRecoilDivider`: the reset takes back kick / this.
     #[serde(default)]
     pub reset_recoil_divider: f32,
+    /// MuzzleFlash: the particle system Svr_WeaponEffects plays at the Muzzle socket.
+    #[serde(default)]
+    pub muzzle_flash: Option<String>,
+    /// BrassType: the shell SpawnEmitterAtLocation drops at the ejection port.
+    #[serde(default)]
+    pub brass: Option<String>,
     /// FirearmSound: the shot's SoundCue.
     #[serde(default)]
     pub sound: Option<String>,
@@ -270,6 +279,16 @@ pub struct ContainerDef {
     /// Its StaticMesh component's mesh (drawn for containers spawned at runtime).
     #[serde(default)]
     pub mesh: Option<String>,
+    /// Airdrop crates: their map marker's title and colour.
+    #[serde(default)]
+    pub airdrop: Option<AirdropInfo>,
+}
+
+/// Master_AirdropContainer's `Text` and `Color` (its BP_Marker's title and tint).
+#[derive(Deserialize, Clone, Debug)]
+pub struct AirdropInfo {
+    pub title: String,
+    pub color: [f32; 3],
 }
 
 /// A `Struct_ItemsToCraft` row of `DT_CraftingTableTypes`.
@@ -315,7 +334,7 @@ impl ItemDb {
         self.roll_rows(self.unique_loot.get(set).map(Vec::as_slice).unwrap_or_default(), rng)
     }
 
-    fn roll_rows(&self, rows: &[LootRow], rng: &mut impl Rng) -> Vec<Stack> {
+    pub fn roll_rows(&self, rows: &[LootRow], rng: &mut impl Rng) -> Vec<Stack> {
         let mut out = Vec::new();
         for row in rows {
             if !self.items.contains_key(&row.item) || rng.gen_range(0.0..100.0) >= row.chance {
@@ -392,6 +411,10 @@ pub struct Stack {
     /// Durability left (weapons); `None` is the item's full `MaxDurability`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub durability: Option<f32>,
+    /// RepItemInfo.Price when it isn't the item's own: a trader that resells an item it bought
+    /// prices it with its attachments' (SetVendorPriceOfSoldItem). `None` is the item's price.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub price: Option<f32>,
 }
 
 fn is_zero(n: &u32) -> bool {
@@ -593,6 +616,7 @@ mod tests {
             reduce_durability: 0.0,
             context: Vec::new(),
             swing_speed: 1.0,
+            harvests: Vec::new(),
             reload_speed: 1.0,
             armor: false,
             flashlight_intensity: 0.0,

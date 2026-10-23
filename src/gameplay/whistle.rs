@@ -22,7 +22,7 @@ pub struct Whistle(pub Option<f32>);
 pub fn plugin(app: &mut App) {
     app.init_resource::<Whistle>()
         .add_systems(OnEnter(AppState::InGame), |mut w: ResMut<Whistle>| w.0 = None)
-        .add_systems(Update, whistle.run_if(in_state(AppState::InGame)).run_if(in_state(MenuScreen::None)).run_if(super::player_in_control));
+        .add_systems(Update, whistle.run_if(in_state(AppState::InGame)).run_if(in_state(MenuScreen::None)).run_if(super::on_foot));
 }
 
 /// The noise's range: 40 m, 15 m crouched.

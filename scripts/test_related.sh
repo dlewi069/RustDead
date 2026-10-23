@@ -36,6 +36,7 @@ for f in "${files[@]}"; do
             ;;
         assets/data/items.json) add gameplay::items:: gameplay::equipment:: gameplay::inventory_ui:: gameplay::combat:: gameplay::lockpick:: ; python=1 ;;
         assets/data/menus.json) add menus:: models:: gameplay::daynight:: ; python=1 ;;
+        assets/data/quests.json) add gameplay::quests:: gameplay::journal:: ; python=1 ;;
         assets/game/*) add models:: level:: ; python=1 ;;
         extractor/*.py|scripts/*.py) python=1 ;;
         extractor/*.cs|extractor/*.csproj) dotnet=1 ;;

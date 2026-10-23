@@ -11,6 +11,11 @@
 //!   count as spawned and alive, as in the BP.
 //! - Kills respawn after `Difficulty.AIRespawnTimer` seconds: one actor per kill
 //!   (`EachIndividually`, the default) or the whole group once all are dead.
+//! - The human AI's spawning volumes (BP_AISpawningVolume_Prefab in prefabs and quests, the
+//!   level's 69 BP_AISpawningVolume_RandomChanceToSpawn) run on the same spawner, one group per
+//!   `Spawning AI` element ([`SpawnerDef::human_volume`], [`SpawnerDef::random_chance`]); a
+//!   random-chance volume is only there when its BeginPlay roll (RandomSpawn: 0-100 <= Chance)
+//!   comes up.
 
 use std::collections::{HashMap, VecDeque};
 
@@ -102,22 +107,141 @@ pub struct SpawnerDef {
     pub skip_meshes: bool,
     /// `UseSpecifiedSpawnPoints`: box-local (UE cm) positions and UE yaw in degrees.
     pub points: Vec<(Vec3, f32)>,
+    /// Tries at a spawn point before the spawn is given up (the volumes' Spawn Retries + 1).
+    pub retries: u32,
+    /// The volumes' UniqueLoot: DT_UniqueLoot sets added to each spawned AI's loot.
+    pub unique: Vec<String>,
 }
 
+/// BP_AISpawningVolume_Prefab's AI Spawn Volume (BoxExtent 1000 x 1000 x 200 cm), SpawnRadius
+/// (14000 cm) and InitialSpawnDelay (2 s).
+const VOLUME_EXTENT: Vec3 = Vec3::new(10.0, 10.0, 2.0);
+const VOLUME_RADIUS: f32 = 140.0;
+const VOLUME_DELAY: f32 = 2.0;
+/// The volumes' Spawn Retries (9): a spawn tries this many points.
+const VOLUME_RETRIES: u32 = 10;
+/// BP_AISpawningVolume_RandomChanceToSpawn's AI Spawn Volume (BoxExtent 1000 x 1000 x 64 cm,
+/// 64.5 cm up), SpawnRadius (14000 cm), InitialSpawnDelay (8 s) and TraceForPlayer's 2000 cm.
+const RANDOM_BOX_EXTENT: Vec3 = Vec3::new(1000.0, 1000.0, 64.0);
+const RANDOM_BOX_OFFSET: Vec3 = Vec3::new(0.0, 0.0, 64.5);
+const RANDOM_RADIUS: f32 = 14000.0;
+const RANDOM_DELAY: f32 = 8.0;
+const NO_SPAWN_NEAR: f32 = 20.0;
+/// Spawner indices of the random-chance volumes' groups: this + actor index x 8 + element.
+pub const RANDOM_VOLUME_KEYS: usize = 1 << 22;
+
 impl SpawnerDef {
+    /// One element of a BP_AISpawningVolume_Prefab's `Spawning AI` (AICharacter, SpawnCount) at
+    /// the volume's transform: SpawnCount of them in its box once the survivor comes within
+    /// SpawnRadius, each respawning on the AI respawn timer.
+    pub fn human_volume(kind: ZombieKind, t: &Transform, count: u32) -> Self {
+        let (scale, rot, pos) = (t.scale, t.rotation, t.translation);
+        Self {
+            kind,
+            multiplier_row: "",
+            pos,
+            axes: [rot * Vec3::X, rot * Vec3::Z, rot * Vec3::Y],
+            extent: VOLUME_EXTENT * Vec3::new(scale.x, scale.z, scale.y),
+            radius: VOLUME_RADIUS,
+            amount: count,
+            randomised: false,
+            initial_delay: VOLUME_DELAY,
+            interval: 0.5,
+            no_spawn_near_player: 0.0,
+            respawn: RespawnMethod::EachIndividually,
+            // Camps are built of props: the AI stands on them.
+            skip_meshes: true,
+            points: Vec::new(),
+            retries: VOLUME_RETRIES,
+            unique: Vec::new(),
+        }
+    }
+
+    /// A level BP_AISpawningVolume_RandomChanceToSpawn: its `Chance` (%) and one group per
+    /// `Spawning AI` element, as [`human_volume`](Self::human_volume) with the instance's AI
+    /// Spawn Volume box, SpawnRadius and UniqueLoot. It never respawns (`Respawn AI` is off), it
+    /// waits InitialSpawnDelay (8 s), a spawn may land on its `Floors` (otherwise only on the
+    /// landscape) and never within 20 m of the survivor (TraceForPlayer) unless SkipPlayerCheck?.
+    pub fn random_chance(a: &ActorInfo) -> Option<(f32, Vec<Self>)> {
+        if a.class != "BP_AISpawningVolume_RandomChanceToSpawn_C" {
+            return None;
+        }
+        let empty = HashMap::new();
+        let props = a.props.as_ref().unwrap_or(&empty);
+        let num = |k: &str, d: f32| props.get(k).and_then(|v| v.trim_matches('"').parse::<f32>().ok()).unwrap_or(d);
+        let vec = |k: &str, d: Vec3| {
+            props.get(k).and_then(|j| serde_json::from_str::<serde_json::Value>(j).ok()).map_or(d, |v| {
+                let f = |c: &str, d: f32| v.get(c).and_then(|x| x.as_f64()).map_or(d, |x| x as f32);
+                Vec3::new(f("X", d.x), f("Y", d.y), f("Z", d.z))
+            })
+        };
+        let elements = crate::level::prefabs::spawning_ai(props.get("Spawning AI")?);
+        let t = crate::level::affine(&a.transform);
+        // The box component sits at its RelativeLocation on the root.
+        let rel = vec("AI Spawn Volume.RelativeLocation", RANDOM_BOX_OFFSET);
+        let at = t.transform_point(Vec3::new(rel.x, rel.z, rel.y) / 100.0);
+        let extent = vec("AI Spawn Volume.BoxExtent", RANDOM_BOX_EXTENT);
+        let floors = props.get("Floors").is_some_and(|f| f.contains("ObjectName"));
+        let player_check = props.get("SkipPlayerCheck?").is_none_or(|v| v != "true");
+        let unique = props.get("UniqueLoot").and_then(|u| serde_json::from_str::<Vec<String>>(u).ok()).unwrap_or_default();
+        let defs = elements
+            .into_iter()
+            .map(|(kind, count)| {
+                let mut d = Self::human_volume(kind, &Transform { translation: at, ..t }, count);
+                d.extent = extent / 100.0 * Vec3::new(t.scale.x, t.scale.z, t.scale.y);
+                d.radius = num("SpawnRadius", RANDOM_RADIUS) / 100.0;
+                d.initial_delay = RANDOM_DELAY;
+                d.respawn = RespawnMethod::None;
+                d.skip_meshes = floors;
+                d.no_spawn_near_player = if player_check { NO_SPAWN_NEAR } else { 0.0 };
+                d.unique = unique.clone();
+                d
+            })
+            .collect();
+        Some((num("Chance", 100.0), defs))
+    }
+
+    /// A BP_AISpawner_SettlementSurvivors (the master spawner with SpawnType 3) and the class it
+    /// spawns (BP_RandomCivilian_Male / _Female: `gameplay::civilians`, not zombie classes).
+    /// SkipPlayerCheck? turns TraceForPlayer off.
+    pub fn settlers(a: &ActorInfo) -> Option<(String, Self)> {
+        if a.class != "BP_AISpawner_SettlementSurvivors_C" {
+            return None;
+        }
+        let empty = HashMap::new();
+        let props = a.props.as_ref().unwrap_or(&empty);
+        let class = props.get("SpawnedActorClass")?.trim_matches('"').to_string();
+        let mut def = Self::build(a, ZombieKind::default(), 3, 12500.0, 5.0);
+        if props.get("SkipPlayerCheck?").is_some_and(|v| v == "true") {
+            def.no_spawn_near_player = 0.0;
+        }
+        Some((class, def))
+    }
+
     pub fn from_actor(a: &ActorInfo) -> Option<Self> {
-        // Animal, boss and settlement spawners aren't handled yet.
-        let (default_type, default_radius) = match a.class.as_str() {
-            // BP_AISpawner_Zombies overrides the master's SpawnRadius 12500; the hounds' doesn't.
-            "BP_AISpawner_Zombies_C" => (0, 14000.0),
-            "BP_AISpawner_ZombieHounds_C" => (1, 12500.0),
+        // (The settlement survivors' spawners: `settlers`.)
+        let (default_type, default_radius, default_amount) = match a.class.as_str() {
+            // BP_AISpawner_Zombies overrides the master's SpawnRadius 12500; the hounds' and the
+            // animals' don't (BP_AISpawner_Animals: SpawnType NewEnumerator4). The bosses'
+            // spawns one (SpawnAmount 1, SpawnType NewEnumerator2).
+            "BP_AISpawner_Zombies_C" => (0, 14000.0, 5.0),
+            "BP_AISpawner_ZombieHounds_C" => (1, 12500.0, 5.0),
+            "BP_AISpawner_ZombieBosses_C" => (2, 12500.0, 1.0),
+            "BP_AISpawner_Animals_C" => (4, 12500.0, 5.0),
             _ => return None,
         };
         let empty = HashMap::new();
         let props = a.props.as_ref().unwrap_or(&empty);
         // No SpawnedActorClass: InitSpawner's IsValidClass fails and it never spawns. Classes
-        // without data (the bosses) are skipped too.
+        // without data are skipped too.
         let kind = ZombieKind::from_class(props.get("SpawnedActorClass")?.trim_matches('"'))?;
+        Some(Self::build(a, kind, default_type, default_radius, default_amount))
+    }
+
+    /// The master spawner's settings over the subclass's defaults and the instance's overrides.
+    fn build(a: &ActorInfo, kind: ZombieKind, default_type: u8, default_radius: f32, default_amount: f32) -> Self {
+        let empty = HashMap::new();
+        let props = a.props.as_ref().unwrap_or(&empty);
         let spawn_type = props
             .get("SpawnType")
             .and_then(|v| v.trim_matches('"').rsplit("NewEnumerator").next()?.parse::<u8>().ok())
@@ -125,6 +249,9 @@ impl SpawnerDef {
         let multiplier_row = match spawn_type {
             1 => "ZOMBIE HOUND SPAWN AMOUNT MULTIPLIER",
             2 => "ZOMBIE BOSS SPAWN AMOUNT MULTIPLIER",
+            // GetCVarType: 3 Difficulty.SettlementSurvivorAmount (no menu row: 1), 4 Difficulty.AnimalAmount.
+            3 => "",
+            4 => "ANIMAL SPAWN AMOUNT MULTIPLIER",
             _ => "ZOMBIE SPAWN AMOUNT MULTIPLIER",
         };
         let t = &a.transform;
@@ -143,7 +270,7 @@ impl SpawnerDef {
         } else {
             Vec::new()
         };
-        Some(Self {
+        Self {
             kind,
             multiplier_row,
             pos: a.position(),
@@ -154,7 +281,7 @@ impl SpawnerDef {
                 num("Box Extent Z", 200.0) * c1.length(),
             ) / 100.0,
             radius: num("SpawnRadius", default_radius) / 100.0,
-            amount: num("SpawnAmount", 5.0).max(0.0) as u32,
+            amount: num("SpawnAmount", default_amount).max(0.0) as u32,
             randomised: flag("RandomisedSpawnCount", true),
             initial_delay: num("InitialSpawnDelay", 9.0),
             interval: num("SpawningInterval", 0.5),
@@ -162,7 +289,9 @@ impl SpawnerDef {
             respawn,
             skip_meshes: flag("SkipMeshes?", false),
             points,
-        })
+            retries: 1,
+            unique: Vec::new(),
+        }
     }
 
     /// Box-local UE centimetres to world metres.
@@ -226,6 +355,10 @@ pub struct SpawnerRuntime {
 }
 
 impl SpawnerRuntime {
+    pub fn started(&self) -> bool {
+        self.started
+    }
+
     pub fn begin(&mut self, def: &SpawnerDef, multiplier: f32, rng: &mut impl Rng) {
         // `multiplier`: the difficulty row for `def.kind` (ZombieKind::spawn_multiplier).
         self.started = true;
@@ -308,6 +441,33 @@ pub struct Spawners {
     loaded: bool,
 }
 
+impl Spawners {
+    /// A spawner that came with a prefab (`prefabs::SPAWNER_KEYS` and up).
+    pub fn add(&mut self, index: usize, def: SpawnerDef) {
+        self.defs.push((index, def));
+    }
+
+    /// A spawner taken away (a quest's volume when the quest is forgotten).
+    pub fn remove(&mut self, index: usize) {
+        self.defs.retain(|d| d.0 != index);
+        self.runtime.remove(&index);
+    }
+
+    pub fn has(&self, index: usize) -> bool {
+        self.defs.iter().any(|d| d.0 == index)
+    }
+
+    /// The UniqueLoot sets a spawner adds to what it spawns.
+    pub fn unique(&self, index: usize) -> &[String] {
+        self.defs.iter().find(|d| d.0 == index).map_or(&[], |d| d.1.unique.as_slice())
+    }
+
+    /// The spawner groups (index, settings).
+    pub fn defs(&self) -> impl Iterator<Item = &(usize, SpawnerDef)> {
+        self.defs.iter()
+    }
+}
+
 fn difficulty(store: &SettingsStore, label: &str, default: f32) -> f32 {
     match store.find(&crate::menus::settings::row_key("difficulty", "AI", label)) {
         Some(crate::menus::settings::Value::Num(v)) => v,
@@ -318,7 +478,7 @@ fn difficulty(store: &SettingsStore, label: &str, default: f32) -> f32 {
 /// `ProjectLocation`: trace down 2.5x the box's half height from `top`. The landscape (or any
 /// surface when `SkipMeshes?`) is a hit; landing on a prop otherwise fails the spawn. The BP adds
 /// `ProjectionZOffset` (1 m) for the capsule centre; our characters stand on their feet.
-fn project(def: &SpawnerDef, top: Vec3, terrain: &Terrain, prop_floor: Option<f32>) -> Option<Vec3> {
+pub(crate) fn project(def: &SpawnerDef, top: Vec3, terrain: &Terrain, prop_floor: Option<f32>) -> Option<Vec3> {
     let bottom = top.y - def.extent.z * 2.5;
     let ground = terrain.height(top.x, top.z);
     let land = (ground >= bottom && ground <= top.y).then_some(ground);
@@ -349,7 +509,23 @@ pub(super) fn run_spawners(
     let s = &mut *spawners;
     if !s.loaded {
         s.loaded = true;
-        s.defs = level.actors.iter().enumerate().filter_map(|(i, a)| SpawnerDef::from_actor(a).map(|d| (i, d))).collect();
+        // (Prefabs' spawners may have been added first: `Spawners::add`.)
+        s.defs.extend(level.actors.iter().enumerate().filter_map(|(i, a)| SpawnerDef::from_actor(a).map(|d| (i, d))));
+        // RandomSpawn at BeginPlay: RandomFloatInRange(0, 100) <= Chance, else the volume is destroyed.
+        let mut rng = rand::thread_rng();
+        let (mut volumes, mut groups) = (0, 0);
+        for (i, a) in level.actors.iter().enumerate() {
+            let Some((chance, defs)) = SpawnerDef::random_chance(a) else { continue };
+            if rng.gen_range(0.0..100.0) > chance {
+                continue;
+            }
+            volumes += 1;
+            for (k, d) in defs.into_iter().enumerate().take(8) {
+                s.defs.push((RANDOM_VOLUME_KEYS + i * 8 + k, d));
+                groups += 1;
+            }
+        }
+        info!("random-chance AI volumes: {volumes} rolled in ({groups} groups)");
     }
     let dt = time.delta_secs();
     s.clock += dt as f64;
@@ -381,10 +557,14 @@ pub(super) fn run_spawners(
         for _ in 0..attempts {
             let (at, yaw) = if def.points.is_empty() {
                 let e = def.extent * 100.0;
-                let local = Vec3::new(rng.gen_range(-e.x..=e.x), rng.gen_range(-e.y..=e.y), e.z);
-                let top = def.local_to_world(local);
-                let prop = streaming.as_ref().and_then(|st| cache.prop_floor(&level, st, &meshes, top.xz(), (top.y - def.extent.z * 2.5, top.y)));
-                let Some(at) = project(def, top, &terrain, prop) else { continue };
+                // Spawn Location Trace: up to Spawn Retries more points when one misses.
+                let found = (0..def.retries.max(1)).find_map(|_| {
+                    let local = Vec3::new(rng.gen_range(-e.x..=e.x), rng.gen_range(-e.y..=e.y), e.z);
+                    let top = def.local_to_world(local);
+                    let prop = streaming.as_ref().and_then(|st| cache.prop_floor(&level, st, &meshes, top.xz(), (top.y - def.extent.z * 2.5, top.y)));
+                    project(def, top, &terrain, prop)
+                });
+                let Some(at) = found else { continue };
                 (at, rng.gen_range(0.0..std::f32::consts::TAU))
             } else {
                 // GetSpawnPointAtIndex(TotalSpawned % SpawnAmount), random when out of range.
@@ -462,6 +642,37 @@ mod tests {
     }
 
     #[test]
+    fn random_chance_volumes_read_their_instance() {
+        if crate::gameplay::zombies::zombie_classes().iter().all(|(n, _)| n != "BP_MasterTrader_C") {
+            return;
+        }
+        let ai = r#"[{"AICharacter_8":{"ObjectName":"BlueprintGeneratedClass'BP_Bandit_Melee_C'"},"SpawnCount_5":2},{"AICharacter_8":{"ObjectName":"BlueprintGeneratedClass'BP_MasterTrader_C'"},"SpawnCount_5":1},{"AICharacter_8":{"ObjectName":"BlueprintGeneratedClass'BP_Scavenger_Dog_C'"},"SpawnCount_5":1}]"#;
+        let props: HashMap<String, String> = [
+            ("Spawning AI", ai),
+            ("Chance", "25.0"),
+            ("AI Spawn Volume.BoxExtent", r#"{"X":250.0,"Y":500.0,"Z":64.0}"#),
+            ("SpawnRadius", "3500.0"),
+            ("UniqueLoot", r#"["BanditSet"]"#),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v.to_string()))
+        .collect();
+        let a = ActorInfo { class: "BP_AISpawningVolume_RandomChanceToSpawn_C".into(), name: "v".into(), transform: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 10.0, 0.0, 20.0], props: Some(props) };
+        let (chance, defs) = SpawnerDef::random_chance(&a).unwrap();
+        assert_eq!(chance, 25.0);
+        // The dog isn't ported; the bandits and the trader are a group each.
+        assert_eq!(defs.iter().map(|d| (d.kind.class_name(), d.amount)).collect::<Vec<_>>(), [("BP_Bandit_Melee_C", 2), ("BP_MasterTrader_C", 1)]);
+        let d = &defs[0];
+        // UE X/Y/Z half extents in m; the box 64.5 cm up; never respawning; 20 m from the player.
+        assert_eq!((d.extent, d.radius, d.initial_delay, d.respawn), (Vec3::new(2.5, 5.0, 0.64), 35.0, 8.0, RespawnMethod::None));
+        assert!((d.pos - Vec3::new(10.0, 0.645, 20.0)).length() < 1e-4, "{}", d.pos);
+        assert_eq!((d.no_spawn_near_player, d.skip_meshes, d.retries), (20.0, false, 10));
+        assert_eq!(d.unique, ["BanditSet"]);
+        // Other classes aren't volumes.
+        assert!(SpawnerDef::random_chance(&actor(&[])).is_none());
+    }
+
+    #[test]
     fn spawned_class_and_spawn_type_come_from_the_instance() {
         if crate::gameplay::zombies::zombie_classes().is_empty() {
             return;
@@ -472,11 +683,11 @@ mod tests {
         // A zombie spawner set to hounds (as 9 in the map are) uses the hound row.
         let dogs = SpawnerDef::from_actor(&actor(&[("SpawnedActorClass", "BP_Zombie_Dog_C"), ("SpawnType", "\"Enum_SpawnType::NewEnumerator1\"")])).unwrap();
         assert_eq!((dogs.kind, dogs.multiplier_row), (ZombieKind::hound(), "ZOMBIE HOUND SPAWN AMOUNT MULTIPLIER"));
-        // No class: IsValidClass fails, nothing spawns. Bosses have no data yet.
+        // No class: IsValidClass fails, nothing spawns.
         let mut none = actor(&[]);
         none.props.as_mut().unwrap().remove("SpawnedActorClass");
         assert!(SpawnerDef::from_actor(&none).is_none());
-        assert!(SpawnerDef::from_actor(&actor(&[("SpawnedActorClass", "BP_ZombieBoss_Military_C")])).is_none());
+        assert!(SpawnerDef::from_actor(&actor(&[("SpawnedActorClass", "BP_NoSuchZombie_C")])).is_none());
     }
 
     #[test]
@@ -491,8 +702,36 @@ mod tests {
         hound.class = "BP_AISpawner_ZombieHounds_C".into();
         let h = SpawnerDef::from_actor(&hound).unwrap();
         assert_eq!((h.radius, h.multiplier_row), (125.0, "ZOMBIE HOUND SPAWN AMOUNT MULTIPLIER"), "hounds keep the master's radius");
-        hound.class = "BP_AISpawner_ZombieBosses_C".into();
+        hound.class = "BP_AISpawner_SettlementSurvivors_C".into();
         assert!(SpawnerDef::from_actor(&hound).is_none());
+    }
+
+    #[test]
+    fn boss_spawners_place_one_boss() {
+        if crate::gameplay::zombies::ZombieKind::from_class("BP_ZombieBoss_Military_Small_C").is_none() {
+            return;
+        }
+        // As the level's BP_AISpawner_ZombieBosses_C_17 is set.
+        let mut boss = actor(&[("SpawnedActorClass", "BP_ZombieBoss_Military_Small_C"), ("SpawnRadius", "2500.0"), ("DontSpawnCloseToPlayerRange", "500.0")]);
+        boss.class = "BP_AISpawner_ZombieBosses_C".into();
+        let d = SpawnerDef::from_actor(&boss).unwrap();
+        assert_eq!((d.amount, d.radius, d.no_spawn_near_player, d.multiplier_row), (1, 25.0, 5.0, "ZOMBIE BOSS SPAWN AMOUNT MULTIPLIER"));
+        assert!(d.kind.boss().is_some());
+        // SetSpawnCount leaves a single spawn alone; the multiplier then truncates (0.5 -> none).
+        let mut rng = rand::thread_rng();
+        assert_eq!((spawn_count(1, true, 1.0, &mut rng), spawn_count(1, true, 0.5, &mut rng), spawn_count(1, true, 2.0, &mut rng)), (1, 0, 2));
+    }
+
+    #[test]
+    fn animal_spawners_use_the_animal_multiplier() {
+        if crate::gameplay::zombies::ZombieKind::from_class("BP_AnimalDeer_C").is_none() {
+            return;
+        }
+        let mut deer = actor(&[("SpawnedActorClass", "BP_AnimalDeer_C")]);
+        deer.class = "BP_AISpawner_Animals_C".into();
+        let d = SpawnerDef::from_actor(&deer).unwrap();
+        assert_eq!((d.multiplier_row, d.radius), ("ANIMAL SPAWN AMOUNT MULTIPLIER", 125.0));
+        assert!(d.kind.animal().is_some());
     }
 
     #[test]

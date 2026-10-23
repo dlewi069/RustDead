@@ -227,6 +227,14 @@ def weapon_speeds(p):
     return c.get("SwingSpeed", 1.0), c.get("ReloadBaseSpeed", 1.0)
 
 
+def harvests(p):
+    """What a melee weapon's swings harvest (BP_WeaponsPickupComponent's CanDamageTree? /
+    CanDamageRock? / CanDamageTrashObjects?, read by BP_MeleePickup.HitFoliageTree / HitFoliageRock /
+    HitTrashObject)."""
+    c = weapon_component(p) or {}
+    return [k for k, flag in (("tree", "CanDamageTree?"), ("rock", "CanDamageRock?"), ("trash", "CanDamageTrashObjects?")) if c.get(flag)]
+
+
 def firearm(p):
     """What BP_FirearmPickup's firing reads off the weapon component."""
     c = weapon_component(p)
@@ -253,6 +261,11 @@ def firearm(p):
         "sound": pkg_name(c.get("FirearmSound")),
         "suppressed_sound": pkg_name(c.get("FirearmSuppressedSound")),
         "chamber_sound": pkg_name(c.get("FirearmChamberSound")),
+        # Svr_WeaponEffects' particle system at the Muzzle socket (SuppressedMuzzleFlash with a
+        # suppressor), and the shell SpawnEmitterAtLocation drops at the ejection port.
+        "muzzle_flash": pkg_name(c.get("MuzzleFlash")),
+        "suppressed_muzzle_flash": pkg_name(c.get("SuppressedMuzzleFlash")),
+        "brass": pkg_name(c.get("BrassType")),
     }
 
 
@@ -348,6 +361,7 @@ def main():
                 # ContextMenuOptions (Jig.Context.*): what the right-click menu offers ("ReadBook"...).
                 "context": [str(t).rsplit(".", 1)[-1] for t in p.get("ContextMenuOptions") or []],
                 "swing_speed": weapon_speeds(p)[0],
+                "harvests": harvests(p),
                 "reload_speed": weapon_speeds(p)[1],
                 "firearm": firearm(p) if (p.get("Type") or {}).get("TagName", "").endswith(("MainFirearm", "Sidearm")) else None,
                 "equip": equip(p),
@@ -446,6 +460,22 @@ def main():
             # ChanceToProduceNoise (%): Quick Search's per-0.075 s roll for a 40 m noise.
             "noise": (inherited(name, "ChanceToProduceNoise") or 10.0) if is_a(name, "BP_LootContainer_C") else 0.0,
             "mesh": classes[name]["mesh"],
+        }
+
+    # Airdrop crates (Master_AirdropContainer's children, dropped by AirdropAircraft): held 6 s,
+    # opened as "Airdrop" (AddJigWidgetToContent's title), their map marker's title and colour.
+    for name in classes:
+        if not is_a(name, "Master_AirdropContainer_C") or name == "Master_AirdropContainer_C":
+            continue
+        colour = inherited(name, "Color") or {}
+        containers[name] = {
+            "name": "Airdrop",
+            "table": enum.get(inherited(name, "LootTable") or "Enum_ContainerLootTables::NewEnumerator0"),
+            "hold": inherited(name, "DurationToHold") or 6.0,
+            "lockpick": False,
+            "noise": inherited(name, "ChanceToProduceNoise") or 10.0,
+            "mesh": classes[name]["mesh"] or classes.get(classes[name]["super"], {}).get("mesh"),
+            "airdrop": {"title": inherited(name, "Text") or "Airdrop", "color": [colour.get("R", 1.0), colour.get("G", 1.0), colour.get("B", 1.0)]},
         }
 
     # DT_CraftingTableTypes: one row per crafting UI ("Player" is the inventory's CRAFTING tab,

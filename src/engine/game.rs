@@ -39,6 +39,30 @@ pub struct GameState {
     /// TechTreeComponent: the unlocked tech tree skills.
     #[serde(default)]
     pub tech: crate::progression::tech::TechTree,
+    /// BP_POIManager's Explored? (by actor name): discovered POIs, shown on the map.
+    #[serde(default)]
+    pub pois_explored: std::collections::BTreeSet<String>,
+    /// The player's map markers (BP_PlayerMarker actors).
+    #[serde(default)]
+    pub map_markers: Vec<crate::gameplay::markers::PlayerMarker>,
+    /// BP_PlayerController's journal stats (kills, days survived, distance travelled).
+    #[serde(default)]
+    pub stats: crate::gameplay::stats::JournalStats,
+    /// The world's vehicles (`gameplay::vehicles`); `None` until the spawners have rolled.
+    #[serde(default)]
+    pub world_vehicles: Option<crate::gameplay::vehicles::VehicleSave>,
+    /// NarrativeComponent's quests (`gameplay::quests`).
+    #[serde(default)]
+    pub quest_log: crate::gameplay::quests::QuestLog,
+    /// BP_WaterWell's CurrentWater (EMS actor save), by actor name.
+    #[serde(default)]
+    pub wells: crate::gameplay::zones::WellSave,
+    /// BP_SettlementManager's CampToSpawn (`None` = not picked yet: SettlementSpawned? off).
+    #[serde(default)]
+    pub settlement: Option<usize>,
+    /// Buildables the survivor placed (BuildingComponent.SpawnBuild; `gameplay::building`).
+    #[serde(default)]
+    pub buildables: Vec<crate::gameplay::building::PlacedBuildable>,
     pub equipment: Equipment,
     pub active_weapon: Option<WeaponStats>,
     pub zombies: Vec<Zombie>,
@@ -209,6 +233,14 @@ impl GameState {
             progression: ProgressionSystem::new(),
             passive: Default::default(),
             tech: Default::default(),
+            pois_explored: Default::default(),
+            map_markers: Vec::new(),
+            stats: Default::default(),
+            world_vehicles: None,
+            quest_log: Default::default(),
+            wells: Default::default(),
+            settlement: None,
+            buildables: Vec::new(),
             equipment,
             active_weapon: create_weapon_preset("m4a1"),
             zombies,

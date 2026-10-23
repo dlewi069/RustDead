@@ -622,7 +622,7 @@ fn nearest(doors: &[DoorDef], p: Vec3) -> Option<usize> {
 }
 
 /// The door prompt and F, when no container claimed the prompt this frame.
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub(crate) fn interact_doors(
     keys: Res<ButtonInput<KeyCode>>,
     scroll: Res<AccumulatedMouseScroll>,
@@ -640,11 +640,13 @@ pub(crate) fn interact_doors(
     mut notify: MessageWriter<Notify>,
     mut noise: MessageWriter<crate::gameplay::zombies::Noise>,
     // (Bevy systems take at most 16 parameters.)
-    (mut codes, mut power, mut garages, mut sound): (
+    (mut codes, mut power, mut garages, mut sound, driving, mut quest_tasks): (
         MessageReader<crate::gameplay::keypad::KeypadCode>,
         Option<ResMut<super::power::Power>>,
         ResMut<super::garage::Garages>,
         MessageWriter<crate::audio::Sound>,
+        Res<crate::gameplay::vehicles::Driving>,
+        MessageWriter<crate::gameplay::quests::DataTask>,
     ),
 ) {
     let Some(level) = level else { return };
@@ -673,7 +675,7 @@ pub(crate) fn interact_doors(
         }
     }
     let (Ok(mut me), Ok(mut vis)) = (player.single_mut(), prompt.single_mut()) else { return };
-    if *screen.get() != MenuScreen::None || overlay.is_open() || *vis != Visibility::Hidden {
+    if *screen.get() != MenuScreen::None || overlay.is_open() || *vis != Visibility::Hidden || driving.active() {
         return;
     }
     let p = me.translation;
@@ -729,6 +731,10 @@ pub(crate) fn interact_doors(
                         }
                         let msg = if f.on { "Laboratory generator powered on..." } else { "Laboratory generator powered off..." };
                         notify.write(Notify::new(msg));
+                        if f.on {
+                            let argument = power.generators[g].quest_argument.clone();
+                            quest_tasks.write(crate::gameplay::quests::DataTask { task: "PowerOnGenerator".into(), argument, quantity: 1 });
+                        }
                     }
                 }
                 Target::Switch(k) => {

@@ -28,7 +28,7 @@ impl Plugin for ModelsPlugin {
             .init_resource::<anim::AnimLibrary>()
             .add_observer(remap_materials)
             .add_observer(anim::wire_skeleton)
-            .add_systems(Update, (attach_to_bones, anim::wire_late, anim::drive_animation).chain());
+            .add_systems(Update, (attach_to_bones, anim::wire_late, anim::drive_animation, swap_parts).chain());
     }
 }
 
@@ -57,6 +57,11 @@ impl GameMaterials {
                 HashMap::new()
             });
         Self { defs, built: HashMap::new() }
+    }
+
+    /// The texture a material samples, if materials.json names one (particle sprites).
+    pub fn texture(&self, name: &str, assets: &AssetServer) -> Option<Handle<Image>> {
+        self.defs.get(name)?.texture.clone().map(|t| assets.load(t))
     }
 
     /// Trunk material for tree materials (see [`MaterialDef::trunk_color`]).
@@ -126,6 +131,11 @@ pub struct GameModel;
 #[derive(Component, Clone)]
 pub struct MaterialOverride(pub String);
 
+/// Swap named materials for others (a component's OverrideMaterials on some slots only):
+/// (material in the file, material to draw instead).
+#[derive(Component, Clone)]
+pub struct MaterialRename(pub Vec<(String, String)>);
+
 /// Spawnable bundle for an exported mesh, `path` relative to `assets/` (e.g. "game/.../X.glb").
 pub fn model(assets: &AssetServer, path: impl Into<String>) -> impl Bundle {
     (WorldAssetRoot(assets.load(GltfAssetLabel::Scene(0).from_asset(path.into()))), GameModel)
@@ -133,7 +143,7 @@ pub fn model(assets: &AssetServer, path: impl Into<String>) -> impl Bundle {
 
 fn remap_materials(
     ev: On<WorldInstanceReady>,
-    roots: Query<Option<&MaterialOverride>, With<GameModel>>,
+    roots: Query<(Option<&MaterialOverride>, Option<&MaterialRename>), With<GameModel>>,
     children: Query<&Children>,
     mut meshes: Query<(&GltfMaterialName, &Mesh3d, &mut MeshMaterial3d<StandardMaterial>, &mut Visibility)>,
     mut mesh_assets: ResMut<Assets<Mesh>>,
@@ -141,7 +151,7 @@ fn remap_materials(
     assets: Res<AssetServer>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let Ok(override_mat) = roots.get(ev.entity) else { return };
+    let Ok((override_mat, rename)) = roots.get(ev.entity) else { return };
     for e in children.iter_descendants(ev.entity) {
         let Ok((name, mesh, mut mat, mut vis)) = meshes.get_mut(e) else { continue };
         // UE's materials here ignore vertex colour, but Bevy multiplies COLOR_0 into the base
@@ -155,7 +165,8 @@ fn remap_materials(
             *vis = Visibility::Hidden;
             continue;
         }
-        let want = override_mat.map_or(name.0.as_str(), |o| o.0.as_str());
+        let renamed = rename.and_then(|r| r.0.iter().find(|(from, _)| *from == name.0)).map(|(_, to)| to.as_str());
+        let want = override_mat.map(|o| o.0.as_str()).or(renamed).unwrap_or(name.0.as_str());
         if let Some(h) = lib.get(want, &assets, &mut materials) {
             mat.0 = h;
         }
@@ -170,6 +181,33 @@ pub struct Part {
     /// Static meshes `BP_CharacterCreator` attaches to a bone of the Head mesh, with the
     /// component's relative transform (glTF space); skinned parts share the body's bind space.
     pub bone: Option<(&'static str, Transform)>,
+    /// Which swappable body part it is (`BODY_PARTS`).
+    pub body: Option<&'static str>,
+}
+
+/// The body-part slots BP_PlayerCharacter swaps for clothing (BodyPartVisibility).
+pub const BODY_PARTS: [&str; 8] = ["Torso", "Arms", "Biceps", "Hands", "Legs", "LowerThighs", "LowerLegs", "Feet"];
+
+/// The bare body (`SetSexMesh` / `UpdateBodyParts`): package paths per part; no Biceps or
+/// LowerThighs (the underwear pieces only some clothing brings back).
+pub fn default_body(sex: &str) -> Vec<(&'static str, Option<String>)> {
+    let bp = "SurrounDead/Content/PlayerModel/BodyParts";
+    BODY_PARTS
+        .iter()
+        .map(|&b| {
+            let mesh = match b {
+                "Biceps" | "LowerThighs" => None,
+                "Hands" => Some(format!("{bp}/Hands/SK_Chr_Hands")),
+                _ => Some(format!("{bp}/{b}/{sex}/SK_Chr_{sex}_{b}")),
+            };
+            (b, mesh)
+        })
+        .collect()
+}
+
+/// The skin material for a profile's skin tone.
+pub fn skin_material(profile: &CharacterProfile) -> String {
+    format!("M_Chr_Texture_1{}", ["A", "B", "C"][profile.body[1].min(2)])
 }
 
 /// A UE relative transform (location in cm, rotator in degrees) in glTF space, where positions
@@ -200,15 +238,16 @@ fn feature_attach() -> (&'static str, Transform) {
 pub fn character_parts(profile: &CharacterProfile, data: &CreatorData) -> Vec<Part> {
     let pick = |i: usize| data.body[i].options[profile.body[i]].as_str();
     let sex = pick(0);
-    let skin = format!("M_Chr_Texture_1{}", ["A", "B", "C"][profile.body[1].min(2)]);
+    let skin = skin_material(profile);
     let hair_mat = |i: usize| format!("MI_CharacterHair_{}", pick(i).replace(' ', "").replace("Gray", "Grey"));
 
-    let part = |path: String, material: Option<String>, bone: Option<(&'static str, Transform)>| Part { path, material, bone };
-    let mut parts = Vec::new();
-    for body in ["Head", "Torso", "Arms", "Legs", "LowerLegs", "Feet"] {
-        parts.push(part(format!("{PLAYER_MODEL}/BodyParts/{body}/{sex}/SK_Chr_{sex}_{body}.glb"), Some(skin.clone()), None));
+    let part = |path: String, material: Option<String>, bone: Option<(&'static str, Transform)>| Part { path, material, bone, body: None };
+    let mut parts = vec![part(format!("{PLAYER_MODEL}/BodyParts/Head/{sex}/SK_Chr_{sex}_Head.glb"), Some(skin.clone()), None)];
+    for (b, mesh) in default_body(sex) {
+        if let Some(m) = mesh {
+            parts.push(Part { body: Some(b), ..part(format!("game/{m}.glb"), Some(skin.clone()), None) });
+        }
     }
-    parts.push(part(format!("{PLAYER_MODEL}/BodyParts/Hands/SK_Chr_Hands.glb"), Some(skin.clone()), None));
 
     // "Male Hair 3" -> Chr_MaleHair3, "Beard 2" -> Chr_Beard2, "Eyebrows 1" -> Chr_Eyebrows1.
     let mesh_name = |option: &str| option.replace(' ', "");
@@ -256,6 +295,9 @@ pub fn spawn_character(commands: &mut Commands, assets: &AssetServer, profile: &
         if i == 0 {
             part.insert(HeadPart);
         }
+        if let Some(b) = p.body {
+            part.insert(BodyPart(b));
+        }
         if let Some((bone, rel)) = p.bone {
             part.insert((AttachToBone(bone, rel), Visibility::Hidden));
         }
@@ -285,6 +327,30 @@ fn attach_to_bones(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn new_clothes_show_before_old_ones_go() {
+        let mut app = App::new();
+        app.init_resource::<Time>().add_systems(Update, swap_parts);
+        let body = app.world_mut().spawn_empty().id();
+        let old = app.world_mut().spawn((Outgoing, ChildOf(body))).id();
+        let new = app.world_mut().spawn((Incoming::default(), Visibility::Hidden, ChildOf(body))).id();
+        // Its scene hasn't spawned: the old part stays, the new one hidden.
+        for _ in 0..5 {
+            app.update();
+        }
+        assert!(app.world().get_entity(old).is_ok());
+        assert_eq!(app.world().get::<Visibility>(new), Some(&Visibility::Hidden));
+        app.world_mut().spawn(ChildOf(new));
+        for _ in 0..REVEAL_AFTER {
+            app.update();
+            assert!(app.world().get_entity(old).is_ok());
+        }
+        app.update();
+        app.update();
+        assert_eq!(app.world().get::<Visibility>(new), Some(&Visibility::Inherited));
+        assert!(app.world().get_entity(old).is_err());
+    }
     use crate::menus::data::MenuData;
 
     /// Bind-pose world matrix of a node in a glb (its parent chain composed).
@@ -388,6 +454,31 @@ pub fn split_by_vertex_alpha(mesh: &Mesh) -> Option<(Mesh, Mesh)> {
 #[derive(Component, Default, PartialEq)]
 pub struct WornClothing(pub Vec<(String, String)>);
 
+/// A swappable body part (one of `BODY_PARTS`) under a [`CharacterModel`].
+#[derive(Component)]
+pub struct BodyPart(pub &'static str);
+
+/// The body-part meshes currently on a survivor (part, package path or hidden).
+#[derive(Component, Default, PartialEq, Debug, Clone)]
+pub struct BodyMeshes(pub Vec<(&'static str, Option<String>)>);
+
+/// Swap a survivor's body parts from `have` to `want` (BodyPartVisibility): changed parts are
+/// despawned and respawned with the skin, hidden ones just go.
+pub fn set_body(commands: &mut Commands, assets: &AssetServer, character: Entity, parts: &[(Entity, &'static str)], have: &BodyMeshes, want: &BodyMeshes, skin: &str) {
+    for (b, mesh) in &want.0 {
+        if have.0.iter().any(|(h, m)| h == b && m == mesh) {
+            continue;
+        }
+        for (e, _) in parts.iter().filter(|(_, p)| p == b) {
+            commands.entity(*e).insert(Outgoing).remove::<BodyPart>();
+        }
+        if let Some(m) = mesh {
+            let part = commands.spawn((model(assets, format!("game/{m}.glb")), Transform::default(), MaterialOverride(skin.to_string()), BodyPart(b), Incoming::default(), Visibility::Hidden)).id();
+            commands.entity(character).add_child(part);
+        }
+    }
+}
+
 /// A clothing part spawned under a [`CharacterModel`].
 #[derive(Component)]
 pub struct ClothingPart;
@@ -396,10 +487,55 @@ pub struct ClothingPart;
 /// parts of a survivor. `meshes` are package paths without extension.
 pub fn dress(commands: &mut Commands, assets: &AssetServer, character: Entity, old: &[Entity], meshes: &[String]) {
     for e in old {
-        commands.entity(*e).despawn();
+        commands.entity(*e).insert(Outgoing).remove::<ClothingPart>();
     }
     for m in meshes {
-        let part = commands.spawn((model(assets, format!("game/{m}.glb")), Transform::default(), ClothingPart)).id();
+        let part = commands.spawn((model(assets, format!("game/{m}.glb")), Transform::default(), ClothingPart, Incoming::default(), Visibility::Hidden)).id();
         commands.entity(character).add_child(part);
+    }
+}
+
+/// A part being put on: hidden until its scene is in place and has been animated, so a change
+/// of clothes never shows a part in its bind (T) pose.
+#[derive(Component, Default)]
+pub struct Incoming {
+    /// Frames since its scene spawned.
+    frames: u8,
+    /// Seconds waited (a file that never loads gives up and shows nothing new).
+    waited: f32,
+}
+
+/// A part being taken off: it stays until the character's incoming parts are shown.
+#[derive(Component)]
+pub struct Outgoing;
+
+/// Frames an incoming part waits after its scene spawns: one for the animation wiring, one for
+/// the first posed frame.
+const REVEAL_AFTER: u8 = 2;
+
+/// Show incoming parts once ready, then drop the parts they replace.
+fn swap_parts(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut incoming: Query<(Entity, &mut Incoming, &mut Visibility, Option<&Children>, &ChildOf)>,
+    outgoing: Query<(Entity, &ChildOf), With<Outgoing>>,
+) {
+    let mut waiting = std::collections::HashSet::new();
+    for (e, mut inc, mut vis, kids, parent) in &mut incoming {
+        inc.waited += time.delta_secs();
+        if kids.is_some_and(|k| !k.is_empty()) {
+            inc.frames = inc.frames.saturating_add(1);
+        }
+        if inc.frames > REVEAL_AFTER || inc.waited > 3.0 {
+            *vis = Visibility::Inherited;
+            commands.entity(e).remove::<Incoming>();
+        } else {
+            waiting.insert(parent.parent());
+        }
+    }
+    for (e, parent) in &outgoing {
+        if !waiting.contains(&parent.parent()) {
+            commands.entity(e).despawn();
+        }
     }
 }

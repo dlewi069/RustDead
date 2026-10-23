@@ -44,6 +44,7 @@ def main():
     # Owners are actor names (BP_Campfire2_5); actors.json has their classes.
     class_of = {a["name"]: a["class"] for a in json.loads((LEVEL / "actors.json").read_text())}
     for l in lights:
+        l["actor"] = l["owner"]
         l["owner"] = class_of.get(l["owner"], l["owner"])
     classes = sorted({l["owner"] for l in lights})
     tmp = tempfile.mkdtemp()
@@ -78,6 +79,8 @@ def main():
         col = p["LightColor"] if "LightColor" not in l["set"] else {"R": l["color"][0] * 255, "G": l["color"][1] * 255, "B": l["color"][2] * 255}
         out.append({
             "owner": cls,
+            # The actor (BP_LaboratoryLight_C_12): lab switches name the lights they drive.
+            "actor": l["actor"],
             "component": l["component"],
             "pos": l["pos"],
             "candela": round(candela(float(p["Intensity"]), str(p.get("IntensityUnits", "Unitless"))), 4),

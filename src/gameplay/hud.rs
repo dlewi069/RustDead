@@ -39,7 +39,12 @@ struct LevelText;
 #[derive(Component)]
 struct XpText;
 #[derive(Component)]
-struct CompassStrip;
+pub struct CompassStrip;
+/// `FlashlightDur` (shown while the flashlight is on) and its `FlashlightText`.
+#[derive(Component)]
+pub(crate) struct FlashlightDur;
+#[derive(Component)]
+struct FlashlightText;
 #[derive(Component)]
 pub(crate) struct MedicalIcon(MedicalUi);
 
@@ -73,13 +78,23 @@ impl MedicalUi {
 }
 #[derive(Component)]
 struct HudRoot;
+/// `OxygenStat` (its OxygenBar fill and OxygenText): faded in under water (OxygenAnim, 0.5 s).
+#[derive(Component)]
+pub struct OxygenStat(pub f32);
+#[derive(Component)]
+struct OxygenFill;
+#[derive(Component)]
+struct OxygenText;
+/// OxygenBar's FillColorCurrent and BackgroundTint.
+const OXYGEN_FILL: Color = Color::linear_rgb(0.429688, 0.680468, 0.6875);
+const OXYGEN_BG: Color = Color::linear_rgba(0.5, 0.5, 0.5, 0.5);
 /// Action-bar slot `n` (1-9) picture.
 #[derive(Component)]
 struct ActionIcon(usize);
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(AppState::InGame), spawn_hud)
-        .add_systems(Update, (update_stats, update_compass, hide_under_inventory, update_action_bar).run_if(in_state(AppState::InGame)))
+        .add_systems(Update, (update_stats, update_compass, hide_under_inventory, update_action_bar, update_flashlight, update_oxygen).run_if(in_state(AppState::InGame)))
         .add_systems(OnEnter(MenuScreen::None), |mut q: Query<&mut Visibility, With<HudRoot>>| q.iter_mut().for_each(|mut v| *v = Visibility::Inherited))
         .add_systems(OnExit(MenuScreen::None), |mut q: Query<&mut Visibility, With<HudRoot>>| q.iter_mut().for_each(|mut v| *v = Visibility::Hidden));
 }
@@ -133,10 +148,11 @@ fn spawn_hud(mut commands: Commands, font: Res<MenuFont>, assets: Res<AssetServe
         ))
         .id();
 
-    // Compass: a 750 px window onto the 2700 x 30 strip, marker over its centre.
+    // Compass: a 750 px window onto the 2700 x 30 strip, marker over its centre. Its RetainerBox
+    // clips the map markers' icons (`markers::compass_icons`) to it.
     let compass = commands
         .spawn((
-            Node { position_type: PositionType::Absolute, left: Val::Percent(50.0), top: Val::Px(11.0), margin: UiRect::left(Val::Px(-375.0)), width: Val::Px(750.0), height: Val::Px(30.0), ..default() },
+            Node { position_type: PositionType::Absolute, left: Val::Percent(50.0), top: Val::Px(11.0), margin: UiRect::left(Val::Px(-375.0)), width: Val::Px(750.0), height: Val::Px(30.0), overflow: Overflow::clip(), ..default() },
             ImageNode { image: assets.load(format!("{TEX}/Compass_Points.png")), rect: Some(Rect::new(0.0, 0.0, 750.0, 30.0)), ..default() },
             CompassStrip,
         ))
@@ -174,9 +190,86 @@ fn spawn_hud(mut commands: Commands, font: Res<MenuFont>, assets: Res<AssetServe
         commands.entity(effects).add_child(icon);
     }
 
+    // FlashlightDur: bottom-left anchored at (217, -147.5), 68 x 20, alignment (0, 1), 50% black;
+    // the UI_Flashlight icon (18 px) and FlashlightText ("{A}%", size 10, 5 px left padding).
+    // ShowFlashlightDurability plays the ShowFlashlightDur fade in/out; here it just shows/hides.
+    let flashlight = commands
+        .spawn((
+            Node {
+                position_type: PositionType::Absolute,
+                left: Val::Px(217.0),
+                bottom: Val::Px(147.5),
+                width: Val::Px(68.0),
+                height: Val::Px(20.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            BackgroundColor(Color::linear_rgba(0.0, 0.0, 0.0, 0.5)),
+            Visibility::Hidden,
+            FlashlightDur,
+            children![
+                (Node { width: Val::Px(18.0), height: Val::Px(18.0), ..default() }, ImageNode::new(assets.load(format!("{TEX}/UI_Flashlight.png")))),
+                (label_colored(font, "0%", 10.0, Color::WHITE), Node { margin: UiRect::left(Val::Px(5.0)), ..default() }, FlashlightText),
+            ],
+        ))
+        .id();
+
     let stats = spawn_stats(&mut commands, font, &assets);
     let action_bar = spawn_action_bar(&mut commands, font);
-    commands.entity(root).add_children(&[cross, compass, marker, effects, stats, action_bar]);
+    // OxygenStat: bottom centre, 350 x 20, alignment (0.5, 8): its bottom 7 heights up.
+    let oxygen = commands
+        .spawn((
+            Node {
+                position_type: PositionType::Absolute,
+                left: Val::Percent(50.0),
+                bottom: Val::Px(7.0 * 20.0),
+                margin: UiRect::left(Val::Px(-175.0)),
+                width: Val::Px(350.0),
+                height: Val::Px(20.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            BackgroundColor(OXYGEN_BG.with_alpha(0.0)),
+            OxygenStat(0.0),
+            children![
+                (Node { position_type: PositionType::Absolute, left: Val::ZERO, top: Val::ZERO, bottom: Val::ZERO, width: Val::Percent(100.0), ..default() }, BackgroundColor(OXYGEN_FILL.with_alpha(0.0)), OxygenFill),
+                (label_colored(font, "100%", 8.0, Color::BLACK.with_alpha(0.0)), OxygenText),
+            ],
+        ))
+        .id();
+    commands.entity(root).add_children(&[cross, compass, marker, effects, flashlight, stats, action_bar, oxygen]);
+}
+
+/// OnRep_UnderWater? / OxygenTimer: shown under water, hidden once the air is full again.
+#[allow(clippy::type_complexity)]
+fn update_oxygen(
+    time: Res<Time>,
+    swim: Res<super::swim::Swim>,
+    mut stat: Query<(&mut OxygenStat, &mut BackgroundColor), Without<OxygenFill>>,
+    mut fill: Query<(&mut Node, &mut BackgroundColor), With<OxygenFill>>,
+    mut text: Query<(&mut Text, &mut TextColor, &mut TextShadow), With<OxygenText>>,
+) {
+    let Ok((mut s, mut bg)) = stat.single_mut() else { return };
+    let show = swim.underwater || swim.oxygen < super::swim::MAX_OXYGEN;
+    let step = time.delta_secs() / 0.5;
+    s.0 = if show { (s.0 + step).min(1.0) } else { (s.0 - step).max(0.0) };
+    let a = s.0;
+    bg.0 = OXYGEN_BG.with_alpha(OXYGEN_BG.alpha() * a);
+    let pct = swim.oxygen / super::swim::MAX_OXYGEN;
+    for (mut n, mut c) in &mut fill {
+        n.width = Val::Percent(pct * 100.0);
+        c.0 = OXYGEN_FILL.with_alpha(a);
+    }
+    for (mut t, mut c, mut sh) in &mut text {
+        let v = format!("{}%", (pct * 100.0).round());
+        if t.0 != v {
+            t.0 = v;
+        }
+        c.0 = Color::BLACK.with_alpha(a);
+        sh.color.set_alpha(0.0);
+    }
 }
 
 fn bar(commands: &mut Commands, font: &MenuFont, b: Bar, width: Val, height: f32) -> Entity {
@@ -371,6 +464,25 @@ fn update_stats(
 
 /// Heading = camera yaw in UE terms (0 = +X = north, clockwise). The strip starts at East and
 /// runs 5 px per degree; pick the 750 px window centred on the heading.
+/// ShowFlashlightDurability / GetFlashlightDurability: the battery left, whole percent.
+fn update_flashlight(
+    light: Res<super::flashlight::Flashlight>,
+    game: Res<CurrentGame>,
+    db: Res<super::ItemDb>,
+    mut boxes: Query<&mut Visibility, With<FlashlightDur>>,
+    mut text: Query<&mut Text, With<FlashlightText>>,
+) {
+    let Ok(mut vis) = boxes.single_mut() else { return };
+    vis.set_if_neq(if light.on { Visibility::Inherited } else { Visibility::Hidden });
+    let charge = game.inventory.as_ref().and_then(|i| i.equipped.get(&super::equipment::Slot::Flashlight)).and_then(|f| super::flashlight::battery(f, &db)).map(|b| super::flashlight::charge(b, &db));
+    if let (true, Some(c), Ok(mut t)) = (light.on, charge, text.single_mut()) {
+        let s = format!("{:.0}%", c);
+        if t.0 != s {
+            t.0 = s;
+        }
+    }
+}
+
 fn update_compass(cams: Query<&GlobalTransform, With<Camera3d>>, mut strip: Query<&mut ImageNode, With<CompassStrip>>) {
     let (Some(cam), Ok(mut img)) = (cams.iter().next(), strip.single_mut()) else { return };
     let f = cam.forward();

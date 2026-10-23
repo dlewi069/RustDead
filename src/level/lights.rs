@@ -4,11 +4,13 @@
 //!
 //! - `BP_ResortLight`: on from 17:59 to 05:59 (its Time of Day >= 1799 / <= 599 check), else off.
 //! - Fires (`BP_BarrelFire`, `BP_Campfire`, `BP_CookingStation`, `BP_EasterEgg_Campfire`): lit, with
-//!   a flame flicker (their particle flames aren't drawn).
+//!   a flame flicker (the flames themselves are `gameplay::particles` level emitters).
 //! - `BP_FlickeringLight(Sparks)`: the LightFlicker timeline, approximated by random dips.
-//! - Lab lights (lab power switches), infestation lights and lamps belong to systems not ported yet
-//!   and stay off; a resort light's on-intensity comes from a timeline that isn't readable, so it
-//!   uses the engine default (8 cd).
+//! - Lab lights (`BP_LaboratoryLight(2/3)`): lit while their switch is On (`power`), at the
+//!   class's `Intensity` 2000 (unitless: 3.2 cd). Some instances set 1.5 with exponent falloff,
+//!   which has no candela equivalent; they use the class value too (a guess).
+//! - Infestation lights and lamps belong to systems not ported yet and stay off; a resort light's
+//!   on-intensity comes from a timeline that isn't readable, so it uses the engine default (8 cd).
 //!
 //! Brightness: our night is lit ~1100x brighter than UDS's (moon 450 lux standing in for its 0.4
 //! with auto exposure), so lamps are scaled the same way to keep their in-game contrast with
@@ -30,6 +32,9 @@ const DEFAULT_CANDELA: f32 = 8.0;
 #[derive(Deserialize, Clone, Debug)]
 pub struct LevelLight {
     pub owner: String,
+    /// The owner actor's name.
+    #[serde(default)]
+    pub actor: String,
     pub pos: [f32; 3],
     pub candela: f32,
     pub color: [f32; 3],
@@ -41,14 +46,20 @@ pub enum Behaviour {
     NightOnly,
     Fire,
     Flicker,
+    /// Lab lamps: on with their switch.
+    Lab,
     Off,
 }
+
+/// BP_LaboratoryLight's `Intensity` default (2000 unitless).
+const LAB_CANDELA: f32 = 2000.0 / 625.0;
 
 pub fn behaviour(owner: &str) -> Behaviour {
     match owner {
         "BP_ResortLight_C" => Behaviour::NightOnly,
         "BP_BarrelFire_C" | "BP_Campfire_C" | "BP_CookingStation_C" | "BP_EasterEgg_Campfire_C" => Behaviour::Fire,
         "BP_FlickeringLight_C" | "BP_FlickeringLightSparks_C" => Behaviour::Flicker,
+        "BP_LaboratoryLight_C" | "BP_LaboratoryLight2_C" | "BP_LaboratoryLight3_C" => Behaviour::Lab,
         _ => Behaviour::Off,
     }
 }
@@ -79,7 +90,7 @@ pub(super) fn reset_lights(mut commands: Commands) {
 }
 
 /// Lumens for a light's candelas at our light scale.
-fn lumens(candela: f32) -> f32 {
+pub fn lumens(candela: f32) -> f32 {
     let cd = if candela > 0.0 { candela } else { DEFAULT_CANDELA };
     cd * 4.0 * std::f32::consts::PI * NIGHT_SCALE
 }
@@ -89,6 +100,7 @@ pub(super) fn update_lights(
     time: Res<Time>,
     game: Res<CurrentGame>,
     lights: Option<ResMut<LevelLights>>,
+    power: Option<Res<super::power::Power>>,
     players: Query<&Transform, With<crate::models::CharacterModel>>,
     mut lamps: Query<(&LampOf, &mut PointLight)>,
 ) {
@@ -96,6 +108,9 @@ pub(super) fn update_lights(
     let Some(eye) = players.iter().next().map(|t| t.translation) else { return };
     let hour = game.state.as_ref().map_or(12.0, |s| s.environment.time_of_day_hours);
     ll.refresh -= time.delta_secs();
+    if power.as_ref().is_some_and(|p| p.is_changed()) {
+        ll.refresh = 0.0;
+    }
     if ll.refresh <= 0.0 {
         ll.refresh = 0.5;
         let mut near: Vec<(usize, f32)> = ll
@@ -103,6 +118,7 @@ pub(super) fn update_lights(
             .iter()
             .enumerate()
             .filter(|(_, (_, b))| *b != Behaviour::NightOnly || night_on(hour))
+            .filter(|(_, (l, b))| *b != Behaviour::Lab || power.as_ref().is_some_and(|p| p.lit(&l.actor)))
             .map(|(i, (l, _))| (i, Vec3::from(l.pos).distance(eye)))
             .filter(|(_, d)| *d <= RANGE)
             .collect();
@@ -126,7 +142,7 @@ pub(super) fn update_lights(
                 .spawn((
                     PointLight {
                         color: Color::srgb(l.color[0], l.color[1], l.color[2]),
-                        intensity: lumens(l.candela),
+                        intensity: lumens(if ll.lights[i].1 == Behaviour::Lab { LAB_CANDELA } else { l.candela }),
                         range: l.radius.max(1.0),
                         shadow_maps_enabled: false,
                         ..default()
@@ -143,7 +159,7 @@ pub(super) fn update_lights(
     let mut rng = rand::thread_rng();
     for (LampOf(i), mut p) in &mut lamps {
         let (l, b) = &ll.lights[*i];
-        let base = lumens(l.candela);
+        let base = lumens(if *b == Behaviour::Lab { LAB_CANDELA } else { l.candela });
         p.intensity = match b {
             Behaviour::Fire => base * rng.gen_range(0.75..1.1),
             Behaviour::Flicker => base * if rng.gen_range(0.0..1.0) < 0.08 { 0.1 } else { 1.0 },
@@ -171,6 +187,7 @@ mod tests {
         // The barrel fire's template: orange (255, 165, 0), 10 m.
         assert!((fires[0].color[1] - 0.647).abs() < 0.01 && fires[0].radius == 10.0);
         assert_eq!(behaviour("BP_ResortLight_C"), Behaviour::NightOnly);
-        assert_eq!(behaviour("BP_LaboratoryLight_C"), Behaviour::Off);
+        assert_eq!(behaviour("BP_LaboratoryLight_C"), Behaviour::Lab);
+        assert_eq!(behaviour("BP_PrimaryInfestation_C"), Behaviour::Off);
     }
 }

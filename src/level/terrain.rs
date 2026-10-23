@@ -17,6 +17,10 @@ use crate::menus::AppState;
 
 /// Quads per chunk edge (1 m each at full detail).
 const CHUNK: i32 = 128;
+/// How far under the surface still counts as being on (or in) the landscape rather than in a
+/// space below it, metres.
+const UNDERGROUND: f32 = 1.5;
+
 /// Chunks further than this (in metres, chunk centre to camera) aren't drawn.
 const VIEW: f32 = 1800.0;
 
@@ -37,6 +41,8 @@ struct TerrainLayers {
 #[derive(Resource, Clone)]
 pub struct Terrain {
     heights: std::sync::Arc<Vec<f32>>,
+    /// The landscape's visibility (hole) layer, `DataLayer`: 0..255 per sample; empty if absent.
+    holes: std::sync::Arc<Vec<u8>>,
     pub size: [usize; 2],
     /// World (Bevy) x/z of sample (0, 0) and spacing between samples, metres.
     pub origin: Vec2,
@@ -50,8 +56,10 @@ impl Terrain {
         let [w, h] = info.heightmap_size;
         // UE: z = loc.z + (h - 32768) / 128 * scale.z  (cm)
         let heights = img.pixels().map(|p| (info.location[2] + (p.0[0] as f32 - 32768.0) / 128.0 * info.scale[2]) / 100.0).collect();
+        let holes = image::open(format!("{dir}/weight_DataLayer.png")).ok().map(|i| i.into_luma8().into_raw()).filter(|v| v.len() == w * h).unwrap_or_default();
         Some(Self {
             heights: std::sync::Arc::new(heights),
+            holes: std::sync::Arc::new(holes),
             size: [w, h],
             origin: Vec2::new(
                 (info.location[0] + info.section_min[0] as f32 * info.scale[0]) / 100.0,
@@ -67,6 +75,44 @@ impl Terrain {
         self.heights[j * self.size[0] + i]
     }
 
+    fn hole_weight(&self, i: i32, j: i32) -> f32 {
+        if self.holes.is_empty() {
+            return 0.0;
+        }
+        let i = i.clamp(0, self.size[0] as i32 - 1) as usize;
+        let j = j.clamp(0, self.size[1] as i32 - 1) as usize;
+        self.holes[j * self.size[0] + i] as f32 / 255.0
+    }
+
+    /// Is the landscape cut away at world x/z? (The visibility layer's opacity mask: the
+    /// interpolated weight at 0.5 or more.)
+    pub fn hole(&self, x: f32, z: f32) -> bool {
+        if self.holes.is_empty() {
+            return false;
+        }
+        let gx = (x - self.origin.x) / self.spacing;
+        let gz = (z - self.origin.y) / self.spacing;
+        let (i, j) = (gx.floor() as i32, gz.floor() as i32);
+        let (fx, fz) = (gx - i as f32, gz - j as f32);
+        let a = self.hole_weight(i, j) * (1.0 - fx) + self.hole_weight(i + 1, j) * fx;
+        let b = self.hole_weight(i, j + 1) * (1.0 - fx) + self.hole_weight(i + 1, j + 1) * fx;
+        a * (1.0 - fz) + b * fz >= 0.5
+    }
+
+    /// The landscape as a floor for something at `p`: its height, unless there's a hole here or
+    /// `p` is already underground (through a hole: labs, bunkers, cellars).
+    pub fn ground_under(&self, p: Vec3) -> Option<f32> {
+        let h = self.height(p.x, p.z);
+        (!self.hole(p.x, p.z) && p.y > h - UNDERGROUND).then_some(h)
+    }
+
+    /// Is `p` inside the landscape's surface (blocks sight and shots)? Underground spaces below
+    /// it aren't.
+    pub fn blocks(&self, p: Vec3) -> bool {
+        let h = self.height(p.x, p.z);
+        p.y < h && p.y > h - UNDERGROUND && !self.hole(p.x, p.z)
+    }
+
     /// Bilinear ground height at world x/z.
     pub fn height(&self, x: f32, z: f32) -> f32 {
         let gx = (x - self.origin.x) / self.spacing;
@@ -76,6 +122,14 @@ impl Terrain {
         let a = self.sample(i, j) * (1.0 - fx) + self.sample(i + 1, j) * fx;
         let b = self.sample(i, j + 1) * (1.0 - fx) + self.sample(i + 1, j + 1) * fx;
         a * (1.0 - fz) + b * fz
+    }
+
+    /// Surface normal at world x/z (central differences over one grid step).
+    pub fn normal(&self, x: f32, z: f32) -> Vec3 {
+        let s = self.spacing;
+        let dx = self.height(x + s, z) - self.height(x - s, z);
+        let dz = self.height(x, z + s) - self.height(x, z - s);
+        Vec3::new(-dx, 2.0 * s, -dz).normalize()
     }
 
     pub fn extent(&self) -> Vec2 {
@@ -110,6 +164,12 @@ impl Terrain {
         let at = |gi: i32, gj: i32| (gj * n + gi) as u32;
         for gj in 0..n - 1 {
             for gi in 0..n - 1 {
+                // Holes: quads whose centre is masked out by the visibility layer.
+                let (ci, cj) = (i0 + gi * step + step / 2, j0 + gj * step + step / 2);
+                let centre = (self.hole_weight(ci, cj) + self.hole_weight(ci + 1, cj) + self.hole_weight(ci, cj + 1) + self.hole_weight(ci + 1, cj + 1)) / 4.0;
+                if step == 1 && centre >= 0.5 || step > 1 && self.hole_weight(ci, cj) >= 0.5 {
+                    continue;
+                }
                 let (a, b, c, d) = (at(gi, gj), at(gi + 1, gj), at(gi, gj + 1), at(gi + 1, gj + 1));
                 idx.extend_from_slice(&[a, c, b, b, c, d]);
             }
@@ -294,5 +354,30 @@ pub fn stream_terrain(
 pub fn reset_terrain(mut state: Option<ResMut<TerrainAssets>>) {
     if let Some(s) = state.as_mut() {
         s.loaded.clear();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn landscape_holes_open_the_lab_entrance() {
+        let Some(t) = Terrain::load(crate::level::LEVEL_DIR) else { return };
+        // The laboratory's entrance (a 4 m hole in the visibility layer) and ground beside it.
+        assert!(t.hole(1754.5, 166.5));
+        assert!(!t.hole(1745.0, 166.5));
+        let h = t.height(1745.0, 166.5);
+        assert_eq!(t.ground_under(Vec3::new(1745.0, h + 0.2, 166.5)), Some(h));
+        assert_eq!(t.ground_under(Vec3::new(1754.5, h + 0.2, 166.5)), None, "no floor over the hole");
+        // Underground (the lab, ~8 m down): the surface overhead is neither floor nor wall.
+        let below = Vec3::new(1745.0, h - 8.0, 166.5);
+        assert_eq!(t.ground_under(below), None);
+        assert!(!t.blocks(below) && t.blocks(Vec3::new(1745.0, h - 0.5, 166.5)));
+        // The normal is unit length, points up, and leans downhill.
+        let n = t.normal(1745.0, 166.5);
+        assert!((n.length() - 1.0).abs() < 1e-4 && n.y > 0.0);
+        let downhill = t.height(1745.0 + n.x, 166.5 + n.z);
+        assert!(downhill <= h + 1e-3, "{downhill} vs {h}");
     }
 }

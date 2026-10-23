@@ -129,6 +129,11 @@ fn on_pause_action(
             next_screen.set(MenuScreen::None);
         }
         PauseAction::Respawn => {
+            // Client_SUICIDE: LevellingComponent.XPDeath first.
+            if let Some(st) = game.state.as_mut() {
+                st.progression.xp_death();
+                st.tech.deathbringer_used = false;
+            }
             commands.insert_resource(RespawnPlayer);
             next_screen.set(MenuScreen::None);
         }

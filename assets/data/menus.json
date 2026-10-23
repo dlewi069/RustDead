@@ -28,7 +28,8 @@
     },
     {
      "label": "VERTICAL SYNC",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "r.vsync"
     },
     {
      "label": "ANTI-ALIASING TYPE",
@@ -83,19 +84,26 @@
      "max": 2.0,
      "digits": 2,
      "multiplier": 1.0,
-     "cvar": "Game.Saturation"
+     "cvar": "Game.Saturation",
+     "default": 0.75
     },
     {
      "label": "DEPTH OF FIELD",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.DOF",
+     "default": 1.0
     },
     {
      "label": "VOLUMETRIC FOG",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.Fog",
+     "default": 1.0
     },
     {
      "label": "LIGHT SHAFTS",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.LightShafts",
+     "default": 1.0
     },
     {
      "label": "THIRD PERSON FIELD OF VIEW",
@@ -104,7 +112,8 @@
      "max": 105.0,
      "digits": 0,
      "multiplier": 1.0,
-     "cvar": "Character.FieldOfView"
+     "cvar": "Character.FieldOfView",
+     "default": 90.0
     },
     {
      "label": "FIRST PERSON FIELD OF VIEW",
@@ -113,7 +122,8 @@
      "max": 105.0,
      "digits": 0,
      "multiplier": 1.0,
-     "cvar": "Character.FieldOfViewFP"
+     "cvar": "Character.FieldOfViewFP",
+     "default": 90.0
     },
     {
      "label": "GAMMA",
@@ -279,26 +289,35 @@
     },
     {
      "label": "FSR 3 FRAME GENERATION",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.AMDFrameGeneration"
     },
     {
      "section": "OTHER"
     },
     {
      "label": "BUILDABLE LIGHTS CAST SHADOWS?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.BuildableShadows",
+     "default": 1.0
     },
     {
      "label": "BLOOD SPLATTER EFFECT ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.BloodSplatter",
+     "default": 1.0
     },
     {
      "label": "INCREASE BLOOD SPLATTER EFFECT LIFETIME? (MAY EFFECT PERFORMANCE)",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.KeepBlood",
+     "default": 0.0
     },
     {
      "label": "PLAYER CAN INTERACT WITH GRASS?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.GrassInteract",
+     "default": 1.0
     },
     {
      "label": "INVENTORY ITEM PICTURE QUALITY",
@@ -367,11 +386,15 @@
     },
     {
      "label": "COMBAT MUSIC ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.CombatMusic",
+     "default": 1.0
     },
     {
      "label": "ICE CREAM VENDOR SOUNDS ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.IceCream",
+     "default": 0.0
     },
     {
      "label": "MASTER",
@@ -394,7 +417,8 @@
      "max": 10.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Input.Sensitivity"
+     "cvar": "Input.Sensitivity",
+     "default": 1.5
     },
     {
      "label": "AIMING SENSITIVITY MULTIPLIER",
@@ -403,7 +427,8 @@
      "max": 10.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Input.AimingSensitivity"
+     "cvar": "Input.AimingSensitivity",
+     "default": 1.0
     },
     {
      "label": "SCOPE SENSITIVITY MULTIPLIER",
@@ -412,47 +437,68 @@
      "max": 5.0,
      "digits": 2,
      "multiplier": 1.0,
-     "cvar": "Input.ScopeSensitivity"
+     "cvar": "Input.ScopeSensitivity",
+     "default": 0.5
     },
     {
      "label": "ENABLE WEAPON SCROLL",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.WeaponScroll",
+     "default": 1.0
     },
     {
      "label": "INVERT MOUSE Y",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.Invert",
+     "default": 0.0
     },
     {
      "label": "CROUCH TOGGLE",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.CrouchToggle",
+     "default": 1.0
     },
     {
      "label": "SPRINT TOGGLE",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.SprintToggle",
+     "default": 0.0
     },
     {
      "label": "AIMING TOGGLE",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.AimingToggle",
+     "default": 0.0
     },
     {
      "label": "LEANING TOGGLE",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.LeaningToggle",
+     "default": 1.0
     },
     {
      "label": "MELEE AIMING TOGGLE",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.MeleeAimingToggle",
+     "default": 0.0
     },
     {
      "label": "ALTERNATE MELEE CONTROLS? (NO HOLDING AIM)",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.MeleeAim",
+     "default": 0.0
     },
     {
      "label": "PRESS TO LOOT CONTAINERS? (NO HOLDING THE INTERACT KEY)",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.PressToLoot",
+     "default": 0.0
     },
     {
      "label": "ROLL DIRECTION FOLLOWS PLAYER DIRECTION? (IF FALSE FOLLOWS CAMERA DIRECTION)",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.RollFollowsPlayer",
+     "default": 1.0
     },
     {
      "section": "KEY BINDINGS"
@@ -933,55 +979,81 @@
     },
     {
      "label": "DEBUG MENU ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Debug.Allow",
+     "default": 0.0
     },
     {
      "label": "VEHICLE SPEED IN KPH?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.Metric",
+     "default": 0.0
     },
     {
      "label": "AUTO SAVE ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.AutoSave",
+     "default": 0.0
     },
     {
      "label": "PLAYER JOURNAL STATS RESET ON DEATH?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.PlayerJournalStatsReset",
+     "default": 1.0
     },
     {
      "label": "AUTOMATICALLY USE SCOPE WHEN AIMING?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.AutoScope",
+     "default": 0.0
     },
     {
      "label": "DISABLE ZOMBIE EYES?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.DisableZombieEyes",
+     "default": 0.0
     },
     {
      "label": "PLAYER BULLET TRAIL ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.BulletTrail",
+     "default": 1.0
     },
     {
      "label": "AI BULLET TRAIL ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.AIBulletTrail",
+     "default": 1.0
     },
     {
      "label": "HIDE PLAYER HEADWEAR?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.HideHeadWear",
+     "default": 0.0
     },
     {
      "label": "CONTAINER SEARCH ICON WHEN CLOSE TO?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.OutlineDistance",
+     "default": 1.0
     },
     {
      "label": "IN GAME MARKER WHEN NEAR TO DEATH LOCATION? (RESTART REQUIRED)",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.DeathWidget",
+     "default": 1.0
     },
     {
      "label": "GEIGER SOUND WHEN TAKING RADIATION DAMAGE?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.GeigerSound",
+     "default": 1.0
     },
     {
      "label": "MISOPHONIA MODE ACTIVATED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.Misophonia",
+     "default": 0.0
     },
     {
      "section": "CAMERA"
@@ -993,7 +1065,8 @@
      "max": 140.0,
      "digits": 0,
      "multiplier": 1.0,
-     "cvar": "Character.CameraOffset"
+     "cvar": "Character.CameraOffset",
+     "default": 55.0
     },
     {
      "label": "THIRD PERSON VERTICAL CAMERA OFFSET",
@@ -1002,7 +1075,8 @@
      "max": 50.0,
      "digits": 0,
      "multiplier": 1.0,
-     "cvar": "Character.CameraOffsetVertical"
+     "cvar": "Character.CameraOffsetVertical",
+     "default": 0.0
     },
     {
      "label": "CAMERA SHAKE INTENSITY",
@@ -1011,11 +1085,14 @@
      "max": 2.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Character.CameraShakeIntensity"
+     "cvar": "Character.CameraShakeIntensity",
+     "default": 1.0
     },
     {
      "label": "CAMERA LAG ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.CameraLag",
+     "default": 1.0
     },
     {
      "section": "USER INTERFACE"
@@ -1027,51 +1104,74 @@
      "max": 4.0,
      "digits": 2,
      "multiplier": 1.0,
-     "cvar": "Game.CrosshairScale"
+     "cvar": "Game.CrosshairScale",
+     "default": 1.0
     },
     {
      "label": "AI HEALTH BARS ENABLED? (RESTART REQUIRED)",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.AIHealthBar",
+     "default": 1.0
     },
     {
      "label": "HITMARKERS ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "UI.Hitmarker",
+     "default": 1.0
     },
     {
      "label": "DAMAGE NUMBERS ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.DamageNumbers",
+     "default": 1.0
     },
     {
      "label": "OUTLINE OBJECTS ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.Outline",
+     "default": 1.0
     },
     {
      "label": "SATURATION DECREASE ON LOW HEALTH? (RESTART REQUIRED IF IN EFFECT)",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Video.HealthPP",
+     "default": 1.0
     },
     {
      "label": "ACTION BAR ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.ActionBar",
+     "default": 1.0
     },
     {
      "label": "ACTION BAR SHOWS INPUT KEYS?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Character.ActionBarKeys",
+     "default": 1.0
     },
     {
      "label": "CLOCK UI STAYS OPENED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "UI.TimeStayOpen",
+     "default": 0.0
     },
     {
      "label": "OPENING MENUS SLOWS DOWN TIME?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.SlowTime",
+     "default": 0.0
     },
     {
      "label": "XP POP UP ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.XpPopUp",
+     "default": 1.0
     },
     {
      "label": "AIRDROP NOTIFICATION ENABLED?",
-     "kind": "check"
+     "kind": "check",
+     "cvar": "Game.AirDrop",
+     "default": 0.0
     }
    ]
   }
@@ -1083,26 +1183,31 @@
     {
      "label": "AIRDROPS ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.Airdrop",
      "default": 1.0
     },
     {
      "label": "TRADERS HAVE A SET AMOUNT OF CURRENCY ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.TraderCurrencyAmount",
      "default": 0.0
     },
     {
      "label": "MELEE MULTI HIT ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.MultiHit",
      "default": 0.0
     },
     {
      "label": "HEADSHOT MODE ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.HeadshotMode",
      "default": 0.0
     },
     {
      "label": "BLOCK BUILDING AT MAJOR POIs?",
      "kind": "check",
+     "cvar": "Difficulty.BlockBuildingPOI",
      "default": 0.0
     },
     {
@@ -1118,31 +1223,37 @@
     {
      "label": "WEAPON DURABILITY ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.WeaponDurability",
      "default": 0.0
     },
     {
      "label": "ARMOR DURABILITY ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.ArmorDurability",
      "default": 0.0
     },
     {
      "label": "MUZZLE ATTACHMENT DURABILITY ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.MuzzleAttachmentDurability",
      "default": 0.0
     },
     {
      "label": "OTHER ITEMS DURABILITY ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.OtherItemsDurability",
      "default": 0.0
     },
     {
      "label": "FIREARM MALFUNCTION ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.FirearmMalfunction",
      "default": 0.0
     },
     {
      "label": "MELEE DAMAGE DEGRADATION ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.MeleeDmgDegradation",
      "default": 0.0
     },
     {
@@ -1152,7 +1263,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.WeaponDurabilityMultiplier"
+     "cvar": "Difficulty.WeaponDurabilityMultiplier",
+     "default": 1.0
     },
     {
      "label": "ARMOR DURABILITY MULTIPLIER",
@@ -1161,7 +1273,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.ArmorDurabilityMultiplier"
+     "cvar": "Difficulty.ArmorDurabilityMultiplier",
+     "default": 1.0
     },
     {
      "label": "MUZZLE ATTACHMENT DURABILITY MULTIPLIER",
@@ -1170,7 +1283,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.MuzzleAttachmentDurabilityMultiplier"
+     "cvar": "Difficulty.MuzzleAttachmentDurabilityMultiplier",
+     "default": 1.0
     },
     {
      "label": "OTHER ITEMS DURABILITY MULTIPLIER",
@@ -1179,7 +1293,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.OtherItemsDurabilityMultiplier"
+     "cvar": "Difficulty.OtherItemsDurabilityMultiplier",
+     "default": 1.0
     },
     {
      "label": "BATTERY DEPLETION MULTIPLIER",
@@ -1188,7 +1303,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.BatteryDepletionMultiplier"
+     "cvar": "Difficulty.BatteryDepletionMultiplier",
+     "default": 1.0
     },
     {
      "label": "RADIATION FILTER DEPLETION MULTIPLIER",
@@ -1197,16 +1313,19 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.RadFilterDepletionMultiplier"
+     "cvar": "Difficulty.RadFilterDepletionMultiplier",
+     "default": 1.0
     },
     {
      "label": "PRIMARY INFESTATIONS ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.PrimaryInfestations",
      "default": 0.0
     },
     {
      "label": "RANDOM INFESTATIONS ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.RandomInfestations",
      "default": 0.0
     },
     {
@@ -1216,7 +1335,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.RandomInfestationsMultiplier"
+     "cvar": "Difficulty.RandomInfestationsMultiplier",
+     "default": 1.0
     },
     {
      "label": "INFESTATIONS HEALTH MULTIPLIER",
@@ -1231,6 +1351,7 @@
     {
      "label": "RANDOM EVENTS HAVE A MARKER?",
      "kind": "check",
+     "cvar": "Difficulty.RandomEventMarker",
      "default": 0.0
     },
     {
@@ -1246,6 +1367,7 @@
     {
      "label": "LEVEL SCALING ENABLED?",
      "kind": "check",
+     "cvar": "Difficulty.ScalingEnabled",
      "default": 0.0
     },
     {
@@ -1289,7 +1411,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.RadSeverityLvl1"
+     "cvar": "Difficulty.RadSeverityLvl1",
+     "default": 1.0
     },
     {
      "label": "RADIATION SEVERITY MULTIPLIER (LEVEL 2)",
@@ -1298,7 +1421,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.RadSeverityLvl2"
+     "cvar": "Difficulty.RadSeverityLvl2",
+     "default": 1.0
     },
     {
      "label": "RADIATION SEVERITY MULTIPLIER (LEVEL 3)",
@@ -1307,7 +1431,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.RadSeverityLvl3"
+     "cvar": "Difficulty.RadSeverityLvl3",
+     "default": 1.0
     },
     {
      "label": "DAY LENGTH",
@@ -1381,7 +1506,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.ZombieHoundAmount"
+     "cvar": "Difficulty.ZombieHoundAmount",
+     "default": 1.0
     },
     {
      "label": "ZOMBIE HEALTH MULTIPLIER",
@@ -1420,7 +1546,8 @@
      "max": 2.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.ArchetypeSprinter"
+     "cvar": "Difficulty.ArchetypeSprinter",
+     "default": 1.0
     },
     {
      "label": "'TOUGHENED CRAWLER' SPECIAL ARCHETYPE MULTIPLIER",
@@ -1429,7 +1556,8 @@
      "max": 2.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.ArchetypeToughenedCrawler"
+     "cvar": "Difficulty.ArchetypeToughenedCrawler",
+     "default": 1.0
     },
     {
      "label": "'ULTRA-RADIATED' SPECIAL ARCHETYPE MULTIPLIER",
@@ -1438,7 +1566,8 @@
      "max": 2.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.ArchetypeUltraRadiated"
+     "cvar": "Difficulty.ArchetypeUltraRadiated",
+     "default": 1.0
     },
     {
      "label": "'ACIDIC' SPECIAL ARCHETYPE MULTIPLIER",
@@ -1447,7 +1576,8 @@
      "max": 2.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.ArchetypeAcidic"
+     "cvar": "Difficulty.ArchetypeAcidic",
+     "default": 1.0
     },
     {
      "label": "'ARMORED FERAL HOUND' SPECIAL ARCHETYPE MULTIPLIER",
@@ -1456,7 +1586,8 @@
      "max": 2.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.ArchetypeArmoredHound"
+     "cvar": "Difficulty.ArchetypeArmoredHound",
+     "default": 1.0
     },
     {
      "label": "BANDIT HEALTH MULTIPLIER",
@@ -1475,7 +1606,8 @@
      "max": 4.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.BanditsCampMultiplier"
+     "cvar": "Difficulty.BanditsCampMultiplier",
+     "default": 1.0
     },
     {
      "label": "MILITARY HEALTH MULTIPLIER",
@@ -1514,7 +1646,8 @@
      "max": 4.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.ScavengersCampMultiplier"
+     "cvar": "Difficulty.ScavengersCampMultiplier",
+     "default": 1.0
     },
     {
      "label": "ANIMAL SPAWN AMOUNT MULTIPLIER",
@@ -1534,16 +1667,19 @@
     {
      "label": "DISABLE BACKPACK IN BACKPACK? (RESTART RECOMMENDED)",
      "kind": "check",
+     "cvar": "Difficulty.DisableBackpackInBackpack",
      "default": 0.0
     },
     {
      "label": "LOOT REGENERATION DISABLED ON LOAD?",
      "kind": "check",
+     "cvar": "Difficulty.Refill",
      "default": 0.0
     },
     {
      "label": "LOOT DEGREDATION AS DAYS SURVIVED INCREASES?",
      "kind": "check",
+     "cvar": "Difficulty.LootDegredation",
      "default": 0.0
     },
     {
@@ -1563,7 +1699,8 @@
      "max": 2.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.SearchTime"
+     "cvar": "Difficulty.SearchTime",
+     "default": 1.0
     },
     {
      "label": "GENERAL ITEMS RARITY",
@@ -1898,11 +2035,13 @@
     {
      "label": "KEEP INVENTORY ON DEATH?",
      "kind": "check",
+     "cvar": "Difficulty.KeepInventory",
      "default": 0.0
     },
     {
      "label": "RESET PASSIVE SKILLS ON DEATH?",
      "kind": "check",
+     "cvar": "Difficulty.ResetPassiveSkills",
      "default": 0.0
     },
     {
@@ -1912,7 +2051,8 @@
      "max": 5.0,
      "digits": 1,
      "multiplier": 1.0,
-     "cvar": "Difficulty.RegenMultiplier"
+     "cvar": "Difficulty.RegenMultiplier",
+     "default": 1.0
     },
     {
      "label": "HUNGER DEPLETION MULTIPLIER",
@@ -1986,7 +2126,8 @@
      "max": 100.0,
      "digits": 0,
      "multiplier": 1.0,
-     "cvar": "Difficulty.VehicleChance"
+     "cvar": "Difficulty.VehicleChance",
+     "default": 30.0
     },
     {
      "label": "RESET VEHICLE SPAWNS?",
@@ -2195,11 +2336,13 @@
  "new_game_rows": [
   {
    "label": "PERMADEATH?",
-   "kind": "check"
+   "kind": "check",
+   "cvar": "Difficulty.Permadeath"
   },
   {
    "label": "ALLOW DIFFICULTY CHANGES WHILE IN-GAME?",
-   "kind": "check"
+   "kind": "check",
+   "cvar": "Difficulty.Allow"
   }
  ],
  "difficulty_presets": [

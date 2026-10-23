@@ -1,7 +1,26 @@
 # SurrounDead — Rust Survival Engine
 
-**Estimated Port Completion: 40%**
-*The core engine data layer, physics, survival simulation, AI state machines, economy, and inventory systems are fully mapped. We are currently preparing for 3D mesh imports (converting proprietary UE5 `.uasset` to `.obj`/`.gltf`) and level design construction to bring the game visually to parity with the original.*
+**Estimated Port Completion: ~58%** (2026-10-15; the breakdown is in the Obsidian note "SurrounDead in Rust" and below)
+*The playable port is the Bevy app in `src/level`, `src/gameplay`, `src/menus` and `src/models`, built from the game's own extracted data, art and decompiled Blueprints. The figure weighs each area of the original game by size and counts how much of it the port does like the game; areas with nothing yet (NPCs and traders, vehicles, animals, fishing, base building, audio) count as zero.*
+
+| Area | Weight | Done |
+|---|---|---|
+| Menus, settings, saves | 8 | 90% |
+| World: terrain, props, lights, weather, day/night | 12 | 80% |
+| Player: movement, camera, animation, clothing, needs | 12 | 80% |
+| Combat: guns, melee, throwables, recoil | 12 | 75% |
+| Zombies | 10 | 65% |
+| Inventory, looting, crafting | 12 | 65% |
+| Progression: levels, passive skills, tech tree, journal | 6 | 75% |
+| Interactables: doors, power, locks, ladders | 6 | 80% |
+| NPCs, traders, quests | 8 | 0% |
+| Vehicles | 5 | 0% |
+| Animals, fishing, harvesting, base building | 6 | 0% |
+| Map, journal info/quests, radial menu | 3 | 20% |
+| Audio | 5 | 45% |
+| Particles and effects | 3 | 5% |
+
+(The sections below describe the earlier simulation layer, most of which the Bevy port doesn't use.)
 
 A comprehensive, pure Rust reimplementation of **SurrounDead** (open-world post-apocalyptic zombie survival).
 

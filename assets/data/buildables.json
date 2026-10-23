@@ -1,0 +1,6483 @@
+{
+ "actors": {
+  "Buildable_AmmoCrate_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Crate_Large_02",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_AmmoCrate",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_BarricadedMetalDoor_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Buildings/SM_Bld_Door_Barricaded_08",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_BarricadedMetalDoor",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_BaseMarker_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonOffice/Meshes/Props/Desk/SM_Prop_Minigolf_Flag_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.5,
+      1.5,
+      1.5
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_BaseMarker",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_BatteryCharger_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_CarBattery_Table_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_BatteryChargingBench",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_BearMount_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/HeadMount_Bear",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_BearHeadMount",
+   "tags": []
+  },
+  "Buildable_BearTrap_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/BearTrapBase",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/SM_Prop_Bear_Trap_Jaw_01",
+     "name": "SM_Prop_Bear_Trap_Jaw_01",
+     "parent": "StaticMesh",
+     "r": [
+      -0.707109,
+      -2e-06,
+      0.0,
+      -0.707105
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      -0.08,
+      0.073,
+      -1e-06
+     ]
+    },
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/SM_Prop_Bear_Trap_Jaw_01",
+     "name": "SM_Prop_Bear_Trap_Jaw_02",
+     "parent": "StaticMesh",
+     "r": [
+      -1e-06,
+      -0.707106,
+      0.707107,
+      -1e-06
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      -0.005,
+      0.073,
+      1e-06
+     ]
+    }
+   ],
+   "pickup": "DA_BearTrap",
+   "tags": [
+    "PlayerTrap"
+   ]
+  },
+  "Buildable_Bed_C": {
+   "options": [
+    "Sleep",
+    "Set Spawn Point",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonFarm/Meshes/Props/SM_Prop_Bed_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_DoubleBed",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_BoatHelm_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/BoatHelm",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_BoatHelmOrnament",
+   "tags": []
+  },
+  "Buildable_BunkerDoor_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildings/Bunker/BunkerDoor",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_BunkerDoor",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Campfire_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/CampfireModel",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Campfire",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_CampingLamp_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Flashlight_07",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_CampingLamp",
+   "tags": []
+  },
+  "Buildable_CampsiteTent_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Sleep",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Tent_Long_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_CampsiteTent",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_CeilingLight2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Bunker_Light_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_CeilingLight2",
+   "tags": []
+  },
+  "Buildable_CeilingLight_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Light_Industrial_Ceiling_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_CeilingLight1",
+   "tags": []
+  },
+  "Buildable_Chair2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Chair_Soft_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Chair2",
+   "tags": []
+  },
+  "Buildable_Chair_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonFarm/Meshes/Props/SM_Prop_Chair_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Chair1",
+   "tags": []
+  },
+  "Buildable_ClothingCupboard_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Items/CupboardMesh",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_ClothingCupboard",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_ConstructionBench_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/BuildBenchMesh",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_ConstructionWorkbench",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_ConstructionLight_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/SM_PortableLights",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_ConstructionLight",
+   "tags": []
+  },
+  "Buildable_Couch_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Couch_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Couch",
+   "tags": []
+  },
+  "Buildable_Cowgirl_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Figure_Cowgirl_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_CowgirlOrnament",
+   "tags": []
+  },
+  "Buildable_CraftingWorkbench_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/Workbench",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_CraftingWorkbench",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_DecontaminationShower_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Decontamination_Shower_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "collides": false,
+     "materials": [
+      "M_EmissiveColour_Red"
+     ],
+     "mesh": "SurrounDead/Content/Meshes/Other/1M_Cube",
+     "name": "Light",
+     "parent": "StaticMesh",
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      0.05,
+      0.05,
+      0.05
+     ],
+     "t": [
+      0.6,
+      2.333843,
+      -0.910433
+     ]
+    },
+    {
+     "collides": false,
+     "materials": [
+      "M_EmissiveColour_Red"
+     ],
+     "mesh": "SurrounDead/Content/Meshes/Other/1M_Cube",
+     "name": "Light2",
+     "parent": "StaticMesh",
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      0.05,
+      0.05,
+      0.05
+     ],
+     "t": [
+      -0.59,
+      2.331071,
+      0.905693
+     ]
+    }
+   ],
+   "pickup": "DA_DecontaminationShower",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_DeerMount_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/HeadMount_Deer",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_DeerHeadMount",
+   "tags": []
+  },
+  "Buildable_DisassemblyWorkbench_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/DisassemblyWorkbench",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_DisassemblyWorkbench",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Display_Plaque_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Decoration_GunRackSmall",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_DisplayPlaque",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Dog_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Car_Ornament_02",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_DogOrnament",
+   "tags": []
+  },
+  "Buildable_Dresser_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Dresser_03",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Dresser",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_FridgeContainer_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/FridgeMesh",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Fridge",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_GarageDoor_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [],
+   "pickup": "DA_GarageDoor",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Globe_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Globe_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_GlobeOrnament",
+   "tags": []
+  },
+  "Buildable_Goblin_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Figure_Goblin_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_GoblinOrnament",
+   "tags": []
+  },
+  "Buildable_GunLocker_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/GunLockerMesh",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_GunLocker",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_HordeBeacon_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [
+      "Mat_PolygonExplorers_01_A"
+     ],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonConstruction/Meshes/Props/SM_Prop_Generator_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.5,
+      1.5,
+      1.5
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "collides": false,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/SM_Prop_Satellite_Dish_01",
+     "name": "Dish",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      0.9,
+      0.9,
+      0.9
+     ],
+     "t": [
+      0.0,
+      0.77175,
+      0.214888
+     ]
+    },
+    {
+     "collides": false,
+     "materials": [
+      "M_PulsingLight_Camera"
+     ],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonGangWarfare/FX/Misc/SM_LightRay_Cube",
+     "name": "Cube",
+     "parent": "Dish",
+     "r": [
+      0.283022,
+      0.0,
+      0.0,
+      -0.959113
+     ],
+     "s": [
+      3.333333,
+      3.333333,
+      1.222222
+     ],
+     "t": [
+      0.013083,
+      1.148773,
+      0.76663
+     ]
+    }
+   ],
+   "pickup": "DA_HordeBeacon",
+   "tags": [
+    "NoSpawn",
+    "NoBuild"
+   ]
+  },
+  "Buildable_IndustrialGenerator_C": {
+   "options": [
+    "Turn On",
+    "Refuel",
+    "Show Generator Area",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonConstruction/Meshes/Props/SM_Prop_Generator_Large_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_IndustrialGenerator",
+   "tags": []
+  },
+  "Buildable_Jukebox_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonOffice/Meshes/Props/Misc/SM_Prop_Jukebox_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Jukebox",
+   "tags": []
+  },
+  "Buildable_Knight_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Figure_Knight_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_KnightOrnament",
+   "tags": []
+  },
+  "Buildable_Lamp_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Study_Lamp_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Lamp",
+   "tags": []
+  },
+  "Buildable_LandMine_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/Military/SM_Prop_Mine_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_LandMine",
+   "tags": [
+    "PlayerTrap"
+   ]
+  },
+  "Buildable_LargeConcreteWall1_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/MilitaryWall",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_LargeConcreteWall1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_LargeConcreteWall2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/MilitaryWall2",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_LargeConcreteWall2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_LargeGenerator_C": {
+   "options": [
+    "Turn On",
+    "Refuel",
+    "Show Generator Area",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/Genny",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_LargeGenerator",
+   "tags": []
+  },
+  "Buildable_LogWire_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Log_Wire_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_LogWire",
+   "tags": [
+    "PlayerTrap"
+   ]
+  },
+  "Buildable_MetalFence_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Fence_03",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_MetalFence",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_MilitaryCrate_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Crate_03",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_MilitaryCrate",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_MilitarySupplyCrates_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/Military/SM_Prop_Crate_Stack_02",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_MilitarySupplyCrates",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_MoneySafe_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/SafeLocker",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Safe",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_NeonCactus_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Neon_Cactus_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_NeonCactusOrnament",
+   "tags": []
+  },
+  "Buildable_NewtonsCradle_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_DeskToy_NewtownsCradle_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_NewtonsCradleOrnament",
+   "tags": []
+  },
+  "Buildable_OldChest_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/OldChest",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_OldChest",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Orbiter_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_DeskToy_Orbiter_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_OrbiterOrnament",
+   "tags": []
+  },
+  "Buildable_Piano_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Piano_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Piano",
+   "tags": []
+  },
+  "Buildable_Radio_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonConstruction/Meshes/Items/SM_Item_Radio_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Radio",
+   "tags": []
+  },
+  "Buildable_RazorWire_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/SM_Prop_RazorWire_02",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_RazorWire",
+   "tags": [
+    "PlayerTrap"
+   ]
+  },
+  "Buildable_Samurai_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Toy_Samurai_Full_Painted_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_SamuraiOrnament",
+   "tags": []
+  },
+  "Buildable_Shark_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/SharkFigurine",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      2.0,
+      2.0,
+      2.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_SharkOrnament",
+   "tags": []
+  },
+  "Buildable_Shelf_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/BuildableShelfMesh",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Shelf",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_ShippingContainer_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Shipping_Container_02",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_ShippingContainer",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_SleepingBag_C": {
+   "options": [
+    "Sleep",
+    "Set Spawn Point",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Sleeping_Bag_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_SleepingBag",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_SmallConcreteWall_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/SM_Prop_Barrier_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_SmallConcreteWall",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_SmallCouch_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Couch_02",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_SmallCouch",
+   "tags": []
+  },
+  "Buildable_SmallGenerator_C": {
+   "options": [
+    "Turn On",
+    "Refuel",
+    "Show Generator Area",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Generator_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_SmallGenerator",
+   "tags": []
+  },
+  "Buildable_SmallTurret_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonShops/Meshes/Props/SM_Prop_Computer_Camera_Tripod_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      0.75,
+      0.75,
+      0.75
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Sewers/M249Mesh",
+     "name": "Turret",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      -0.002321,
+      0.974348,
+      0.088352
+     ]
+    }
+   ],
+   "pickup": "DA_SmallTurret",
+   "tags": [
+    "NoSpawn",
+    "ZombieCanAttack"
+   ]
+  },
+  "Buildable_SpaceShuttle_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Spaceship_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_SpaceShuttleOrnament",
+   "tags": []
+  },
+  "Buildable_SpikedWall_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_SpikeWall_02",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_SpikedWall",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Spikes_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/SpikesMesh",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_SpikesTrap",
+   "tags": [
+    "PlayerTrap"
+   ]
+  },
+  "Buildable_StorageCrate2_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Crate_Large_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_StorageCrate2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_StorageCrate3_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonFarm/Meshes/Props/SM_Prop_Crate_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_StorageCrate3",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_StorageCrate4_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Crate_02",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_StorageCrate4",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_StorageCrate_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Crate_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_StorageCrate1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Table2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_CoffeeTable_02",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Table2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Table_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Table_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Table1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_TankTrap_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_TankTrap_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_TankTrap",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Tent1_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Sleep",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Tent_Dome_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Tent1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Tent2_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Sleep",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [
+      "Mat_PolygonApocalypse_02_A_Inst"
+     ],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Tent_Dome_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Tent2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Tent3_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Sleep",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [
+      "Mat_PolygonApocalypse_03_A_Inst"
+     ],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Tent_Dome_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Tent3",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Tent4_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Sleep",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [
+      "Mat_PolygonApocalypse_04_A_Inst"
+     ],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Tent_Dome_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_Tent4",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_TentCover_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/TentRoof",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_TentCover",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_ToolsCabinet_C": {
+   "options": [
+    "Interact",
+    "Change Container Name",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonStreetRacer/Meshes/Props/SM_Prop_ToolCabinet_01_Preset",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_ToolsCabinet",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_ToyBear_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Toy_Bear_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_ToyBearOrnament",
+   "tags": []
+  },
+  "Buildable_TrashBin_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_DustBin_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_TrashBin",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_Turret_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonShops/Meshes/Props/SM_Prop_Computer_Camera_Tripod_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Weapons/SM_Wep_Veh_MachineGun_01",
+     "name": "Turret",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.25,
+      1.25,
+      1.25
+     ],
+     "t": [
+      -0.0,
+      1.259812,
+      0.088352
+     ]
+    }
+   ],
+   "pickup": "DA_Turret",
+   "tags": [
+    "NoSpawn",
+    "ZombieCanAttack"
+   ]
+  },
+  "Buildable_Viking_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Figure_Viking_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": null,
+   "tags": []
+  },
+  "Buildable_WallLight_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Light_Industrial_Wall_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WallLight",
+   "tags": []
+  },
+  "Buildable_WatchTower_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/WatchTowerMesh",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.1,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WatchTower",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WaterWell_C": {
+   "options": [
+    "Fill Bottle",
+    "Drink",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/Mesh_WaterWell",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WaterWell",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WeaponsEquipmentWorkbench_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/WeaponEquipmentCraftingBenchMesh",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WeaponsEquipmentWorkbench",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WolfMount_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/HeadMount_Wolf",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WolfHeadMount",
+   "tags": []
+  },
+  "Buildable_WoodenDoor2_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Fence_Wood_Gate_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenDoor2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenDoor_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Buildings/SM_Bld_Door_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenDoor1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenFence2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Props/SM_Prop_Fence_01",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenFence2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenFence_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/SM_Prop_Fence_Wood_Straight_03",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenFence1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenFloorHalf_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Floor/Base_wood_floorHalf",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenHalfFloor",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenFloorQuarter_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Floor/Base_wood_floorQuarter",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenQuarterFloor",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenFloorTriangle_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Floor/Base_wood_floorTriangle",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenTriangularFloor",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenFloor_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Floor/Base_wood_floor",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenFloor",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenFoundationHalf_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Foundation/Base_wood_foundationHalf",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenHalfFoundation",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenFoundationQuarter_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Foundation/Base_wood_foundationQuarter",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenQuarterFoundation",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenFoundationTriangle_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Foundation/Base_wood_foundationTriangle",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenTriangularFoundation",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenFoundation_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Foundation/Base_wood_foundation",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenFoundation",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenGate_C": {
+   "options": [
+    "Interact",
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/Gate_Base",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/Gate_DoorLeft",
+     "name": "Gate_DoorLeft",
+     "parent": "StaticMesh",
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      3.542011
+     ]
+    },
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Meshes/Buildables/Gate_DoorRight",
+     "name": "Gate_DoorRight",
+     "parent": "StaticMesh",
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      -0.0,
+      -0.0,
+      -3.544855
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenGate",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenRoof45_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Roof/Base_wood_roof_45",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenRoof",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenRoofCorner_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Roof/Base_wood_roof_corner_45",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenRoofCorner",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenRoofTop_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Roof/Base_wood_roof_45_top",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenRoofTop",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenStairsCorner_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Stairs/Base_wood_stairs_corner",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenCornerStairs",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenStairsHalf_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Stairs/Base_wood_stairs_half",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenHalfStairs",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWall2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenWall2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallDoor2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_door",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenDoorway2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallDoor_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_door",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenDoorway1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallGableTop_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_gable_45_top",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenGable45Top",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallGable_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_gable_45",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenGable45",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallHalf2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_half",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenHalfWall2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallHalfMid2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_half_mid",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenHalfMidWall2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallHalfMid_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_half_mid",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenHalfMidWall1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallHalfShort2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_half_short",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenHalfShortWall2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallHalfShort_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_half_short",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenHalfShortWall1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallHalf_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_half",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenHalfWall1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallMid2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_mid",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenWallMid2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallMid_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_mid",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenWallMid1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallShort2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_short",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenWallShort2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallShort_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_short",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenWallShort1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallWindow2_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_window",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenWindow2",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWallWindow_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_window",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenWindow1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWall_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenWall1",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  },
+  "Buildable_WoodenWindowBarricade_C": {
+   "options": [
+    "Move",
+    "Pickup"
+   ],
+   "parts": [
+    {
+     "collides": true,
+     "materials": [],
+     "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Barricade_08",
+     "name": "StaticMesh",
+     "parent": null,
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "s": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "t": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "pickup": "DA_WoodenWindowBarricade",
+   "tags": [
+    "NoSpawn",
+    "Buildable"
+   ]
+  }
+ },
+ "horde": {
+  "dish_alpha": [
+   [
+    0.0,
+    0.0
+   ],
+   [
+    0.5,
+    0.0
+   ],
+   [
+    5.5,
+    1.0
+   ],
+   [
+    6.5,
+    1.0
+   ],
+   [
+    11.5,
+    0.0
+   ],
+   [
+    12.0,
+    0.0
+   ]
+  ],
+  "dish_secs": 12.0,
+  "max_rewards": 8,
+  "reward_at": [
+   3.7532556e-09,
+   1.25,
+   0.0
+  ],
+  "rewards": [
+   {
+    "chance": 25.0,
+    "item": "DA_ColonelsRevenge",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_BattleReadyGlock",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_Deadeye",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_Crusher",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_Guardian",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_Exterminator",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_Valkyrie",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_Lechie",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_Survivor",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_Cerberus",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_DarkMachete",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_556Ammo",
+    "max": 60,
+    "min": 40
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_762Ammo",
+    "max": 70,
+    "min": 40
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_308Ammo",
+    "max": 60,
+    "min": 40
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_9mmAmmo",
+    "max": 60,
+    "min": 40
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_45ACPAmmo",
+    "max": 60,
+    "min": 40
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_12GaugeAmmo",
+    "max": 60,
+    "min": 40
+   },
+   {
+    "chance": 10.0,
+    "item": "DA_300WinchesterAmmo",
+    "max": 20,
+    "min": 10
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_50CalAmmo",
+    "max": 20,
+    "min": 10
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_LargeMedkit",
+    "max": 4,
+    "min": 2
+   },
+   {
+    "chance": 10.0,
+    "item": "DA_LargeCoyoteBackpack",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 5.0,
+    "item": "DA_EnhancedMilitaryRespirator",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 10.0,
+    "item": "DA_SpecOpsPlateCarrier",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 10.0,
+    "item": "DA_SmallTurret",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 10.0,
+    "item": "DA_GrenadeLauncher",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 10.0,
+    "item": "DA_40mmGrenade",
+    "max": 10,
+    "min": 5
+   },
+   {
+    "chance": 10.0,
+    "item": "DA_SpecOpsHelmet",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 10.0,
+    "item": "DA_SpecOpsNVG",
+    "max": 1,
+    "min": 1
+   }
+  ],
+  "spawn_retries": 9,
+  "waves": [
+   {
+    "final": false,
+    "groups": [
+     [
+      "BP_Zombie_Infected_Horde_C",
+      4
+     ]
+    ]
+   },
+   {
+    "final": false,
+    "groups": [
+     [
+      "BP_Zombie_Infected_Horde_C",
+      6
+     ]
+    ]
+   },
+   {
+    "final": false,
+    "groups": [
+     [
+      "BP_ZombieBossHorde_Military_Small_C",
+      1
+     ]
+    ]
+   },
+   {
+    "final": false,
+    "groups": [
+     [
+      "BP_Zombie_Infected_Horde_C",
+      8
+     ]
+    ]
+   },
+   {
+    "final": false,
+    "groups": [
+     [
+      "BP_Zombie_Infected_Horde_C",
+      12
+     ]
+    ]
+   },
+   {
+    "final": false,
+    "groups": [
+     [
+      "BP_ZombieBossHorde_Military_Small_C",
+      2
+     ]
+    ]
+   },
+   {
+    "final": false,
+    "groups": [
+     [
+      "BP_Zombie_Infected_Horde_C",
+      15
+     ]
+    ]
+   },
+   {
+    "final": true,
+    "groups": [
+     [
+      "BP_ZombieBossHorde_Military_C",
+      1
+     ]
+    ]
+   }
+  ]
+ },
+ "items": {
+  "DA_AmmoCrate": {
+   "actor": "Buildable_AmmoCrate_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Crate_Large_02",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_BarricadedMetalDoor": {
+   "actor": "Buildable_BarricadedMetalDoor_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Buildings/SM_Bld_Door_Barricaded_08",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Door"
+  },
+  "DA_BaseMarker": {
+   "actor": "Buildable_BaseMarker_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonOffice/Meshes/Props/Desk/SM_Prop_Minigolf_Flag_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_BatteryChargingBench": {
+   "actor": "Buildable_BatteryCharger_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_CarBattery_Table_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_BearHeadMount": {
+   "actor": "Buildable_BearMount_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/HeadMount_Bear",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_BearTrap": {
+   "actor": "Buildable_BearTrap_C",
+   "allow_no_build": true,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/BearTrapBase",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_BoatHelmOrnament": {
+   "actor": "Buildable_BoatHelm_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/BoatHelm",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_BunkerDoor": {
+   "actor": "Buildable_BunkerDoor_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildings/Bunker/BunkerDoor",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Door"
+  },
+  "DA_Campfire": {
+   "actor": "Buildable_Campfire_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/CampfireModel",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_CampingLamp": {
+   "actor": "Buildable_CampingLamp_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Flashlight_07",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_CampsiteTent": {
+   "actor": "Buildable_CampsiteTent_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Tent_Long_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_CeilingLight1": {
+   "actor": "Buildable_CeilingLight_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Light_Industrial_Ceiling_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_CeilingLight2": {
+   "actor": "Buildable_CeilingLight2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Bunker_Light_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Chair1": {
+   "actor": "Buildable_Chair_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonFarm/Meshes/Props/SM_Prop_Chair_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Chair2": {
+   "actor": "Buildable_Chair2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Chair_Soft_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_ClothingCupboard": {
+   "actor": "Buildable_ClothingCupboard_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Items/CupboardMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_ConstructionLight": {
+   "actor": "Buildable_ConstructionLight_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/SM_PortableLights",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_ConstructionWorkbench": {
+   "actor": "Buildable_ConstructionBench_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/BuildBenchMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Couch": {
+   "actor": "Buildable_Couch_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Couch_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_CowgirlOrnament": {
+   "actor": "Buildable_Cowgirl_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Figure_Cowgirl_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_CraftingWorkbench": {
+   "actor": "Buildable_CraftingWorkbench_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/Workbench",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_DecontaminationShower": {
+   "actor": "Buildable_DecontaminationShower_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Decontamination_Shower_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_DeerHeadMount": {
+   "actor": "Buildable_DeerMount_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/HeadMount_Deer",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_DisassemblyWorkbench": {
+   "actor": "Buildable_DisassemblyWorkbench_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/DisassemblyWorkbench",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_DisplayPlaque": {
+   "actor": "Buildable_Display_Plaque_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Decoration_GunRackSmall",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_DogOrnament": {
+   "actor": "Buildable_Dog_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Car_Ornament_02",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_DoubleBed": {
+   "actor": "Buildable_Bed_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonFarm/Meshes/Props/SM_Prop_Bed_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Dresser": {
+   "actor": "Buildable_Dresser_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Dresser_03",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Fridge": {
+   "actor": "Buildable_FridgeContainer_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/FridgeMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_GarageDoor": {
+   "actor": "Buildable_GarageDoor_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/GarageDoor/GarageDoorMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_GlobeOrnament": {
+   "actor": "Buildable_Globe_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Globe_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_GoblinOrnament": {
+   "actor": "Buildable_Goblin_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Figure_Goblin_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_GunLocker": {
+   "actor": "Buildable_GunLocker_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/GunLockerMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_HordeBeacon": {
+   "actor": "Buildable_HordeBeacon_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/Mesh_HordeBeaconLarge",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_IndustrialGenerator": {
+   "actor": "Buildable_IndustrialGenerator_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonConstruction/Meshes/Props/SM_Prop_Generator_Large_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Jukebox": {
+   "actor": "Buildable_Jukebox_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonOffice/Meshes/Props/Misc/SM_Prop_Jukebox_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_KnightOrnament": {
+   "actor": "Buildable_Knight_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Figure_Knight_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Lamp": {
+   "actor": "Buildable_Lamp_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Study_Lamp_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_LandMine": {
+   "actor": "Buildable_LandMine_C",
+   "allow_no_build": true,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/Military/SM_Prop_Mine_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_LargeConcreteWall1": {
+   "actor": "Buildable_LargeConcreteWall1_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/MilitaryWall",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Fence"
+  },
+  "DA_LargeConcreteWall2": {
+   "actor": "Buildable_LargeConcreteWall2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/MilitaryWall2",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Fence"
+  },
+  "DA_LargeGenerator": {
+   "actor": "Buildable_LargeGenerator_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/Genny",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_LogWire": {
+   "actor": "Buildable_LogWire_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Log_Wire_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_MetalFence": {
+   "actor": "Buildable_MetalFence_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Fence_03",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Fence"
+  },
+  "DA_MilitaryCrate": {
+   "actor": "Buildable_MilitaryCrate_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Crate_03",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_MilitarySupplyCrates": {
+   "actor": "Buildable_MilitarySupplyCrates_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/Military/SM_Prop_Crate_Stack_02",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_NeonCactusOrnament": {
+   "actor": "Buildable_NeonCactus_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Neon_Cactus_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_NewtonsCradleOrnament": {
+   "actor": "Buildable_NewtonsCradle_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_DeskToy_NewtownsCradle_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_OldChest": {
+   "actor": "Buildable_OldChest_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/OldChest",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_OrbiterOrnament": {
+   "actor": "Buildable_Orbiter_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_DeskToy_Orbiter_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Piano": {
+   "actor": "Buildable_Piano_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Piano_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Radio": {
+   "actor": "Buildable_Radio_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonConstruction/Meshes/Items/SM_Item_Radio_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_RazorWire": {
+   "actor": "Buildable_RazorWire_C",
+   "allow_no_build": true,
+   "bounds_multiplier": 2.0,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/SM_Prop_RazorWire_02",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    15.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Safe": {
+   "actor": "Buildable_MoneySafe_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/SafeLocker",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_SamuraiOrnament": {
+   "actor": "Buildable_Samurai_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Toy_Samurai_Full_Painted_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_SharkOrnament": {
+   "actor": "Buildable_Shark_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/SharkFigurine",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Shelf": {
+   "actor": "Buildable_Shelf_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/BuildableShelfMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_ShippingContainer": {
+   "actor": "Buildable_ShippingContainer_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Shipping_Container_02",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_SleepingBag": {
+   "actor": "Buildable_SleepingBag_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Sleeping_Bag_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_SmallConcreteWall": {
+   "actor": "Buildable_SmallConcreteWall_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/SM_Prop_Barrier_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Fence"
+  },
+  "DA_SmallCouch": {
+   "actor": "Buildable_SmallCouch_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Couch_02",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_SmallGenerator": {
+   "actor": "Buildable_SmallGenerator_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Generator_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_SmallTurret": {
+   "actor": "Buildable_SmallTurret_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/SmallTurretMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_SpaceShuttleOrnament": {
+   "actor": "Buildable_SpaceShuttle_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Spaceship_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_SpikedWall": {
+   "actor": "Buildable_SpikedWall_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_SpikeWall_02",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Fence"
+  },
+  "DA_SpikesTrap": {
+   "actor": "Buildable_Spikes_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/SpikesMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_StorageCrate1": {
+   "actor": "Buildable_StorageCrate_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Crate_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_StorageCrate2": {
+   "actor": "Buildable_StorageCrate2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Crate_Large_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_StorageCrate3": {
+   "actor": "Buildable_StorageCrate3_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonFarm/Meshes/Props/SM_Prop_Crate_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_StorageCrate4": {
+   "actor": "Buildable_StorageCrate4_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Crate_02",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Table1": {
+   "actor": "Buildable_Table_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Table_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Table2": {
+   "actor": "Buildable_Table2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_CoffeeTable_02",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_TankTrap": {
+   "actor": "Buildable_TankTrap_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_TankTrap_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Tent1": {
+   "actor": "Buildable_Tent1_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Tent_Dome_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Tent2": {
+   "actor": "Buildable_Tent2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Tent_Dome_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Tent3": {
+   "actor": "Buildable_Tent3_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Tent_Dome_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Tent4": {
+   "actor": "Buildable_Tent4_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Tent_Dome_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_TentCover": {
+   "actor": "Buildable_TentCover_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/TentRoof",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_ToolsCabinet": {
+   "actor": "Buildable_ToolsCabinet_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonStreetRacer/Meshes/Props/SM_Prop_ToolCabinet_01_Preset",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_ToyBearOrnament": {
+   "actor": "Buildable_ToyBear_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Toy_Bear_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_TrashBin": {
+   "actor": "Buildable_TrashBin_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_DustBin_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_Turret": {
+   "actor": "Buildable_Turret_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/TurretMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_VikingOrnament": {
+   "actor": "Buildable_Viking_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Figurines/SM_Prop_Figure_Viking_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_WallLight": {
+   "actor": "Buildable_WallLight_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Light_Industrial_Wall_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_WatchTower": {
+   "actor": "Buildable_WatchTower_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/WatchTowerMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_WaterWell": {
+   "actor": "Buildable_WaterWell_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/Mesh_WaterWell",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_WeaponsEquipmentWorkbench": {
+   "actor": "Buildable_WeaponsEquipmentWorkbench_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/WeaponEquipmentCraftingBenchMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_WolfHeadMount": {
+   "actor": "Buildable_WolfMount_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/HeadMount_Wolf",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_WoodenCornerStairs": {
+   "actor": "Buildable_WoodenStairsCorner_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Stairs/Base_wood_stairs_corner",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Stairs"
+  },
+  "DA_WoodenDoor1": {
+   "actor": "Buildable_WoodenDoor_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Buildings/SM_Bld_Door_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Door"
+  },
+  "DA_WoodenDoor2": {
+   "actor": "Buildable_WoodenDoor2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Fence_Wood_Gate_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Door"
+  },
+  "DA_WoodenDoorway1": {
+   "actor": "Buildable_WoodenWallDoor_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_door",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenDoorway2": {
+   "actor": "Buildable_WoodenWallDoor2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_door",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenFence1": {
+   "actor": "Buildable_WoodenFence_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/SM_Prop_Fence_Wood_Straight_03",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Fence"
+  },
+  "DA_WoodenFence2": {
+   "actor": "Buildable_WoodenFence2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonNature/Meshes/Props/SM_Prop_Fence_01",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Fence"
+  },
+  "DA_WoodenFloor": {
+   "actor": "Buildable_WoodenFloor_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Floor/Base_wood_floor",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Floor"
+  },
+  "DA_WoodenFoundation": {
+   "actor": "Buildable_WoodenFoundation_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.25,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Foundation/Base_wood_foundation",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Foundation"
+  },
+  "DA_WoodenGable45": {
+   "actor": "Buildable_WoodenWallGable_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 3.0,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_gable_45",
+   "overlap_offset": [
+    -50.0,
+    0.0,
+    -85.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenGable45Top": {
+   "actor": "Buildable_WoodenWallGableTop_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 4.0,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_gable_45_top",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    -20.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenGate": {
+   "actor": "Buildable_WoodenGate_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Meshes/Buildables/GateMesh",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  },
+  "DA_WoodenHalfFloor": {
+   "actor": "Buildable_WoodenFloorHalf_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Floor/Base_wood_floorHalf",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Floor"
+  },
+  "DA_WoodenHalfFoundation": {
+   "actor": "Buildable_WoodenFoundationHalf_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.4,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Foundation/Base_wood_foundationHalf",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Foundation"
+  },
+  "DA_WoodenHalfMidWall1": {
+   "actor": "Buildable_WoodenWallHalfMid_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_half_mid",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "WallHalf"
+  },
+  "DA_WoodenHalfMidWall2": {
+   "actor": "Buildable_WoodenWallHalfMid2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_half_mid",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "WallHalf"
+  },
+  "DA_WoodenHalfShortWall1": {
+   "actor": "Buildable_WoodenWallHalfShort_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_half_short",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "WallHalf"
+  },
+  "DA_WoodenHalfShortWall2": {
+   "actor": "Buildable_WoodenWallHalfShort2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_half_short",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "WallHalf"
+  },
+  "DA_WoodenHalfStairs": {
+   "actor": "Buildable_WoodenStairsHalf_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Stairs/Base_wood_stairs_half",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "StairsHalf"
+  },
+  "DA_WoodenHalfWall1": {
+   "actor": "Buildable_WoodenWallHalf_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_half",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "WallHalf"
+  },
+  "DA_WoodenHalfWall2": {
+   "actor": "Buildable_WoodenWallHalf2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_half",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "WallHalf"
+  },
+  "DA_WoodenQuarterFloor": {
+   "actor": "Buildable_WoodenFloorQuarter_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Floor/Base_wood_floorQuarter",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "FloorQuarter"
+  },
+  "DA_WoodenQuarterFoundation": {
+   "actor": "Buildable_WoodenFoundationQuarter_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.4,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Foundation/Base_wood_foundationQuarter",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "FoundationQuarter"
+  },
+  "DA_WoodenRoof": {
+   "actor": "Buildable_WoodenRoof45_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 2.0,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Roof/Base_wood_roof_45",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Roof"
+  },
+  "DA_WoodenRoofCorner": {
+   "actor": "Buildable_WoodenRoofCorner_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 2.0,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Roof/Base_wood_roof_corner_45",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Roof"
+  },
+  "DA_WoodenRoofTop": {
+   "actor": "Buildable_WoodenRoofTop_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 2.0,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Roof/Base_wood_roof_45_top",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "RoofTop"
+  },
+  "DA_WoodenTriangularFloor": {
+   "actor": "Buildable_WoodenFloorTriangle_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 4.0,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Floor/Base_wood_floorTriangle",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "FloorTriangle"
+  },
+  "DA_WoodenTriangularFoundation": {
+   "actor": "Buildable_WoodenFoundationTriangle_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 4.0,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Foundation/Base_wood_foundationTriangle",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    65.0
+   ],
+   "snap": "FoundationTriangle"
+  },
+  "DA_WoodenWall1": {
+   "actor": "Buildable_WoodenWall_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenWall2": {
+   "actor": "Buildable_WoodenWall2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenWallMid1": {
+   "actor": "Buildable_WoodenWallMid_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_mid",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenWallMid2": {
+   "actor": "Buildable_WoodenWallMid2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_mid",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenWallShort1": {
+   "actor": "Buildable_WoodenWallShort_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.6,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_short",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenWallShort2": {
+   "actor": "Buildable_WoodenWallShort2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.6,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_short",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenWindow1": {
+   "actor": "Buildable_WoodenWallWindow_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall_window",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenWindow2": {
+   "actor": "Buildable_WoodenWallWindow2_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/Blueprints/BuildingSystem/Modular/Wood/Wall/Base_wood_wall02_window",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "Wall"
+  },
+  "DA_WoodenWindowBarricade": {
+   "actor": "Buildable_WoodenWindowBarricade_C",
+   "allow_no_build": false,
+   "bounds_multiplier": 1.5,
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Props/SM_Prop_Barricade_08",
+   "overlap_offset": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "snap": "NoSnap"
+  }
+ },
+ "no_build": [
+  2000.0,
+  2000.0,
+  2000.0
+ ]
+}

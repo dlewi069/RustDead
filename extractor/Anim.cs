@@ -1,7 +1,8 @@
 // Animation export: CUE4Parse can't write AnimSequences as glTF, so sample each bone's local
 // transform per frame and write JSON the Rust side turns into Bevy AnimationClips.
 //
-//   { "fps": 30, "frames": N, "duration": s,
+//   { "fps": 30, "frames": N, "duration": s, "rate": RateScale,
+//     "notifies": [{ "name": "Footstep", "time": s }...],
 //     "bones": { "<bone>": { "t": [[x,y,z]...], "r": [[x,y,z,w]...], "s": [[x,y,z]...] } } }
 //
 // Values are already in the glb skeleton's space (matches CUE4Parse's glTF skeleton export):
@@ -15,6 +16,8 @@ using System.Text.Json;
 using CUE4Parse.FileProvider;
 using CUE4Parse.UE4.Assets.Exports.Animation;
 using CUE4Parse.UE4.Objects.Core.Math;
+using CUE4Parse.UE4.Objects.UObject;
+using CUE4Parse.UE4.Assets.Objects;
 using CUE4Parse_Conversion.Animations;
 
 static class AnimExport
@@ -47,15 +50,28 @@ static class AnimExport
                         track.GetBoneTransform(f, frames, ref q, ref p, ref sc);
                         if (modes != null && b < modes.Length && modes[b] == EBoneTranslationRetargetingMode.Skeleton)
                             p = refPose[b].Translation;
+                        // Additive clips (Fire_Rifle_Ironsights) come back as full poses on their
+                        // base pose, but with scale 4 on every bone: keep the reference scale.
+                        if (anim.IsAdditive) sc = refPose[b].Scale3D;
                         t.Add(new[] { (float)p.X / 100f, (float)p.Z / 100f, (float)p.Y / 100f });
                         r.Add(new[] { (float)q.X, (float)q.Z, (float)q.Y, -(float)q.W });
                         s.Add(new[] { (float)sc.X, (float)sc.Z, (float)sc.Y });
                     }
                     outBones[bones[b].Name.Text] = new { t = Collapse(t), r = Collapse(r), s = Collapse(s) };
                 }
+                // Named notifies (AnimNotify_<Name> events in the AnimBP), by trigger time.
+                var notifies = new List<object>();
+                foreach (var n in seq.GetOrDefault<FStructFallback[]>("Notifies", Array.Empty<FStructFallback>()))
+                {
+                    var name = n.GetOrDefault<FName>("NotifyName").Text;
+                    if (string.IsNullOrEmpty(name) || name == "None") continue;
+                    notifies.Add(new { name, time = n.GetOrDefault<float>("LinkValue") });
+                }
                 var json = new
                 {
                     fps = anim.FramesPerSecond,
+                    rate = seq.GetOrDefault<float>("RateScale", 1f),
+                    notifies,
                     frames,
                     duration = frames > 1 ? (frames - 1) / anim.FramesPerSecond : 0,
                     additive = anim.IsAdditive,
@@ -69,7 +85,7 @@ static class AnimExport
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine($"FAIL {pkg}: {e.Message}");
+                Console.Error.WriteLine($"FAIL {pkg}: {(Environment.GetEnvironmentVariable("SD_DEBUG") != null ? e.ToString() : e.Message)}");
             }
         }
     }

@@ -7,8 +7,21 @@ use bevy::prelude::*;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
+/// A throwable's Blueprint class and its class defaults.
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct ThrowableDef {
+    pub class: String,
+    pub min_damage: f32,
+    pub max_damage: f32,
+    /// ExplosionDelay: seconds from the throw to the blast.
+    pub fuse: f32,
+}
+
 #[derive(Deserialize, Clone, Debug)]
 pub struct ItemDef {
+    /// Throwables (G): `ThrowableClass` and its defaults (`gameplay::throwables`).
+    #[serde(default)]
+    pub throwable: Option<ThrowableDef>,
     pub id: String,
     pub name: String,
     #[serde(rename = "type")]
@@ -62,13 +75,35 @@ pub struct ItemDef {
     pub durability: f32,
     #[serde(default)]
     pub reduce_durability: f32,
+    /// `IsArmor?`: worn as body armor or headwear it divides incoming damage.
+    #[serde(default)]
+    pub armor: bool,
+    /// Flashlights: `FlashlightIntensity`, the spot light's unitless intensity when on.
+    #[serde(default)]
+    pub flashlight_intensity: f32,
     /// The pickup's `BP_WeaponsPickupComponent` (firearms only).
     #[serde(default)]
     pub firearm: Option<FirearmData>,
+    /// BP_WeaponsPickupComponent's SwingSpeed / ReloadBaseSpeed: the melee attack and reload
+    /// montages' base play rates.
+    /// ContextMenuOptions without the `Jig.Context.` prefix ("ReadBook", "Use"...).
+    #[serde(default)]
+    pub context: Vec<String>,
+    #[serde(default = "one")]
+    pub swing_speed: f32,
+    /// Melee weapons: what their swings harvest ("tree", "rock"; `gameplay::harvest`).
+    #[serde(default)]
+    pub harvests: Vec<String>,
+    #[serde(default = "one")]
+    pub reload_speed: f32,
+}
+
+fn one() -> f32 {
+    1.0
 }
 
 /// What `BP_FirearmPickup` reads off the weapon's `BP_WeaponsPickupComponent`.
-#[derive(Deserialize, Clone, Copy, Debug, Default)]
+#[derive(Deserialize, Clone, Debug, Default)]
 pub struct FirearmData {
     /// `Enum_Firearms` value: 0 pistol, 1 SMG, 2 rifle, 3 marksman, 4 shotgun, 5 grenade
     /// launcher, 6 rocket launcher, 7 crossbow, 8 flare gun.
@@ -79,6 +114,31 @@ pub struct FirearmData {
     pub malfunction_chance: f32,
     /// `DefaultSoundRadius` (m): how far the shot is heard (ReportNoiseEvent MaxRange).
     pub sound_radius: f32,
+    /// `RecoilData` (Recoil_Struct), in AddControllerPitch/YawInput units: negative vertical
+    /// kicks up.
+    #[serde(default)]
+    pub recoil_vertical: f32,
+    #[serde(default)]
+    pub recoil_horizontal: f32,
+    #[serde(default)]
+    pub recoil_vertical_deviation: f32,
+    #[serde(default)]
+    pub recoil_horizontal_deviation: f32,
+    /// `RecoilRate`: ResetRecoilTL's play rate (RecoilTL plays 5x as fast).
+    #[serde(default)]
+    pub recoil_rate: f32,
+    /// `ResetRecoilDivider`: the reset takes back kick / this.
+    #[serde(default)]
+    pub reset_recoil_divider: f32,
+    /// MuzzleFlash: the particle system Svr_WeaponEffects plays at the Muzzle socket.
+    #[serde(default)]
+    pub muzzle_flash: Option<String>,
+    /// BrassType: the shell SpawnEmitterAtLocation drops at the ejection port.
+    #[serde(default)]
+    pub brass: Option<String>,
+    /// FirearmSound: the shot's SoundCue.
+    #[serde(default)]
+    pub sound: Option<String>,
 }
 
 impl FirearmData {
@@ -159,6 +219,18 @@ pub struct AttachmentRoll {
 pub struct Clothing {
     pub male: Option<String>,
     pub female: Option<String>,
+    /// The body-part meshes it swaps in, per sex (`ClothingSettings.BodyPartSettings`; None hides).
+    #[serde(default)]
+    pub body: Option<ClothingBody>,
+    /// `UpdateAllBodyParts?`: it sets every body part, not just its own region (the robe).
+    #[serde(default)]
+    pub update_all: bool,
+}
+
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct ClothingBody {
+    pub male: std::collections::BTreeMap<String, Option<String>>,
+    pub female: std::collections::BTreeMap<String, Option<String>>,
 }
 
 impl ItemDef {
@@ -201,6 +273,22 @@ pub struct ContainerDef {
     /// Seconds the interact key is held to search (BP_LootContainer `DurationToHold`).
     pub hold: f32,
     pub lockpick: bool,
+    /// ChanceToProduceNoise (%): each 0.075 s of a Quick Search may make a 40 m noise.
+    #[serde(default)]
+    pub noise: f32,
+    /// Its StaticMesh component's mesh (drawn for containers spawned at runtime).
+    #[serde(default)]
+    pub mesh: Option<String>,
+    /// Airdrop crates: their map marker's title and colour.
+    #[serde(default)]
+    pub airdrop: Option<AirdropInfo>,
+}
+
+/// Master_AirdropContainer's `Text` and `Color` (its BP_Marker's title and tint).
+#[derive(Deserialize, Clone, Debug)]
+pub struct AirdropInfo {
+    pub title: String,
+    pub color: [f32; 3],
 }
 
 /// A `Struct_ItemsToCraft` row of `DT_CraftingTableTypes`.
@@ -219,6 +307,9 @@ pub struct ItemDb {
     pub items: HashMap<String, ItemDef>,
     pub loot_tables: HashMap<String, Vec<LootRow>>,
     pub containers: HashMap<String, ContainerDef>,
+    /// DT_UniqueLoot: item sets item spawners add to their containers (the police briefcase's key).
+    #[serde(default)]
+    pub unique_loot: HashMap<String, Vec<LootRow>>,
     /// Crafting table ("Player" = the inventory's CRAFTING tab, else a workbench) -> recipes.
     #[serde(default)]
     pub recipes: HashMap<String, Vec<Recipe>>,
@@ -235,8 +326,17 @@ impl ItemDb {
     /// Roll a table the way the container BPs do: each row independently by its spawn
     /// chance, with a uniform count in [min, max].
     pub fn roll(&self, table: &str, rng: &mut impl Rng) -> Vec<Stack> {
+        self.roll_rows(self.loot_tables.get(table).map(Vec::as_slice).unwrap_or_default(), rng)
+    }
+
+    /// Roll a DT_UniqueLoot set (unknown sets give nothing, like AddUniqueLoot's missing row).
+    pub fn roll_unique(&self, set: &str, rng: &mut impl Rng) -> Vec<Stack> {
+        self.roll_rows(self.unique_loot.get(set).map(Vec::as_slice).unwrap_or_default(), rng)
+    }
+
+    pub fn roll_rows(&self, rows: &[LootRow], rng: &mut impl Rng) -> Vec<Stack> {
         let mut out = Vec::new();
-        for row in self.loot_tables.get(table).into_iter().flatten() {
+        for row in rows {
             if !self.items.contains_key(&row.item) || rng.gen_range(0.0..100.0) >= row.chance {
                 continue;
             }
@@ -311,6 +411,10 @@ pub struct Stack {
     /// Durability left (weapons); `None` is the item's full `MaxDurability`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub durability: Option<f32>,
+    /// RepItemInfo.Price when it isn't the item's own: a trader that resells an item it bought
+    /// prices it with its attachments' (SetVendorPriceOfSoldItem). `None` is the item's price.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub price: Option<f32>,
 }
 
 fn is_zero(n: &u32) -> bool {
@@ -484,6 +588,7 @@ mod tests {
 
     fn db() -> ItemDb {
         let item = |w, h, stack| ItemDef {
+            throwable: None,
             id: String::new(),
             name: String::new(),
             kind: String::new(),
@@ -509,12 +614,19 @@ mod tests {
             equip: None,
             durability: 0.0,
             reduce_durability: 0.0,
+            context: Vec::new(),
+            swing_speed: 1.0,
+            harvests: Vec::new(),
+            reload_speed: 1.0,
+            armor: false,
+            flashlight_intensity: 0.0,
             firearm: None,
         };
         ItemDb {
             items: HashMap::from([("Can".into(), item(1, 1, 5)), ("Rifle".into(), item(4, 2, 1))]),
             loot_tables: HashMap::new(),
             containers: HashMap::new(),
+            unique_loot: HashMap::new(),
             recipes: HashMap::new(),
             sockets: HashMap::new(),
         }

@@ -10,7 +10,10 @@ JigSInventory/Jigsaw/Data/DataAsset/JigsawItem_DataAsset (class defaults). Write
                inspect mesh (the game renders inventory icons from this mesh)
   loot_tables  table ID -> [{item, chance %, min, max}]  (DA_LootTable_* / ContainerItems_DataAsset)
   containers   container BP class (as it appears in actors.json) -> display name, loot table ID,
-               seconds to hold interact, lockpicking
+               seconds to hold interact, lockpicking, mesh (its StaticMesh component's, for
+               containers spawned at runtime)
+  unique_loot  DT_UniqueLoot row -> [{item, chance %, min, max}] (sets item spawners add to the
+               containers they spawn: the police briefcase's generator key)
 """
 import json
 import sys
@@ -50,11 +53,40 @@ def wearable_grids(p):
     return [[int(d["X"]), int(d["Y"])] for d in p.get("ContainerDimensions", []) if d.get("X", -1) > 0 and d.get("Y", -1) > 0]
 
 
+BODY_PARTS = ["Torso", "Arms", "Biceps", "Hands", "Legs", "LowerThighs", "LowerLegs", "Feet"]
+CLOTHING_DEFAULTS = None
+
+
+def clothing_defaults():
+    """The ClothingSettings struct's defaults. Unversioned assets leave out fields equal to them,
+    so an item's BodyPartSettings is these overlaid with its own (e.g. a shirt that only sets
+    Torso/Biceps keeps the default bare Arms)."""
+    for f in ROOT.rglob("ClothingSettings.json"):
+        for e in load(f):
+            if e.get("Type") == "UserDefinedStruct":
+                return e.get("DefaultProperties") or {}
+    return {}
+
+
 def clothing(p):
+    """The worn mesh per sex, and the body-part meshes BP_PlayerCharacter.BodyPartVisibility swaps
+    in while it's worn (MC_AttachClothing passes the item's own ClothingSettings; null hides a
+    part). The DT_Clothing path (EquipClothingToMesh) has no callers."""
+    global CLOTHING_DEFAULTS
+    if CLOTHING_DEFAULTS is None:
+        CLOTHING_DEFAULTS = clothing_defaults()
     cs = p.get("ClothingSettings") or {}
     mesh = lambda key: next((v["ObjectPath"].rsplit(".", 1)[0] for k, v in cs.items() if k.startswith(key) and v), None)
     male, female = mesh("MaleMesh"), mesh("FemaleMesh")
-    return {"male": male, "female": female or male} if male or female else None
+    if not (male or female):
+        return None
+    parts = {**(field(CLOTHING_DEFAULTS, "BodyPartSettings") or {}), **(field(cs, "BodyPartSettings") or {})}
+    path = lambda v: v["ObjectPath"].rsplit(".", 1)[0] if v else None
+    body = {sex.lower(): {b: path(field(parts, f"{sex}{b}Mesh")) for b in BODY_PARTS} for sex in ("Male", "Female")}
+    update_all = field(cs, "UpdateAllBodyParts?")
+    if update_all is None:
+        update_all = field(CLOTHING_DEFAULTS, "UpdateAllBodyParts?")
+    return {"male": male, "female": female or male, "body": body, "update_all": bool(update_all)}
 
 
 def random_stats(p):
@@ -159,9 +191,9 @@ def FIREARM_TYPES():
     return next((e.get("Names", {}) for e in load(f) if e["Type"] == "UserDefinedEnum"), {}) if f.exists() else {}
 
 
-def firearm(p):
-    """BP_WeaponsPickupComponent on the item's pickup Blueprint (over the component's class
-    defaults, walking parent pickups): what BP_FirearmPickup's firing reads."""
+def weapon_component(p):
+    """BP_WeaponsPickupComponent on the item's pickup Blueprint, over the component's class
+    defaults, walking parent pickups (None for items without one)."""
     comp_file = ROOT / "Inventory/Items/Other/Components/BP_WeaponsPickupComponent.json"
     if not comp_file.exists():
         return None
@@ -185,6 +217,29 @@ def firearm(p):
     c = dict(base)
     for comp in reversed(chain):
         c.update(comp)
+    return c
+
+
+def weapon_speeds(p):
+    """The montage play rates BP_PlayerCharacter starts from: SwingSpeed (melee attacks, ×
+    StrengthSpeedMultiplier) and ReloadBaseSpeed (reloads, × ReloadingMultiplier)."""
+    c = weapon_component(p) or {}
+    return c.get("SwingSpeed", 1.0), c.get("ReloadBaseSpeed", 1.0)
+
+
+def harvests(p):
+    """What a melee weapon's swings harvest (BP_WeaponsPickupComponent's CanDamageTree? /
+    CanDamageRock? / CanDamageTrashObjects?, read by BP_MeleePickup.HitFoliageTree / HitFoliageRock /
+    HitTrashObject)."""
+    c = weapon_component(p) or {}
+    return [k for k, flag in (("tree", "CanDamageTree?"), ("rock", "CanDamageRock?"), ("trash", "CanDamageTrashObjects?")) if c.get(flag)]
+
+
+def firearm(p):
+    """What BP_FirearmPickup's firing reads off the weapon component."""
+    c = weapon_component(p)
+    if c is None:
+        return None
     recoil = c.get("RecoilData") or {}
     return {
         # Enum_Firearms index: picks the headshot multiplier (FirearmTypeMultiplier).
@@ -195,7 +250,22 @@ def firearm(p):
         "sound_radius": c.get("DefaultSoundRadius", 5000.0) / 100.0,
         "recoil_horizontal": field(recoil, "RecoilHorizontal") or 0.0,
         "recoil_vertical": field(recoil, "RecoilVertical") or 0.0,
+        # Recoil_Struct's random deviations and the timelines' rate / the reset's share
+        # (BP_FirearmPickup.WeaponRecoilValues).
+        "recoil_vertical_deviation": field(recoil, "VerticalRandomDeviation") or 0.0,
+        "recoil_horizontal_deviation": field(recoil, "HorizontalRandomDeviation") or 0.0,
+        "recoil_rate": c.get("RecoilRate", 2.5),
+        "reset_recoil_divider": c.get("ResetRecoilDivider", 1.5),
         "pellets": c.get("ShotgunPellets", 6),
+        # The shot's SoundCue (PlaySoundAtLocation at the muzzle), suppressed and chambering ones.
+        "sound": pkg_name(c.get("FirearmSound")),
+        "suppressed_sound": pkg_name(c.get("FirearmSuppressedSound")),
+        "chamber_sound": pkg_name(c.get("FirearmChamberSound")),
+        # Svr_WeaponEffects' particle system at the Muzzle socket (SuppressedMuzzleFlash with a
+        # suppressor), and the shell SpawnEmitterAtLocation drops at the ejection port.
+        "muzzle_flash": pkg_name(c.get("MuzzleFlash")),
+        "suppressed_muzzle_flash": pkg_name(c.get("SuppressedMuzzleFlash")),
+        "brass": pkg_name(c.get("BrassType")),
     }
 
 
@@ -204,6 +274,54 @@ def item_defaults():
         if e["Name"].startswith("Default__"):
             return e.get("Properties", {})
     return {}
+
+
+def throwable(p):
+    """The DA's ThrowableClass (Blueprints/Throwables/BP_Throwable_*), with its class defaults
+    over BP_MasterThrowable's: MinDamage/MaxDamage and ExplosionDelay (the fuse)."""
+    ref = p.get("ThrowableClass")
+    if not ref:
+        return None
+    cls = ref["ObjectName"].split("'")[1]
+    defaults = {"MinDamage": 0.0, "MaxDamage": 0.0, "ExplosionDelay": 2.0}
+    for name in ("BP_MasterThrowable", cls.removesuffix("_C")):
+        f = ROOT / "Blueprints/Throwables" / f"{name}.json"
+        if f.exists():
+            for e in load(f):
+                if e["Name"].startswith("Default__"):
+                    defaults.update({k: v for k, v in e.get("Properties", {}).items() if k in defaults})
+    return {"class": cls, "min_damage": defaults["MinDamage"], "max_damage": defaults["MaxDamage"], "fuse": defaults["ExplosionDelay"]}
+
+
+def tech_tree():
+    """SkillTree (the Tech Tree plugin's TechnologyTree): each node's BP_SkillTreeAsset (name,
+    tooltip, Cost, icon), editor position and parents -> assets/data/techtree.json."""
+    f = ROOT / "Blueprints/SkillTree/SkillTree.json"
+    if not f.exists():
+        return None
+    exports = load(f)
+    by_ref = {e["Name"]: e for e in exports if e["Type"] == "TTTechNode"}
+    tree = next(e for e in exports if e["Type"] == "TechnologyTree")["Properties"]
+    nodes = []
+    for e in by_ref.values():
+        p = e["Properties"]
+        skill = pkg_name(p["TechnologyAsset"])
+        a = next(x for x in load(ROOT / f"Blueprints/SkillTree/Skills/{skill}.json") if x["Type"] == "BP_SkillTreeAsset_C")["Properties"]
+        parents = [pkg_name(by_ref[r["ObjectName"].split(":")[-1].rstrip("'")]["Properties"]["TechnologyAsset"]) for r in p.get("ParentNodes") or []]
+        nodes.append({
+            "id": skill,
+            "name": text(a.get("PrimaryText")),
+            "tooltip": text(a.get("TooltipText")),
+            "cost": a.get("Cost", 1),
+            # Enum_SkillType index: SkillTreeWidgetIcon tints the icon by it (0 red, 1 green, 2 blue, 3 grey).
+            "kind": int(str(a.get("Type", "Enum_SkillType::NewEnumerator0")).rsplit("NewEnumerator", 1)[-1] or 0),
+            "icon": "game/" + a["TechIcon"]["ResourceObject"]["ObjectPath"].split(".")[0] + ".png",
+            "pos": [p.get("NodePosX", 0), p.get("NodePosY", 0)],
+            "parents": parents,
+        })
+    nodes.sort(key=lambda n: (n["pos"][1], n["pos"][0]))
+    size = tree.get("TreeSize", {})
+    return {"size": [size.get("X", 640.0), size.get("Y", 1000.0)], "slot": [tree.get("SlotSize", {}).get("X", 70.0), tree.get("SlotSize", {}).get("Y", 70.0)], "nodes": nodes}
 
 
 def main():
@@ -236,6 +354,15 @@ def main():
                 "durability": p.get("MaxDurability", 0.0),
                 # Durability lost per shot / swing (ReduceDurability), before the difficulty multiplier.
                 "reduce_durability": p.get("ReduceDurabilityAmount", 0.0),
+                # IsArmor?: body armor / headwear that divides damage (CalculatePlayerDamage).
+                "armor": bool(p.get("IsArmor?")),
+                # Flashlights: the spot light's Intensity when switched on (FlashlightToggle).
+                "flashlight_intensity": p.get("FlashlightIntensity", 0.0) if (p.get("Type") or {}).get("TagName", "").endswith("Flashlight") else 0.0,
+                # ContextMenuOptions (Jig.Context.*): what the right-click menu offers ("ReadBook"...).
+                "context": [str(t).rsplit(".", 1)[-1] for t in p.get("ContextMenuOptions") or []],
+                "swing_speed": weapon_speeds(p)[0],
+                "harvests": harvests(p),
+                "reload_speed": weapon_speeds(p)[1],
                 "firearm": firearm(p) if (p.get("Type") or {}).get("TagName", "").endswith(("MainFirearm", "Sidearm")) else None,
                 "equip": equip(p),
                 "id": p.get("ItemID", e["Name"]),
@@ -259,7 +386,20 @@ def main():
                 # Clothing worn on the survivor (skeletal meshes on the shared body skeleton).
                 "clothing": clothing(p),
                 "fov": p.get("FOV", 30.0),
+                # Throwables (G): the ThrowableClass and its class defaults.
+                "throwable": throwable(p),
             }
+
+    def loot_rows(rows):
+        return [
+            {
+                "item": pkg_name(field(r, "ItemID")),
+                "chance": field(r, "SpawnChance") or 0.0,
+                "min": field(r, "RandomCountMin") or 1,
+                "max": field(r, "RandomCountMax") or 1,
+            }
+            for r in rows if field(r, "ItemID")
+        ]
 
     tables = {}
     # Container loot tables, plus the AI ones dead zombies/animals carry (AI/AILootTables).
@@ -269,15 +409,10 @@ def main():
                 continue
             p = e.get("Properties", {})
             rows = field(p.get("Loot Table", {}), "ContainerSettings") or []
-            tables[p.get("ID", e["Name"])] = [
-                {
-                    "item": pkg_name(field(r, "ItemID")),
-                    "chance": field(r, "SpawnChance") or 0.0,
-                    "min": field(r, "RandomCountMin") or 1,
-                    "max": field(r, "RandomCountMax") or 1,
-                }
-                for r in rows if field(r, "ItemID")
-            ]
+            tables[p.get("ID", e["Name"])] = loot_rows(rows)
+
+    # GameFunctionLibrary.AddUniqueLoot appends a row's ItemSet to the container's starting items.
+    unique = {row: loot_rows(field(v, "ItemSet") or []) for row, v in load(ROOT / "Inventory/Containers/DT_UniqueLoot.json")[0].get("Rows", {}).items()}
 
     # Enum_ContainerLootTables value -> table ID (its display names are the IDs).
     enum = {}
@@ -293,7 +428,8 @@ def main():
         cdo = next((e for e in exports if e["Name"].startswith("Default__")), None)
         if cls and cdo:
             sup = (cls.get("SuperStruct") or {}).get("ObjectName", "")
-            classes[cls["Name"]] = {"super": sup.split("'")[1] if "'" in sup else None, "props": cdo.get("Properties", {})}
+            mesh = next((e["Properties"].get("StaticMesh") for e in exports if e["Name"] == "StaticMesh_GEN_VARIABLE" and "Properties" in e), None)
+            classes[cls["Name"]] = {"super": sup.split("'")[1] if "'" in sup else None, "props": cdo.get("Properties", {}), "mesh": mesh["ObjectPath"].rsplit(".", 1)[0] if mesh else None}
 
     def inherited(name, key):
         while name in classes:
@@ -321,6 +457,25 @@ def main():
             "table": table,
             "hold": inherited(name, "DurationToHold") or 4.0,
             "lockpick": is_a(name, "BP_MASTER_PicklockContainer_C"),
+            # ChanceToProduceNoise (%): Quick Search's per-0.075 s roll for a 40 m noise.
+            "noise": (inherited(name, "ChanceToProduceNoise") or 10.0) if is_a(name, "BP_LootContainer_C") else 0.0,
+            "mesh": classes[name]["mesh"],
+        }
+
+    # Airdrop crates (Master_AirdropContainer's children, dropped by AirdropAircraft): held 6 s,
+    # opened as "Airdrop" (AddJigWidgetToContent's title), their map marker's title and colour.
+    for name in classes:
+        if not is_a(name, "Master_AirdropContainer_C") or name == "Master_AirdropContainer_C":
+            continue
+        colour = inherited(name, "Color") or {}
+        containers[name] = {
+            "name": "Airdrop",
+            "table": enum.get(inherited(name, "LootTable") or "Enum_ContainerLootTables::NewEnumerator0"),
+            "hold": inherited(name, "DurationToHold") or 6.0,
+            "lockpick": False,
+            "noise": inherited(name, "ChanceToProduceNoise") or 10.0,
+            "mesh": classes[name]["mesh"] or classes.get(classes[name]["super"], {}).get("mesh"),
+            "airdrop": {"title": inherited(name, "Text") or "Airdrop", "color": [colour.get("R", 1.0), colour.get("G", 1.0), colour.get("B", 1.0)]},
         }
 
     # DT_CraftingTableTypes: one row per crafting UI ("Player" is the inventory's CRAFTING tab,
@@ -342,7 +497,10 @@ def main():
                 })
             recipes[row] = out
 
-    OUT.write_text(json.dumps({"items": items, "loot_tables": tables, "containers": containers, "recipes": recipes, "sockets": sockets(ROOT)}, indent=1, sort_keys=True))
+    tech = tech_tree()
+    if tech:
+        (OUT.parent / "techtree.json").write_text(json.dumps(tech, indent=1, sort_keys=True))
+    OUT.write_text(json.dumps({"items": items, "loot_tables": tables, "containers": containers, "unique_loot": unique, "recipes": recipes, "sockets": sockets(ROOT)}, indent=1, sort_keys=True))
     missing = sorted({c["table"] for c in containers.values() if c["table"] and c["table"] not in tables})
     print(f"items: {len(items)}, loot tables: {len(tables)}, containers: {len(containers)}, recipes: {sum(map(len, recipes.values()))}; unknown tables: {missing}")
 

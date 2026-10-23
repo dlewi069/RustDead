@@ -5,12 +5,21 @@
 //! - `placements.json`: every static mesh / foliage instance as Bevy-space transforms;
 //! - `splines.json`: spline meshes (roads, fences, cables), deformed at load ([`spline`]);
 //! - `actors.json`: every actor's class and transform (PlayerStarts, spawners, containers...);
-//!   spawners also carry their property overrides ([`spawners`]).
+//!   spawners also carry their property overrides ([`spawners`]);
+//! - `harvest.json`: the foliage instances whose surface is Tree or Stone, and the TrashObjects'
+//!   meshes (`gameplay::harvest`).
 //!
-//! Props and splines are bucketed into [`CELL`]-metre cells and streamed around the camera.
+//! Props and splines are bucketed into [`CELL`]-metre cells and streamed around the camera,
+//! except door meshes, which [`doors`] spawns itself so they can move.
 
 pub mod collision;
+pub mod doors;
+pub mod garage;
+pub mod ladders;
+pub mod power;
+pub mod prefabs;
 pub mod grass;
+pub mod item_spawners;
 pub mod lights;
 pub mod spawners;
 pub mod spline;
@@ -41,12 +50,26 @@ pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(MaterialPlugin::<TerrainMaterial>::default())
-            .add_systems(OnEnter(AppState::InGame), (enter_level, grass::setup_grass, lights::setup_lights).chain())
+            .add_systems(OnEnter(AppState::InGame), (enter_level, grass::setup_grass, lights::setup_lights, ladders::setup_ladders, power::setup_power, item_spawners::setup_item_spawns, item_spawners::spawn_item_containers, garage::setup_garages).chain())
             .init_resource::<collision::CollisionCache>()
-            .add_systems(OnExit(AppState::InGame), (reset_terrain, reset_props, grass::reset_grass, lights::reset_lights))
+            .init_resource::<doors::Doors>()
+            .init_resource::<garage::Garages>()
+            .init_resource::<prefabs::Prefabs>()
+            .add_systems(OnEnter(AppState::InGame), prefabs::reset)
+            .add_systems(
+                Update,
+                prefabs::run_prefabs
+                    .after(spawners::run_spawners)
+                    .run_if(resource_exists::<Level>)
+                    .run_if(resource_exists::<PropStreaming>)
+                    .run_if(in_state(AppState::InGame))
+                    .run_if(in_state(crate::menus::MenuScreen::None)),
+            )
+            .add_systems(OnExit(AppState::InGame), (reset_terrain, reset_props, grass::reset_grass, lights::reset_lights, doors::reset_doors))
             .add_systems(
                 PostUpdate,
-                collision::move_bodies
+                (ladders::climb_ladders, collision::move_bodies)
+                    .chain()
                     .before(bevy::transform::TransformSystems::Propagate)
                     .run_if(in_state(AppState::InGame))
                     .run_if(in_state(crate::menus::MenuScreen::None)),
@@ -55,6 +78,14 @@ impl Plugin for LevelPlugin {
                 Update,
                 (stream_terrain, request_props, resolve_props, spawn_cells, spawners::run_spawners, spawners::optimize_subjects, grass::resolve_grass, grass::stream_grass, lights::update_lights, spin_turbines)
                     .chain()
+                    .run_if(in_state(AppState::InGame)),
+            )
+            .add_systems(
+                Update,
+                (
+                    (doors::load_doors, doors::spawn_doors, doors::move_doors, garage::move_garages, power::status_lamps, power::generator_hum).chain().after(resolve_props),
+                    doors::interact_doors.after(crate::gameplay::interact::search_containers),
+                )
                     .run_if(in_state(AppState::InGame)),
             );
     }
@@ -98,10 +129,41 @@ pub struct Level {
     meshes: Vec<PropMesh>,
     splines: Vec<SplineMesh>,
     cells: HashMap<IVec2, Vec<Item>>,
+    /// Interactive doors (their meshes are not in `cells`).
+    pub doors: Vec<doors::DoorDef>,
+    /// Placed items (cell, index in it) a melee swing can harvest.
+    pub harvest: HashMap<PropKey, Harvestable>,
+    /// The prefab spawners, their prefabs' meshes placed in `cells` (hidden until spawned).
+    pub prefabs: Vec<prefabs::PrefabSite>,
 }
+
+/// A prop's drawn mesh and material.
+pub type DrawPart = (Handle<Mesh>, Handle<StandardMaterial>);
+
+/// A placed prop: its cell and index in the cell's list.
+pub type PropKey = (IVec2, u32);
+
+/// What a melee swing can break: a foliage instance's physical surface, as BP_MeleePickup's hit
+/// switch reads it, or a TrashObject.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Harvestable {
+    /// PhysMat_Tree: becomes BP_HarvestableObject_Tree when hit.
+    Tree,
+    /// PhysMat_Stone (the Resource_Rock foliage): becomes BP_HarvestableObject_Rocks.
+    Stone,
+    /// A TrashObject's mesh (its WorldObjectComponent takes melee damage).
+    Trash,
+}
+
+/// Marks a streamed-in prop's draw entities that can be harvested away.
+#[derive(Component)]
+pub struct PropItem(pub PropKey);
 
 struct PropMesh {
     path: String,
+    /// The mesh's simple collision (`simple_collision.json`: the trees' BodySetup capsules and
+    /// hulls), used instead of its drawn triangles.
+    simple: Option<std::sync::Arc<Vec<[Vec3; 3]>>>,
     gltf: Option<Handle<Gltf>>,
     /// Resolved draw parts. `Some(vec![])` if the file failed to load.
     parts: Option<Vec<Part>>,
@@ -112,6 +174,15 @@ struct Part {
     material: Handle<StandardMaterial>,
     /// Characters collide with it (not leaves, grass, plants, rubbish decals).
     collide: bool,
+    /// A status lamp the Blueprint recolours (material slot 1 of a lab switch or door frame).
+    lamp: Option<power::LampKind>,
+    /// A BP_WaterBox / BP_WaterSpline surface: SwimmingComponent's water trace hits it.
+    water: bool,
+}
+
+/// A prop mesh that's a water body's surface (BP_WaterBox's cube, BP_WaterSpline's plane).
+fn is_water(path: &str) -> bool {
+    path.contains("/Terrain/Water/")
 }
 
 /// Materials characters walk through: foliage cards and ground clutter.
@@ -136,29 +207,114 @@ impl Level {
         let placements: HashMap<String, Vec<[f32; 12]>> = serde_json::from_str(&read("placements.json")?).ok()?;
         let splines: Vec<SplineMesh> = serde_json::from_str(&read("splines.json").unwrap_or_else(|| "[]".into())).ok()?;
         let actors: Vec<ActorInfo> = serde_json::from_str(&read("actors.json")?).ok()?;
+        // { "tree": { mesh: [placement indices] }, "stone": {...}, "trash": {...} }
+        let surfaces: HashMap<String, HashMap<String, Vec<usize>>> = read("harvest.json").and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default();
+        let mut surface_of: HashMap<(&str, usize), Harvestable> = HashMap::new();
+        for (kind, h) in [("tree", Harvestable::Tree), ("stone", Harvestable::Stone), ("trash", Harvestable::Trash)] {
+            for (mesh, list) in surfaces.get(kind).into_iter().flatten() {
+                surface_of.extend(list.iter().map(|&k| ((mesh.as_str(), k), h)));
+            }
+        }
+        let mut harvest = HashMap::new();
 
+        let simple: HashMap<String, Vec<[f32; 9]>> = std::fs::read_to_string("assets/data/simple_collision.json").ok().and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default();
         let mut meshes = Vec::new();
         let mut index = HashMap::new();
         let mut mesh_id = |path: &str, meshes: &mut Vec<PropMesh>| -> u32 {
             *index.entry(path.to_string()).or_insert_with(|| {
-                meshes.push(PropMesh { path: format!("game/{path}.glb"), gltf: None, parts: None });
+                let simple = simple.get(path).map(|t| std::sync::Arc::new(t.iter().map(|v| [Vec3::new(v[0], v[1], v[2]), Vec3::new(v[3], v[4], v[5]), Vec3::new(v[6], v[7], v[8])]).collect()));
+                meshes.push(PropMesh { path: format!("game/{path}.glb"), simple, gltf: None, parts: None });
                 meshes.len() as u32 - 1
             })
         };
+        let (found, taken) = doors::find(&actors, &placements);
         let mut cells: HashMap<IVec2, Vec<Item>> = HashMap::new();
         for (path, list) in &placements {
             let id = mesh_id(path, &mut meshes);
-            for m in list {
+            for (k, m) in list.iter().enumerate() {
+                if taken.contains(&(path.clone(), k)) {
+                    continue;
+                }
                 let transform = affine(m);
-                cells.entry(cell_of(transform.translation)).or_default().push(Item::Static { mesh: id, transform });
+                let cell = cell_of(transform.translation);
+                let list = cells.entry(cell).or_default();
+                if let Some(&h) = surface_of.get(&(path.as_str(), k)) {
+                    harvest.insert((cell, list.len() as u32), h);
+                }
+                list.push(Item::Static { mesh: id, transform });
             }
         }
         for (i, s) in splines.iter().enumerate() {
             let id = mesh_id(&s.mesh, &mut meshes);
             cells.entry(cell_of(affine(&s.transform).translation)).or_default().push(Item::Spline { index: i as u32, mesh: id });
         }
-        info!("level: {} meshes, {} cells, {} actors", meshes.len(), cells.len(), actors.len());
-        Some(Self { actors, meshes, splines, cells })
+        // Each prefab spawner's prefab, its meshes in the cells like the level's own.
+        let mut prefab_sites = Vec::new();
+        for (i, a) in actors.iter().enumerate() {
+            let Some(mut site) = prefabs::PrefabSite::from_actor(i, a) else { continue };
+            let Some(def) = site.def() else { continue };
+            let base = site.transform.to_matrix();
+            for (mesh, m) in &def.meshes {
+                let id = mesh_id(mesh, &mut meshes);
+                let transform = Transform::from_matrix(base * affine(m).to_matrix());
+                let cell = cell_of(transform.translation);
+                let list = cells.entry(cell).or_default();
+                site.keys.push((cell, list.len() as u32));
+                list.push(Item::Static { mesh: id, transform });
+            }
+            prefab_sites.push(site);
+        }
+        let doors = found
+            .into_iter()
+            .map(|(mut d, paths)| {
+                for (part, path) in d.parts.iter_mut().zip(&paths) {
+                    part.mesh = mesh_id(path, &mut meshes);
+                }
+                d
+            })
+            .collect::<Vec<_>>();
+        info!("level: {} meshes, {} cells, {} actors, {} doors, {} harvestable, {} prefab sites", meshes.len(), cells.len(), actors.len(), doors.len(), harvest.len(), prefab_sites.len());
+        Some(Self { actors, meshes, splines, cells, doors, harvest, prefabs: prefab_sites })
+    }
+
+    /// Harvestable props of `kind` within `r` of `p` (horizontally): key and position, nearest first.
+    pub fn harvestables_near(&self, p: Vec3, r: f32, kind: Harvestable) -> Vec<(PropKey, Vec3)> {
+        let mut out: Vec<(PropKey, Vec3)> = self
+            .harvest
+            .iter()
+            .filter(|(_, k)| **k == kind)
+            .filter_map(|(&(cell, i), _)| match self.cells.get(&cell)?.get(i as usize)? {
+                Item::Static { transform, .. } => Some(((cell, i), transform.translation)),
+                Item::Spline { .. } => None,
+            })
+            .filter(|(_, at)| at.xz().distance(p.xz()) < r)
+            .collect();
+        out.sort_by(|a, b| a.1.xz().distance(p.xz()).total_cmp(&b.1.xz().distance(p.xz())));
+        out
+    }
+
+    /// The placed static prop nearest `at` (within `within` m) whose mesh file is `stem`: its key,
+    /// transform and glb path.
+    pub fn prop_near(&self, at: Vec3, stem: &str, within: f32) -> Option<(PropKey, Transform, String)> {
+        let c = cell_of(at);
+        let suffix = format!("/{stem}.glb");
+        (-1..=1)
+            .flat_map(|dx| (-1..=1).map(move |dz| c + IVec2::new(dx, dz)))
+            .filter_map(|cell| self.cells.get(&cell).map(|items| (cell, items)))
+            .flat_map(|(cell, items)| items.iter().enumerate().map(move |(i, it)| (cell, i, it)))
+            .filter_map(|(cell, i, it)| match *it {
+                Item::Static { mesh, transform } if self.meshes[mesh as usize].path.ends_with(&suffix) => Some(((cell, i as u32), transform, self.meshes[mesh as usize].path.clone())),
+                _ => None,
+            })
+            .filter(|(_, t, _)| t.translation.distance(at) <= within)
+            .min_by(|a, b| a.1.translation.distance(at).total_cmp(&b.1.translation.distance(at)))
+    }
+
+    /// A placed static prop's draw parts (once loaded) and transform.
+    pub fn prop_parts(&self, (cell, index): PropKey) -> Option<(Vec<DrawPart>, Transform)> {
+        let Item::Static { mesh, transform } = *self.cells.get(&cell)?.get(index as usize)? else { return None };
+        let parts = self.meshes[mesh as usize].parts.as_ref()?;
+        Some((parts.iter().map(|p| (p.mesh.clone(), p.material.clone())).collect(), transform))
     }
 
     /// PlayerStarts straight from disk, for callers that run before [`Level`] is inserted.
@@ -181,6 +337,38 @@ pub struct PropStreaming {
     /// Deformed spline meshes: (mesh, material, characters collide with it).
     spline_meshes: HashMap<u32, Vec<(Handle<Mesh>, Handle<StandardMaterial>, bool)>>,
     wanted: Vec<IVec2>,
+    /// Props gone for the session (felled trees, broken rocks): not drawn, no collision.
+    removed: HashSet<PropKey>,
+}
+
+impl PropStreaming {
+    /// Take a prop out of the world for the rest of the session. The caller despawns its
+    /// [`PropItem`] entities and drops its collision ([`collision::CollisionCache::forget`]).
+    pub fn remove(&mut self, key: PropKey) {
+        self.removed.insert(key);
+    }
+
+    /// Take a prop out of the static cells for good (gameplay draws it itself): its cell, if
+    /// loaded, comes back for the caller to despawn so it reloads without it.
+    pub fn hide(&mut self, key: PropKey) -> Option<Entity> {
+        self.removed.insert(key);
+        self.loaded.remove(&key.0)
+    }
+
+    pub fn is_removed(&self, key: PropKey) -> bool {
+        self.removed.contains(&key)
+    }
+
+    /// Bring props back (a prefab spawning). Their loaded cells are dropped so they stream in
+    /// again with them; the caller despawns the returned cell entities and forgets the props'
+    /// collision.
+    pub fn restore(&mut self, keys: &[PropKey]) -> Vec<Entity> {
+        for k in keys {
+            self.removed.remove(k);
+        }
+        let cells: HashSet<IVec2> = keys.iter().map(|k| k.0).collect();
+        cells.into_iter().filter_map(|c| self.loaded.remove(&c)).collect()
+    }
 }
 
 fn enter_level(
@@ -190,15 +378,22 @@ fn enter_level(
     assets: Res<AssetServer>,
     mut materials: ResMut<Assets<TerrainMaterial>>,
 ) {
-    if level.is_none() {
-        match Level::load() {
-            Some(l) => commands.insert_resource(l),
+    // Prefab meshes stay hidden until their prefab spawns this session (`prefabs::run_prefabs`).
+    let hidden = |l: &Level| l.prefabs.iter().flat_map(|s| s.keys.iter().copied()).collect::<HashSet<_>>();
+    let removed = match &level {
+        Some(l) => hidden(l),
+        None => match Level::load() {
+            Some(l) => {
+                let h = hidden(&l);
+                commands.insert_resource(l);
+                h
+            }
             None => {
                 warn!("{LEVEL_DIR} missing; run extractor/export_assets.sh --level");
                 return;
             }
-        }
-    }
+        },
+    };
     let terrain = match terrain {
         Some(t) => t.clone(),
         None => match Terrain::load(LEVEL_DIR) {
@@ -210,7 +405,7 @@ fn enter_level(
         },
     };
     commands.insert_resource(setup_terrain_material(ASSET_DIR, &terrain, &assets, &mut materials));
-    commands.insert_resource(PropStreaming::default());
+    commands.insert_resource(PropStreaming { removed, ..default() });
     commands.insert_resource(spawners::Spawners::default());
 }
 
@@ -279,7 +474,7 @@ fn resolve_props(
         let names: HashMap<AssetId<_>, &str> = gltf.named_materials.iter().map(|(n, h)| (h.id(), &**n)).collect();
         // BP_WaterBox / BP_WaterSpline surfaces (SplineWaterTEST, PlaneSplineMesh): the BPs draw
         // them with Mat_Clear_Water and they're water volumes, not floors.
-        let water = m.path.contains("/Terrain/Water/");
+        let water = is_water(&m.path);
         let mut parts = Vec::new();
         let mut ready = true;
         for gm in &gltf.meshes {
@@ -293,7 +488,7 @@ fn resolve_props(
                     continue;
                 }
                 if water {
-                    parts.push(Part { mesh: p.mesh.clone(), material: lib.water(&mut materials), collide: false });
+                    parts.push(Part { mesh: p.mesh.clone(), material: lib.water(&mut materials), collide: false, lamp: None, water: true });
                     continue;
                 }
                 let mat = lib.get(name, &assets, &mut materials).unwrap_or_else(|| materials.add(StandardMaterial::default()));
@@ -301,8 +496,8 @@ fn resolve_props(
                 if let Some(trunk_mat) = lib.trunk(name, &mut materials)
                     && let Some((leaves, trunk)) = meshes.get(&p.mesh).and_then(|m| crate::models::split_by_vertex_alpha(&m))
                 {
-                    parts.push(Part { mesh: meshes.add(leaves), material: mat, collide: false });
-                    parts.push(Part { mesh: meshes.add(trunk), material: trunk_mat, collide: true });
+                    parts.push(Part { mesh: meshes.add(leaves), material: mat, collide: false, lamp: None, water: false });
+                    parts.push(Part { mesh: meshes.add(trunk), material: trunk_mat, collide: true, lamp: None, water: false });
                     continue;
                 }
                 // UE materials ignore vertex colour; Bevy would multiply it in (see models).
@@ -311,7 +506,7 @@ fn resolve_props(
                 {
                     mesh.remove_attribute(Mesh::ATTRIBUTE_COLOR);
                 }
-                parts.push(Part { mesh: p.mesh.clone(), material: mat, collide: !walk_through(name) });
+                parts.push(Part { mesh: p.mesh.clone(), material: mat, collide: !walk_through(name), lamp: power::LampKind::of(&m.path, name), water: false });
             }
         }
         if ready {
@@ -367,7 +562,11 @@ fn spawn_cells(
         }
         budget -= 1;
         let cell = commands.spawn((Transform::default(), Visibility::default(), DespawnOnExit(AppState::InGame))).id();
-        for item in items {
+        for (i, item) in items.iter().enumerate() {
+            let key = (c, i as u32);
+            if state.removed.contains(&key) {
+                continue;
+            }
             match *item {
                 Item::Static { mesh, transform } => {
                     let spins = level.meshes[mesh as usize].path.ends_with("/SM_Prop_Windfarm_Blades_01.glb");
@@ -375,6 +574,12 @@ fn spawn_cells(
                         let mut child = commands.spawn((Mesh3d(p.mesh.clone()), MeshMaterial3d(p.material.clone()), transform));
                         if spins {
                             child.insert(TurbineBlades);
+                        }
+                        if let Some(kind) = p.lamp {
+                            child.insert(power::StatusLamp::new(kind, transform.translation));
+                        }
+                        if level.harvest.contains_key(&key) {
+                            child.insert(PropItem(key));
                         }
                         let child = child.id();
                         commands.entity(cell).add_child(child);

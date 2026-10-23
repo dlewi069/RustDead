@@ -11,7 +11,27 @@ use surroundead::models::{Locomotion, ModelsPlugin, spawn_character};
 #[derive(Component)]
 struct Player {
     speed: f32,
+    /// Sprint ran out of stamina (StaminaComponent's f_CheckStamina turned it off); Shift has to be
+    /// pressed again, with stamina above 0.5 (f_SprintOnOff's NoStamina check).
+    exhausted: bool,
+    /// Crouched (IA_Crouch, Left Ctrl: held, or pressed to toggle with CROUCH TOGGLE).
+    crouched: bool,
+    /// Sitting on the ground (IA_SitDown, -).
+    sitting: bool,
 }
+
+/// StaminaComponent overrides on BP_PlayerCharacter: WalkSpeed 400, SprintSpeed 750 cm/s.
+const WALK_SPEED: f32 = 4.0;
+const SPRINT_SPEED: f32 = 7.5;
+/// CharMoveComp MaxWalkSpeedCrouched 120 cm/s; `Crouch Sprint` raises it to 420.
+const CROUCH_SPEED: f32 = 1.2;
+const CROUCH_SPRINT_SPEED: f32 = 4.2;
+/// The capsule: radius 30, half height 82 standing and 50 crouched (CrouchedHalfHeight), cm.
+const CAPSULE_RADIUS: f32 = 0.30;
+const STANDING_HEIGHT: f32 = 1.64;
+const CROUCHED_HEIGHT: f32 = 1.0;
+/// Jumping needs and costs 5 stamina (`Svr_ReduceStamina(5.0)`).
+const JUMP_STAMINA: f32 = 5.0;
 
 /// BP_PlayerCharacter's spring arm: `ThirdPersonTargetArmLength` 300 behind the survivor,
 /// mouse look (`bUsePawnControlRotation`), shorter and over a shoulder while aiming.
@@ -26,11 +46,13 @@ struct CameraController {
     /// Camera above (+) or below (-) the pivot, radians.
     pitch: f32,
     yaw: f32,
+    /// How far crouching has lowered the pivot (eased).
+    drop: f32,
 }
 
 impl Default for CameraController {
     fn default() -> Self {
-        Self { distance: 3.0, arm: 3.0, side: 0.0, pitch: 12.0f32.to_radians(), yaw: -30.0f32.to_radians() }
+        Self { distance: 3.0, arm: 3.0, side: 0.0, pitch: 12.0f32.to_radians(), yaw: -30.0f32.to_radians(), drop: 0.0 }
     }
 }
 
@@ -74,12 +96,13 @@ fn main() {
                 }),
         )
         .add_plugins((MenuPlugin, ModelsPlugin, LevelPlugin, GameplayPlugin))
+        .add_plugins(surroundead::audio::plugin)
         .add_systems(OnEnter(AppState::InGame), setup_world)
         .add_systems(Update, grab_cursor)
         .add_systems(
             Update,
             (
-                player_movement.run_if(player_in_control),
+                player_movement.run_if(surroundead::gameplay::on_foot).after(surroundead::gameplay::vault::VaultSet),
                 camera_controls.run_if(player_in_control),
                 sync_player_to_save,
                 respawn_player,
@@ -114,7 +137,7 @@ fn setup_world(
 
     // Saved games resume where they left off; a new game picks one of the map's PlayerStarts.
     let saved = game.state.as_ref().map(|s| Vec3::new(s.player_pos.x, s.player_pos.y, s.player_pos.z)).filter(|p| *p != Vec3::ZERO);
-    let starts = level.map(|l| l.player_starts()).or_else(|| Level::peek_player_starts()).unwrap_or_default();
+    let starts = level.map(|l| l.player_starts()).or_else(Level::peek_player_starts).unwrap_or_default();
     let mut spawn = saved.unwrap_or_else(|| {
         // SD_START=<n> pins the PlayerStart (screenshot tours, debugging a spot).
         let seed = std::env::var("SD_START").ok().and_then(|s| s.parse().ok());
@@ -133,8 +156,8 @@ fn setup_world(
         &menu_data.creator,
         (
             DespawnOnExit(AppState::InGame),
-            Player { speed: 4.5 },
-            KinematicBody::new(0.35, 1.8),
+            Player { speed: WALK_SPEED, exhausted: false, crouched: false, sitting: false },
+            KinematicBody::new(CAPSULE_RADIUS, STANDING_HEIGHT),
             Transform::from_translation(spawn),
         ),
     );
@@ -156,6 +179,7 @@ fn setup_world(
         CameraController::default(),
         Camera3d::default(),
         PlayerCamera,
+        surroundead::audio::Listener,
         // Eye adaptation (gameplay/daynight.rs) drives this.
         bevy::camera::Exposure::default(),
         DistanceFog {
@@ -168,18 +192,148 @@ fn setup_world(
     // The HUD is gameplay/hud.rs (BP_Ingame).
 }
 
-/// Responsive WASD Movement + Physics-based Jump
+/// WASD (camera-relative), sprint, crouch and jump, after BP_PlayerCharacter's input events.
+#[allow(clippy::too_many_arguments)]
 fn player_movement(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
     armed: Res<Armed>,
-    game: Res<surroundead::menus::CurrentGame>,
+    mut game: ResMut<surroundead::menus::CurrentGame>,
+    store: Res<surroundead::menus::settings::SettingsStore>,
+    stun: Res<surroundead::gameplay::survival::LandingStun>,
     camera_query: Query<&CameraController>,
-    mut query: Query<(&Player, &mut KinematicBody, &mut Transform, &mut Locomotion)>,
+    mut query: Query<(&mut Player, &mut KinematicBody, &mut Transform, &mut Locomotion)>,
+    roll: Res<surroundead::gameplay::roll::Roll>,
+    swim: Res<surroundead::gameplay::swim::Swim>,
+    vault: Res<surroundead::gameplay::vault::Vault>,
+    fishing: Res<surroundead::gameplay::fishing::Fishing>,
 ) {
     let camera_yaw = camera_query.iter().next().map(|c| c.yaw).unwrap_or(0.0);
+    let stamina = game.state.as_ref().map_or(100.0, |s| s.survival.stamina);
+    // f_SprintOnOff: UpdatePlayerSpeed(FitnessMultiplier x SprintSpeed).
+    let fitness = game.state.as_ref().map_or(1.0, |s| s.passive.multiplier(surroundead::progression::passive::Passive::Fitness));
+    let shift = [KeyCode::ShiftLeft, KeyCode::ShiftRight];
+    let crouch_toggle = store.find("settings/Controls/CROUCH TOGGLE") == Some(surroundead::menus::settings::Value::Bool(true));
 
-    for (player, mut body, mut transform, mut loco) in &mut query {
+    for (mut player, mut body, mut transform, mut loco) in &mut query {
+        // On a ladder: W/S climb at MaxFlySpeed, strafing does nothing, Jump lets go.
+        if body.climbing {
+            // Event_Crouch does nothing on a ladder (ClimbingLadder?).
+            player.crouched = false;
+            body.height = STANDING_HEIGHT;
+            let dir = keyboard_input.any_pressed([KeyCode::KeyW, KeyCode::ArrowUp]) as i32 as f32 - keyboard_input.any_pressed([KeyCode::KeyS, KeyCode::ArrowDown]) as i32 as f32;
+            // The body moves it, and the speed carries on when it leaves the top (Flying -> Falling).
+            body.vertical_velocity = dir * surroundead::level::ladders::CLIMB_SPEED;
+            if keyboard_input.just_pressed(KeyCode::Space) {
+                body.climbing = false;
+            }
+            let next = if dir != 0.0 { Locomotion::Climb } else { Locomotion::ClimbIdle };
+            if *loco != next {
+                *loco = next;
+            }
+            continue;
+        }
+        // Rolling (IsPlayerRolling?): the roll's root motion moves them (gameplay/roll.rs).
+        if roll.active() {
+            continue;
+        }
+        // Vaulting (gameplay/vault.rs): its montages move them, and the press that started it
+        // doesn't jump (the BP's Flying movement mode).
+        if vault.active() {
+            continue;
+        }
+        // Swimming (gameplay/swim.rs): W/S along the camera's whole forward (looking down dives),
+        // A/D along its right, Space rises under water (IA_FloatUpwards); 3 m/s, Shift = SwimFast
+        // (5 m/s x FitnessSwimmingMultiplier, a sprint for stamina). Never above the afloat height.
+        if body.swimming {
+            use surroundead::gameplay::swim::{FLOAT, SWIM_FAST, SWIM_SPEED};
+            player.sitting = false;
+            player.crouched = false;
+            body.height = STANDING_HEIGHT;
+            let (yaw, pitch) = camera_query.iter().next().map_or((0.0, 0.0), |c| (c.yaw, c.pitch));
+            let look = -Vec3::new(yaw.sin() * pitch.cos(), pitch.sin(), yaw.cos() * pitch.cos());
+            let right = Vec3::new(yaw.cos(), 0.0, -yaw.sin());
+            let axis = |pos: [KeyCode; 2], neg: [KeyCode; 2]| keyboard_input.any_pressed(pos) as i32 as f32 - keyboard_input.any_pressed(neg) as i32 as f32;
+            let mut dir = look * axis([KeyCode::KeyW, KeyCode::ArrowUp], [KeyCode::KeyS, KeyCode::ArrowDown]) + right * axis([KeyCode::KeyD, KeyCode::ArrowRight], [KeyCode::KeyA, KeyCode::ArrowLeft]);
+            if swim.underwater && keyboard_input.pressed(KeyCode::Space) {
+                dir += right.cross(look);
+            }
+            if keyboard_input.any_just_pressed(shift) && stamina > 0.5 {
+                player.exhausted = false;
+            } else if stamina <= 0.0 {
+                player.exhausted = true;
+            }
+            let moving = dir.length_squared() > 1e-6;
+            let fast = moving && !player.exhausted && stamina > 0.0 && keyboard_input.any_pressed(shift);
+            if moving {
+                let fitness_swim = game.state.as_ref().map_or(1.0, |s| s.passive.fitness_swimming);
+                let speed = if fast { SWIM_FAST * fitness_swim } else { SWIM_SPEED };
+                let d = dir.normalize();
+                let before = transform.translation.y;
+                transform.translation += d * speed * time.delta_secs();
+                if let Some(s) = swim.surface {
+                    transform.translation.y = transform.translation.y.min((s - FLOAT).max(before));
+                }
+                let flat = d.with_y(0.0);
+                if flat.length_squared() > 1e-6 {
+                    let target = Quat::from_rotation_y(flat.x.atan2(flat.z));
+                    transform.rotation = transform.rotation.slerp(target, 8.0 * time.delta_secs());
+                }
+            }
+            let next = match (swim.underwater, moving, fast) {
+                (true, true, _) => Locomotion::SwimUnder,
+                (_, false, _) => Locomotion::SwimIdle,
+                (false, true, true) => Locomotion::SwimFast,
+                (false, true, false) => Locomotion::Swim,
+            };
+            if *loco != next {
+                *loco = next;
+            }
+            continue;
+        }
+        // IA_SitDown (-): only standing still on the ground, not aiming or sprinting
+        // (DisableMovement + SittingPlayer_Anim_Montage); - again or Jump stands up (StopAnimMontage,
+        // SetMovementMode walking), and Jump doesn't jump then. Crouch does nothing while seated.
+        // Its Event_SitDownRegen (5 s in) restarts the health regen timer, which ours never stops.
+        let wasd = keyboard_input.any_pressed([KeyCode::KeyW, KeyCode::KeyA, KeyCode::KeyS, KeyCode::KeyD, KeyCode::ArrowUp, KeyCode::ArrowDown, KeyCode::ArrowLeft, KeyCode::ArrowRight]);
+        let mut stood_up = false;
+        if player.sitting {
+            if keyboard_input.any_just_pressed([KeyCode::Minus, KeyCode::Space]) {
+                player.sitting = false;
+                stood_up = true;
+            } else {
+                if *loco != Locomotion::Sit {
+                    *loco = Locomotion::Sit;
+                }
+                continue;
+            }
+        } else if keyboard_input.just_pressed(KeyCode::Minus)
+            && body.grounded
+            && !wasd
+            && !armed.aiming
+            && stun.0 <= 0.0
+            && !matches!(*loco, Locomotion::Sprint | Locomotion::CrouchSprint)
+        {
+            // (Sitting from a crouch stands the capsule up: the montage is a standing-height pose.)
+            player.sitting = true;
+            player.crouched = false;
+            body.height = STANDING_HEIGHT;
+            *loco = Locomotion::Sit;
+            continue;
+        }
+        // IA_Crouch (Left Ctrl): Character.CrouchToggle flips it on each press, otherwise
+        // pressed crouches and released stands. (UnCrouch isn't stopped by a low ceiling here:
+        // the collision has no ceilings.)
+        player.crouched = if crouch_toggle { player.crouched != keyboard_input.just_pressed(KeyCode::ControlLeft) } else { keyboard_input.pressed(KeyCode::ControlLeft) };
+        body.height = if player.crouched { CROUCHED_HEIGHT } else { STANDING_HEIGHT };
+        if keyboard_input.any_just_pressed(shift) && stamina > 0.5 {
+            player.exhausted = false;
+        } else if stamina <= 0.0 && matches!(*loco, Locomotion::Sprint | Locomotion::CrouchSprint) {
+            player.exhausted = true;
+        }
+        // A hard landing (OnLanded) disables movement for a moment; so does a line in the water
+        // (CastRod's SetCharacterMovementEnabled(false)).
+        let stunned = stun.0 > 0.0 || fishing.active;
         let mut moving = None;
         let mut raw_direction = Vec3::ZERO;
         let mut aim_dir = Vec3::ZERO;
@@ -196,6 +350,9 @@ fn player_movement(
         if keyboard_input.pressed(KeyCode::KeyD) || keyboard_input.pressed(KeyCode::ArrowRight) {
             raw_direction.x += 1.0;
         }
+        if stunned {
+            raw_direction = Vec3::ZERO;
+        }
 
         // Camera-relative direction vector
         if raw_direction.length_squared() > 0.0 {
@@ -204,16 +361,19 @@ fn player_movement(
 
             let direction = (forward * raw_direction.z + right * raw_direction.x).normalize();
             aim_dir = direction;
-            let sprint_mult = if !armed.aiming && (keyboard_input.pressed(KeyCode::ShiftLeft) || keyboard_input.pressed(KeyCode::ShiftRight)) {
-                1.75
-            } else {
-                1.0
-            };
+            // Sprint input while crouched is the crouch sprint (`Crouch Sprint`).
+            let sprinting = !armed.aiming && !player.exhausted && stamina > 0.0 && keyboard_input.any_pressed(shift);
             // Walking while aiming (the Ironsights blend spaces sample 115 cm/s; ours is a bit
-            // quicker so it doesn't feel stuck).
-            let speed = if armed.aiming { AIM_WALK } else { player.speed * sprint_mult };
+            // quicker so it doesn't feel stuck). Crouched, MaxWalkSpeedCrouched rules either way.
+            let speed = match (player.crouched, sprinting) {
+                (true, true) => CROUCH_SPRINT_SPEED,
+                (true, false) => CROUCH_SPEED,
+                (false, _) if armed.aiming => AIM_WALK,
+                (false, true) => SPRINT_SPEED * fitness,
+                (false, false) => player.speed,
+            };
             transform.translation += direction * speed * time.delta_secs();
-            moving = Some(sprint_mult > 1.0);
+            moving = Some(sprinting);
 
             // Smoothly rotate character to face travel direction (aiming faces the camera below).
             if !armed.aiming {
@@ -229,31 +389,44 @@ fn player_movement(
         }
 
         // Gravity, landing and walls are the level's KinematicBody (level/collision.rs).
-        if keyboard_input.just_pressed(KeyCode::Space) {
-            // 9 m/s stands for the CharacterMovement's 600 cm/s JumpZVelocity; a broken bone
-            // drops it to 400 (MedicalComponent `Svr_SetJumpVelocity`).
+        // Event_Jump: not crouched, falling or aiming, and 5 stamina, which it spends.
+        if keyboard_input.just_pressed(KeyCode::Space) && !stood_up && !stunned && !player.crouched && !armed.aiming && body.grounded && stamina >= JUMP_STAMINA {
+            // CharacterMovement's JumpZVelocity, 600 cm/s; a broken bone drops it to 400
+            // (MedicalComponent `Svr_SetJumpVelocity`).
             let v = game.state.as_ref().map_or(surroundead::gameplay::medical::JUMP_VELOCITY, |s| s.effects.jump_velocity());
-            body.jump = Some(9.0 * v / surroundead::gameplay::medical::JUMP_VELOCITY);
+            body.jump = Some(v / 100.0);
+            if let Some(s) = game.state.as_mut() {
+                s.survival.stamina = (s.survival.stamina - JUMP_STAMINA).max(0.0);
+            }
         }
-        let mut next = match (body.grounded, moving) {
-            (false, _) => Locomotion::Air,
-            (true, Some(true)) => Locomotion::Sprint,
-            (true, Some(false)) => Locomotion::Run,
-            (true, None) => Locomotion::Idle,
+        let mut next = match (body.grounded, moving, player.crouched) {
+            (false, _, _) => Locomotion::Air,
+            (true, Some(true), false) => Locomotion::Sprint,
+            (true, Some(false), false) => Locomotion::Run,
+            (true, None, false) => Locomotion::Idle,
+            (true, Some(true), true) => Locomotion::CrouchSprint,
+            (true, Some(false), true) => Locomotion::CrouchWalk,
+            (true, None, true) => Locomotion::CrouchIdle,
         };
         // Aiming: the *_Ironsights blend spaces, by walking direction relative to the facing
         // (the model faces +Z, its right is -X).
         if armed.aiming && body.grounded {
+            use Locomotion::*;
+            let [idle, fwd, bwd, left, right] = if player.crouched {
+                [CrouchAimIdle, CrouchAimFwd, CrouchAimBwd, CrouchAimLeft, CrouchAimRight]
+            } else {
+                [AimIdle, AimFwd, AimBwd, AimLeft, AimRight]
+            };
             next = if raw_direction.length_squared() == 0.0 {
-                Locomotion::AimIdle
+                idle
             } else {
                 let local = transform.rotation.inverse() * aim_dir;
                 if local.z.abs() >= local.x.abs() {
-                    if local.z > 0.0 { Locomotion::AimFwd } else { Locomotion::AimBwd }
+                    if local.z > 0.0 { fwd } else { bwd }
                 } else if local.x < 0.0 {
-                    Locomotion::AimRight
+                    right
                 } else {
-                    Locomotion::AimLeft
+                    left
                 }
             };
         }
@@ -264,43 +437,70 @@ fn player_movement(
 }
 
 /// Third-person mouse-look camera on a spring arm (see [`CameraController`]).
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn camera_controls(
     mouse_motion: Res<AccumulatedMouseMotion>,
     mouse_scroll: Res<AccumulatedMouseScroll>,
     armed: Res<Armed>,
     terrain: Option<Res<Terrain>>,
-    player_query: Query<&Transform, (With<Player>, Without<CameraController>)>,
+    player_query: Query<(&Transform, &KinematicBody), (With<Player>, Without<CameraController>)>,
     mut camera_query: Query<(&mut CameraController, &mut Transform)>,
     time: Res<Time>,
+    mut yaw_request: ResMut<surroundead::gameplay::combat::CameraYawRequest>,
+    mut pitch_request: ResMut<surroundead::gameplay::combat::CameraPitchRequest>,
+    mut recoil: ResMut<surroundead::gameplay::recoil::Recoil>,
+    mut rays: surroundead::level::collision::PropRays,
+    driving: Res<surroundead::gameplay::vehicles::Driving>,
+    build: Res<surroundead::gameplay::building::BuildMode>,
 ) {
-    let Ok(player_transform) = player_query.single() else {
+    let Ok((player_transform, body)) = player_query.single() else {
         return;
     };
     let Ok((mut controller, mut camera_transform)) = camera_query.single_mut() else {
         return;
     };
 
+    if let Some(yaw) = yaw_request.0.take() {
+        controller.yaw = yaw;
+    }
     // Mouse look (IA_CameraRotation) and wheel zoom (IA_CameraScroll).
     let delta = mouse_motion.delta;
     controller.yaw -= delta.x * 0.003;
     controller.pitch = (controller.pitch + delta.y * 0.003).clamp(-50.0f32.to_radians(), 70.0f32.to_radians());
-    if mouse_scroll.delta.y != 0.0 {
+    // Recoil (degrees up and right): looking up lowers the camera, turning right lowers the yaw.
+    let kick = std::mem::take(&mut recoil.pending);
+    controller.yaw -= kick.y.to_radians();
+    controller.pitch = (controller.pitch - kick.x.to_radians()).clamp(-50.0f32.to_radians(), 70.0f32.to_radians());
+    if let Some(pitch) = pitch_request.0.take() {
+        controller.pitch = pitch;
+    }
+    // In build mode the wheel turns the build.
+    if mouse_scroll.delta.y != 0.0 && !build.on() {
         controller.distance = (controller.distance - mouse_scroll.delta.y * 0.5).clamp(1.5, 6.0);
     }
-    let (arm, side) = if armed.aiming { (AIM_ARM, AIM_SIDE * armed.shoulder) } else { (controller.distance, 0.0) };
+    let (arm, side) = if armed.aiming {
+        (AIM_ARM, AIM_SIDE * armed.shoulder)
+    } else if driving.active() {
+        (controller.distance.max(surroundead::gameplay::vehicles::VEHICLE_ARM), 0.0)
+    } else {
+        (controller.distance, 0.0)
+    };
     let ease = (12.0 * time.delta_secs()).min(1.0);
     controller.arm += (arm - controller.arm) * ease;
     controller.side += (side - controller.side) * ease;
+    // Crouching shrinks the capsule the arm hangs from (CrouchSpringArm's own curve isn't read).
+    controller.drop += ((STANDING_HEIGHT - body.height) - controller.drop) * ease;
 
     let (yaw, pitch) = (controller.yaw, controller.pitch);
     let back = Vec3::new(yaw.sin() * pitch.cos(), pitch.sin(), yaw.cos() * pitch.cos());
     let right = Vec3::new(yaw.cos(), 0.0, -yaw.sin());
-    let pivot = player_transform.translation + Vec3::Y * PIVOT_HEIGHT + right * controller.side;
-    let mut eye = pivot + back * controller.arm;
-    // The arm's collision test, against the ground only.
-    if let Some(t) = terrain.as_ref() {
-        eye.y = eye.y.max(t.height(eye.x, eye.z) + 0.25);
+    let pivot = player_transform.translation + Vec3::Y * (PIVOT_HEIGHT - controller.drop) + right * controller.side;
+    // The arm's collision test: walls and props between the pivot and the camera pull it in.
+    let arm = surroundead::level::collision::spring_arm(controller.arm, rays.cast(pivot, back, controller.arm + surroundead::level::collision::CAMERA_PROBE));
+    let mut eye = pivot + back * arm;
+    // ...and the ground.
+    if let Some(h) = terrain.as_ref().and_then(|t| t.ground_under(eye)) {
+        eye.y = eye.y.max(h + 0.25);
     }
     camera_transform.translation = eye;
     camera_transform.look_to(-back, Vec3::Y);

@@ -1,5 +1,2059 @@
 {
  "classes": {
+  "BP_AnimalBear_C": {
+   "alert_speed": 6.0,
+   "animal": {
+    "alert_waits": [],
+    "antlers": [],
+    "arrive": 0.7,
+    "attacks": [
+     "PolygonFiles/PolyArtBear/Animations/Common/Bear_C_Attack_Claw_Right"
+    ],
+    "away": 5.0,
+    "bounds": [
+     [
+      -0.5028037428855896,
+      -0.004000682849436998,
+      -0.3572010397911072
+     ],
+     [
+      0.5028036832809448,
+      1.529484510421753,
+      2.068974494934082
+     ]
+    ],
+    "corpse_secs": 600.0,
+    "death": null,
+    "flee_radius": null,
+    "flees": false,
+    "hearing": 160.0,
+    "hearing_age": 30.0,
+    "hits": [],
+    "huntsman_meat": true,
+    "investigate_speed": 3.0,
+    "investigate_waits": [
+     [
+      30.0,
+      45.0
+     ]
+    ],
+    "killed": "Bear",
+    "lose_sight": 60.0,
+    "mesh_back": 0.55,
+    "peripheral": 120.0,
+    "reach": 2.0,
+    "roam_radius": 25.0,
+    "roam_waits": [
+     [
+      1.0,
+      3.0
+     ],
+     [
+      5.0,
+      30.0
+     ]
+    ],
+    "scale": 1.0,
+    "sight": 25.0,
+    "snarl": "BearSnarl_cue",
+    "voice": "BearCue"
+   },
+   "attack_interval": [
+    1.3341271,
+    1.3341271
+   ],
+   "bleed": 0.15,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.75,
+   "capsule_radius": 0.65,
+   "container": "Dead Bear",
+   "damage": 31.0,
+   "health": 500.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "locomotion": [
+    [
+     "PolygonFiles/PolyArtBear/Animations/Common/Bear_C_Idle",
+     0.0
+    ],
+    [
+     "PolygonFiles/PolyArtBear/Animations/In_Place/Bear_IP_Walk_Forward",
+     0.85
+    ],
+    [
+     "PolygonFiles/PolyArtBear/Animations/In_Place/Bear_IP_Run_Forward",
+     6.0
+    ]
+   ],
+   "loot_table": "Bear",
+   "materials": [
+    "Mat_Bear_Polar",
+    "MI_Bear_Black",
+    "MI_Bear_Brown",
+    "MI_Bear_Grey",
+    "MI_Bear_Grizly"
+   ],
+   "meshes": [
+    "PolygonFiles/PolyArtBear/Meshes/SK_Bear",
+    "PolygonFiles/PolyArtBear/Meshes/SK_Bear_Black",
+    "PolygonFiles/PolyArtBear/Meshes/SK_Bear_Grizly",
+    "PolygonFiles/PolyArtBear/Meshes/SK_Bear_Polar"
+   ],
+   "name": "Bear",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    10.0,
+    20.0
+   ]
+  },
+  "BP_AnimalDeer_C": {
+   "alert_speed": 8.0,
+   "animal": {
+    "alert_waits": [
+     [
+      10.0,
+      5.0
+     ]
+    ],
+    "antlers": [
+     "AI/Animals/Deer/PolyArtDeer/Meshes/ST_Antlers01",
+     "AI/Animals/Deer/PolyArtDeer/Meshes/ST_Antlers02",
+     "AI/Animals/Deer/PolyArtDeer/Meshes/ST_Antlers03",
+     "AI/Animals/Deer/PolyArtDeer/Meshes/ST_Antlers04",
+     "AI/Animals/Deer/PolyArtDeer/Meshes/ST_Antlers05",
+     null,
+     null
+    ],
+    "arrive": 0.7,
+    "attacks": [],
+    "away": 5.0,
+    "bounds": [
+     [
+      -0.27646374702453613,
+      -0.005319554824382067,
+      -0.3255539536476135
+     ],
+     [
+      0.27646318078041077,
+      1.782443642616272,
+      1.8884474039077759
+     ]
+    ],
+    "corpse_secs": 600.0,
+    "death": null,
+    "flee_radius": [
+     40.0,
+     80.0
+    ],
+    "flees": true,
+    "hearing": 160.0,
+    "hearing_age": 30.0,
+    "hits": [
+     "AI/Animals/Deer/PolyArtDeer/Animations/InPlace/Deer_IP_Damage_Back_Left"
+    ],
+    "huntsman_meat": true,
+    "investigate_speed": null,
+    "investigate_waits": [],
+    "killed": "Deer",
+    "lose_sight": 60.0,
+    "mesh_back": 0.4,
+    "peripheral": 150.0,
+    "reach": 2.0,
+    "roam_radius": 25.0,
+    "roam_waits": [
+     [
+      15.0,
+      30.0
+     ]
+    ],
+    "scale": 1.0,
+    "sight": 40.0,
+    "snarl": null,
+    "voice": "Deer_Noises"
+   },
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.8,
+   "capsule_radius": 0.3,
+   "container": "Dead Deer",
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "locomotion": [
+    [
+     "AI/Animals/Deer/PolyArtDeer/Animations/Common/Deer_C_Idle_01",
+     0.0
+    ],
+    [
+     "AI/Animals/Deer/PolyArtDeer/Animations/InPlace/Deer_IP_Walk_Forward",
+     0.8571429
+    ],
+    [
+     "AI/Animals/Deer/PolyArtDeer/Animations/InPlace/Deer_IP_Run_Forward",
+     6.0
+    ]
+   ],
+   "loot_table": "Deer",
+   "materials": [
+    "MI_Deer_Common",
+    "MI_Deer_Common2",
+    "MI_Deer_Fawn",
+    "MI_Elk",
+    "MI_Elk_Albine"
+   ],
+   "meshes": [
+    "AI/Animals/Deer/PolyArtDeer/Meshes/SK_Deer",
+    "AI/Animals/Deer/PolyArtDeer/Meshes/SK_Deer_Female",
+    "AI/Animals/Deer/PolyArtDeer/Meshes/SK_Elk_Albine",
+    "AI/Animals/Deer/PolyArtDeer/Meshes/SK_Elk",
+    "AI/Animals/Deer/PolyArtDeer/Meshes/SK_Fawn"
+   ],
+   "name": "Deer",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 0.5,
+   "shovable": false,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  },
+  "BP_AnimalRabbit_C": {
+   "alert_speed": 8.0,
+   "animal": {
+    "alert_waits": [],
+    "antlers": [],
+    "arrive": 0.7,
+    "attacks": [],
+    "away": 5.0,
+    "bounds": [
+     [
+      -0.11785532534122467,
+      0.0006526687648147345,
+      -0.14814679324626923
+     ],
+     [
+      0.11783000826835632,
+      0.5108953714370728,
+      0.44346925616264343
+     ]
+    ],
+    "corpse_secs": 600.0,
+    "death": "AI/Animals/Rabbit/RabbitAnims/Animations/Common/Rabbit_C_Death3",
+    "flee_radius": [
+     30.0,
+     40.0
+    ],
+    "flees": true,
+    "hearing": 60.0,
+    "hearing_age": 20.0,
+    "hits": [
+     "AI/Animals/Rabbit/RabbitAnims/Animations/RootMotion/Rabbit_RM_Damage_Left"
+    ],
+    "huntsman_meat": true,
+    "investigate_speed": null,
+    "investigate_waits": [],
+    "killed": "Rabbit",
+    "lose_sight": 50.0,
+    "mesh_back": 0.11214006,
+    "peripheral": 120.0,
+    "reach": 2.0,
+    "roam_radius": 25.0,
+    "roam_waits": [
+     [
+      15.0,
+      30.0
+     ]
+    ],
+    "scale": 1.2,
+    "sight": 50.0,
+    "snarl": null,
+    "voice": null
+   },
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.2,
+   "capsule_radius": 0.2,
+   "container": "Dead Rabbit",
+   "damage": 0.0,
+   "health": 15.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "locomotion": [
+    [
+     "AI/Animals/Rabbit/RabbitAnims/Animations/Common/Rabbit_C_Idle",
+     0.0
+    ],
+    [
+     "AI/Animals/Rabbit/RabbitAnims/Animations/InPlace/Rabbit_IP_Walk_Forward",
+     1.0
+    ],
+    [
+     "AI/Animals/Rabbit/RabbitAnims/Animations/InPlace/Rabbit_IP_Run_Forward",
+     10.0
+    ]
+   ],
+   "loot_table": "Rabbit",
+   "materials": [
+    "MI_Rabbit_Black",
+    "MI_Rabbit_Brown",
+    "MI_Rabbit_BrownWhite",
+    "MI_Rabbit_Common",
+    "MI_Rabbit_Common2"
+   ],
+   "meshes": [
+    "AI/Animals/Rabbit/RabbitAnims/Meshes/Poly_Art/SK_PA_Rabbit_Baby",
+    "AI/Animals/Rabbit/RabbitAnims/Meshes/Poly_Art/SK_PA_Rabbit_Black",
+    "AI/Animals/Rabbit/RabbitAnims/Meshes/Poly_Art/SK_PA_Rabbit_Blend_Shapes",
+    "AI/Animals/Rabbit/RabbitAnims/Meshes/Poly_Art/SK_PA_Rabbit_Brown",
+    "AI/Animals/Rabbit/RabbitAnims/Meshes/Poly_Art/SK_PA_Rabbit_BrownWhite",
+    "AI/Animals/Rabbit/RabbitAnims/Meshes/Poly_Art/SK_PA_Rabbit_Common",
+    "AI/Animals/Rabbit/RabbitAnims/Meshes/Poly_Art/SK_PA_Rabbit_White",
+    "AI/Animals/Rabbit/RabbitAnims/Meshes/Poly_Art/SK_PA_Rabbit_WhiteSpots"
+   ],
+   "name": "Rabbit",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 1.0,
+   "shovable": false,
+   "xp": [
+    7.5,
+    15.0
+   ]
+  },
+  "BP_AnimalWolf_C": {
+   "alert_speed": 8.0,
+   "animal": {
+    "alert_waits": [],
+    "antlers": [],
+    "arrive": 0.7,
+    "attacks": [
+     "PolygonFiles/PolyArtWolf/Animations/InPlace/Wolf_IP_Attack_Bite_Front"
+    ],
+    "away": 5.0,
+    "bounds": [
+     [
+      -0.20133870840072632,
+      -0.0034088429529219866,
+      -0.7677140831947327
+     ],
+     [
+      0.20134419202804565,
+      0.9281508922576904,
+      1.1166809797286987
+     ]
+    ],
+    "corpse_secs": 600.0,
+    "death": null,
+    "flee_radius": null,
+    "flees": false,
+    "hearing": 160.0,
+    "hearing_age": 30.0,
+    "hits": [
+     "PolygonFiles/PolyArtWolf/Animations/RootMotion/Wolf_RM_Damage_Back_Left",
+     "PolygonFiles/PolyArtWolf/Animations/RootMotion/Wolf_RM_Damage_Back_Right",
+     "PolygonFiles/PolyArtWolf/Animations/RootMotion/Wolf_RM_Damage_Left",
+     "PolygonFiles/PolyArtWolf/Animations/RootMotion/Wolf_RM_Damage_Right"
+    ],
+    "huntsman_meat": true,
+    "investigate_speed": 6.0,
+    "investigate_waits": [
+     [
+      30.0,
+      45.0
+     ]
+    ],
+    "killed": "Wolf",
+    "lose_sight": 60.0,
+    "mesh_back": 0.2,
+    "peripheral": 120.0,
+    "reach": 2.0,
+    "roam_radius": 7.5,
+    "roam_waits": [
+     [
+      1.0,
+      3.0
+     ],
+     [
+      5.0,
+      30.0
+     ]
+    ],
+    "scale": 1.0,
+    "sight": 30.0,
+    "snarl": "WolfSnarl_Cue",
+    "voice": "WolfCue"
+   },
+   "attack_interval": [
+    1.0343435,
+    1.0343435
+   ],
+   "bleed": 0.15,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.35,
+   "capsule_radius": 0.18,
+   "container": "Dead Wolf",
+   "damage": 20.0,
+   "health": 150.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "locomotion": [
+    [
+     "PolygonFiles/PolyArtWolf/Animations/Common/Wolf_C_Idle01",
+     0.0
+    ],
+    [
+     "PolygonFiles/PolyArtWolf/Animations/InPlace/Wolf_IP_Walk_Forward",
+     0.85
+    ],
+    [
+     "PolygonFiles/PolyArtWolf/Animations/InPlace/Wolf_IP_Run_Forward",
+     6.0
+    ]
+   ],
+   "loot_table": "Wolf",
+   "materials": [
+    "MI_WolfBlack",
+    "MI_WolfBrown",
+    "MI_WolfGrey",
+    "MI_WolfWhite"
+   ],
+   "meshes": [
+    "PolygonFiles/PolyArtWolf/Meshes/SK_Wolf"
+   ],
+   "name": "Wolf",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    10.0,
+    20.0
+   ]
+  },
+  "BP_Bandit_Melee_C": {
+   "alert_speed": 4.0,
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.3,
+   "container": "Bandit Rusher",
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "human": {
+    "accuracy": 1.5,
+    "backpack": {
+     "mesh": "Meshes/Items/Equipment/Backpacks/Large_Hicking_Backpack_Damaged",
+     "r": [
+      0.0,
+      0.0,
+      -0.065403,
+      -0.997859
+     ],
+     "t": [
+      -0.15,
+      0.0,
+      0.0
+     ]
+    },
+    "beard": [
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Biker_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Criminal_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Homeless_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Hunter_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Press_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_RiotCop_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Wanderer_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Beard_01"
+    ],
+    "boss": false,
+    "corpse_secs": 600.0,
+    "death": [
+     "Animations/Player/Anims/Random/Anim_Regular_death1",
+     "Animations/Player/Anims/Random/Anim_Regular_death2"
+    ],
+    "faction": "Bandit",
+    "hair": [
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Biker_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Business_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Cool_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Criminal_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Islander_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Press_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_RiotCop_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Sheriff_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Wanderer_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Hair_02"
+    ],
+    "health_row": "BANDIT HEALTH MULTIPLIER",
+    "hearing": 160.0,
+    "killed": "Bandit",
+    "lose_sight": 55.0,
+    "melee": [
+     "BP_AIWeapon_BaseballBat_C",
+     "BP_AIWeapon_Axe_C"
+    ],
+    "melee_distance": 2.0,
+    "melee_speed": 6.0,
+    "peripheral": 90.0,
+    "ranged": [],
+    "roam": [
+     2.0,
+     6.0
+    ],
+    "roam_wait": [
+     45.0,
+     15.0
+    ],
+    "sight": 50.0,
+    "start_ranged": false,
+    "trader": false
+   },
+   "locomotion": [],
+   "loot_table": "Bandit",
+   "materials": [],
+   "meshes": [
+    "Meshes/PlayerModels/AI/SK_Chr_Biker_Male_01_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Cool_Male_01_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Criminal_Male_01_AI"
+   ],
+   "name": "Bandit Rusher",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 1.0,
+   "shovable": false,
+   "xp": [
+    10.0,
+    20.0
+   ]
+  },
+  "BP_Bandit_Ranged_AssaultRifle_C": {
+   "alert_speed": 4.0,
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.3,
+   "container": "Bandit Assault",
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "human": {
+    "accuracy": 2.5,
+    "backpack": {
+     "mesh": "Meshes/Items/Equipment/Backpacks/Large_Hicking_Backpack_Damaged",
+     "r": [
+      0.0,
+      0.0,
+      -0.065403,
+      -0.997859
+     ],
+     "t": [
+      -0.15,
+      0.0,
+      0.0
+     ]
+    },
+    "beard": [
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Biker_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Criminal_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Homeless_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Hunter_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Press_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_RiotCop_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Wanderer_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Beard_01"
+    ],
+    "boss": false,
+    "corpse_secs": 600.0,
+    "death": [
+     "Animations/Player/Anims/Random/Anim_Regular_death1",
+     "Animations/Player/Anims/Random/Anim_Regular_death2"
+    ],
+    "faction": "Bandit",
+    "hair": [
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Biker_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Business_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Cool_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Criminal_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Islander_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Press_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_RiotCop_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Sheriff_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Wanderer_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Hair_02"
+    ],
+    "health_row": "BANDIT HEALTH MULTIPLIER",
+    "hearing": 160.0,
+    "killed": "Bandit",
+    "lose_sight": 55.0,
+    "melee": [
+     "BP_AIWeapon_HuntingKnife_C"
+    ],
+    "melee_distance": 2.0,
+    "melee_speed": 6.0,
+    "peripheral": 90.0,
+    "ranged": [
+     "BP_AIWeapon_M4_C"
+    ],
+    "roam": [
+     2.0,
+     6.0
+    ],
+    "roam_wait": [
+     45.0,
+     15.0
+    ],
+    "sight": 50.0,
+    "start_ranged": true,
+    "trader": false
+   },
+   "locomotion": [],
+   "loot_table": "Bandit",
+   "materials": [],
+   "meshes": [
+    "Meshes/PlayerModels/AI/SK_Chr_Biker_Male_01_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Cool_Male_01_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Criminal_Male_01_AI"
+   ],
+   "name": "Bandit Assault",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 1.0,
+   "shovable": false,
+   "xp": [
+    10.0,
+    20.0
+   ]
+  },
+  "BP_Bandit_Ranged_Boss_C": {
+   "alert_speed": 4.0,
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.3,
+   "container": "Bandit Boss",
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "human": {
+    "accuracy": 2.0,
+    "backpack": null,
+    "beard": [],
+    "boss": true,
+    "corpse_secs": 600.0,
+    "death": [
+     "Animations/Player/Anims/Random/Anim_Regular_death1",
+     "Animations/Player/Anims/Random/Anim_Regular_death2"
+    ],
+    "faction": "Bandit",
+    "hair": [
+     "Meshes/Items/Equipment/Damaged/TacticalHelmet/SM_Chr_Attach_Helmet_08_Damaged",
+     "PolygonFiles/PolygonMilitary/Meshes/Characters/Attachments/SM_Chr_Attach_Helmet_07"
+    ],
+    "health_row": "BANDIT HEALTH MULTIPLIER",
+    "hearing": 160.0,
+    "killed": "Bandit",
+    "lose_sight": 55.0,
+    "melee": [
+     "BP_AIWeapon_BaseballBat_C",
+     "BP_AIWeapon_Axe_C"
+    ],
+    "melee_distance": 2.0,
+    "melee_speed": 6.0,
+    "peripheral": 90.0,
+    "ranged": [
+     "BP_AIWeapon_M249_C",
+     "BP_AIWeapon_ColonelsRevenge_C",
+     "BP_AIWeapon_M20_C"
+    ],
+    "roam": [
+     2.0,
+     6.0
+    ],
+    "roam_wait": [
+     45.0,
+     15.0
+    ],
+    "sight": 50.0,
+    "start_ranged": true,
+    "trader": false
+   },
+   "locomotion": [],
+   "loot_table": "BanditBoss",
+   "materials": [],
+   "meshes": [
+    "Meshes/PlayerModels/AI/SK_Chr_Biker_Male_01_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Criminal_Male_01_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Contractor_Male_AI"
+   ],
+   "name": "Bandit Boss",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 1.0,
+   "shovable": false,
+   "xp": [
+    10.0,
+    20.0
+   ]
+  },
+  "BP_Bandit_Ranged_Sniper_C": {
+   "alert_speed": 4.0,
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.3,
+   "container": "Bandit Sniper",
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "human": {
+    "accuracy": 1.5,
+    "backpack": {
+     "mesh": "Meshes/Items/Equipment/Backpacks/Large_Hicking_Backpack_Damaged",
+     "r": [
+      0.0,
+      0.0,
+      -0.065403,
+      -0.997859
+     ],
+     "t": [
+      -0.15,
+      0.0,
+      0.0
+     ]
+    },
+    "beard": [
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Biker_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Criminal_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Homeless_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Hunter_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Press_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_RiotCop_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Wanderer_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Beard_01"
+    ],
+    "boss": false,
+    "corpse_secs": 600.0,
+    "death": [
+     "Animations/Player/Anims/Random/Anim_Regular_death1",
+     "Animations/Player/Anims/Random/Anim_Regular_death2"
+    ],
+    "faction": "Bandit",
+    "hair": [
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Biker_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Business_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Cool_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Criminal_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Islander_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Press_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_RiotCop_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Sheriff_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Wanderer_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Hair_02"
+    ],
+    "health_row": "BANDIT HEALTH MULTIPLIER",
+    "hearing": 160.0,
+    "killed": "Bandit",
+    "lose_sight": 55.0,
+    "melee": [
+     "BP_AIWeapon_HuntingKnife_C"
+    ],
+    "melee_distance": 2.0,
+    "melee_speed": 6.0,
+    "peripheral": 90.0,
+    "ranged": [
+     "BP_AIWeapon_SniperRifle_C"
+    ],
+    "roam": [
+     2.0,
+     6.0
+    ],
+    "roam_wait": [
+     45.0,
+     15.0
+    ],
+    "sight": 50.0,
+    "start_ranged": true,
+    "trader": false
+   },
+   "locomotion": [],
+   "loot_table": "BanditSniper",
+   "materials": [],
+   "meshes": [
+    "Meshes/PlayerModels/AI/SK_Chr_Biker_Male_01_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Cool_Male_01_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Criminal_Male_01_AI"
+   ],
+   "name": "Bandit Sniper",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 1.0,
+   "shovable": false,
+   "xp": [
+    10.0,
+    20.0
+   ]
+  },
+  "BP_MasterTrader_C": {
+   "alert_speed": 4.0,
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.3,
+   "container": null,
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "human": {
+    "accuracy": 1.0,
+    "backpack": {
+     "mesh": "WIP/AI/WanderingTrader/Backpack_WanderingTrader",
+     "r": [
+      -0.046246998,
+      -0.7055928,
+      -0.046246998,
+      -0.7055928
+     ],
+     "t": [
+      -0.1,
+      0.0,
+      0.0
+     ]
+    },
+    "beard": [],
+    "boss": false,
+    "corpse_secs": 600.0,
+    "death": [
+     "Animations/Player/Anims/Random/Anim_Regular_death1",
+     "Animations/Player/Anims/Random/Anim_Regular_death2"
+    ],
+    "faction": "Scavenger",
+    "hair": [],
+    "health_row": "SCAVENGER / TRADER HEALTH MULTIPLIER",
+    "hearing": 0.01,
+    "killed": "Wandering Trader",
+    "lose_sight": 55.0,
+    "melee": [
+     "BP_AIWeapon_Axe_C",
+     "BP_AIWeapon_BaseballBat_C",
+     "BP_AIWeapon_HuntingKnife_C"
+    ],
+    "melee_distance": 2.0,
+    "melee_speed": 6.0,
+    "peripheral": 90.0,
+    "ranged": [
+     "BP_AIWeapon_M249_C",
+     "BP_AIWeapon_M4_C"
+    ],
+    "roam": [
+     20.0,
+     30.0
+    ],
+    "roam_wait": [
+     15.0,
+     5.0
+    ],
+    "sight": 50.0,
+    "start_ranged": false,
+    "trader": true
+   },
+   "locomotion": [],
+   "loot_table": null,
+   "materials": [],
+   "meshes": [
+    "WIP/AI/WanderingTrader/WanderingTrader"
+   ],
+   "name": null,
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 1.0,
+   "shovable": false,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  },
+  "BP_Military_Boss_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.3,
+   "container": "Coyote Lieutenant",
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "human": {
+    "accuracy": 1.75,
+    "backpack": null,
+    "beard": [],
+    "boss": true,
+    "corpse_secs": 600.0,
+    "death": [
+     "Animations/Player/Anims/Random/Anim_Regular_death1",
+     "Animations/Player/Anims/Random/Anim_Regular_death2"
+    ],
+    "faction": "Military",
+    "hair": [],
+    "health_row": "MILITARY HEALTH MULTIPLIER",
+    "hearing": 160.0,
+    "killed": "Soldier",
+    "lose_sight": 55.0,
+    "melee": [
+     "BP_AIWeapon_HuntingKnife_C"
+    ],
+    "melee_distance": 2.0,
+    "melee_speed": 7.0,
+    "peripheral": 90.0,
+    "ranged": [
+     "BP_AIWeapon_ColonelsRevenge_C",
+     "BP_AIWeapon_Valkyrie_C"
+    ],
+    "roam": [
+     2.0,
+     5.0
+    ],
+    "roam_wait": [
+     60.0,
+     20.0
+    ],
+    "sight": 50.0,
+    "start_ranged": true,
+    "trader": false
+   },
+   "locomotion": [],
+   "loot_table": "MilitaryBoss",
+   "materials": [],
+   "meshes": [
+    "Meshes/PlayerModels/AI/SK_Chr_Soldier_Male_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Soldier_Female_AI"
+   ],
+   "name": "Coyote Lieutenant",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 1.0,
+   "shovable": false,
+   "xp": [
+    15.0,
+    25.0
+   ]
+  },
+  "BP_Military_Rifleman_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.3,
+   "container": "Coyote Soldier",
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "human": {
+    "accuracy": 2.0,
+    "backpack": {
+     "mesh": "Meshes/Items/Equipment/Backpacks/Army_Backpack_Damaged",
+     "r": [
+      0.0,
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "t": [
+      -0.15,
+      0.0,
+      0.0
+     ]
+    },
+    "beard": [],
+    "boss": false,
+    "corpse_secs": 600.0,
+    "death": [
+     "Animations/Player/Anims/Random/Anim_Regular_death1",
+     "Animations/Player/Anims/Random/Anim_Regular_death2"
+    ],
+    "faction": "Military",
+    "hair": [],
+    "health_row": "MILITARY HEALTH MULTIPLIER",
+    "hearing": 160.0,
+    "killed": "Soldier",
+    "lose_sight": 55.0,
+    "melee": [
+     "BP_AIWeapon_HuntingKnife_C"
+    ],
+    "melee_distance": 2.0,
+    "melee_speed": 7.0,
+    "peripheral": 90.0,
+    "ranged": [
+     "BP_AIWeapon_M4_C"
+    ],
+    "roam": [
+     2.0,
+     5.0
+    ],
+    "roam_wait": [
+     60.0,
+     20.0
+    ],
+    "sight": 50.0,
+    "start_ranged": true,
+    "trader": false
+   },
+   "locomotion": [],
+   "loot_table": "MilitaryRifleman",
+   "materials": [],
+   "meshes": [
+    "Meshes/PlayerModels/AI/SK_Chr_Contractor_Male_AI",
+    "Meshes/PlayerModels/AI/NotInUseATM/SK_Chr_Contractor_Female_01_AI"
+   ],
+   "name": "Coyote Soldier",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 1.0,
+   "shovable": false,
+   "xp": [
+    15.0,
+    25.0
+   ]
+  },
+  "BP_Scavenger_Female_C": {
+   "alert_speed": 4.0,
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.3,
+   "container": "Friendly Scavenger",
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "human": {
+    "accuracy": 2.5,
+    "backpack": {
+     "mesh": "Meshes/Items/Equipment/Backpacks/Large_Hicking_Backpack_Damaged",
+     "r": [
+      0.0,
+      0.0,
+      -0.065403,
+      -0.997859
+     ],
+     "t": [
+      -0.15,
+      0.0,
+      0.0
+     ]
+    },
+    "beard": [],
+    "boss": false,
+    "corpse_secs": 600.0,
+    "death": [
+     "Animations/Player/Anims/Random/Anim_Regular_death1",
+     "Animations/Player/Anims/Random/Anim_Regular_death2"
+    ],
+    "faction": "Scavenger",
+    "hair": [
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Cool_Female_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Mechanic_Female_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Nerd_Female_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Punk_Female_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Soldier_Female_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Teen_Female_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Waitress_Female_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Female_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Female_Hair_02"
+    ],
+    "health_row": "SCAVENGER / TRADER HEALTH MULTIPLIER",
+    "hearing": 160.0,
+    "killed": "Scavenger",
+    "lose_sight": 55.0,
+    "melee": [
+     "BP_AIWeapon_HuntingKnife_C",
+     "BP_AIWeapon_Axe_C",
+     "BP_AIWeapon_Shiv_C"
+    ],
+    "melee_distance": 2.0,
+    "melee_speed": 6.0,
+    "peripheral": 90.0,
+    "ranged": [
+     "BP_AIWeapon_M9_C",
+     "BP_AIWeapon_HuntingRifle_C"
+    ],
+    "roam": [
+     4.0,
+     12.0
+    ],
+    "roam_wait": [
+     8.0,
+     4.0
+    ],
+    "sight": 50.0,
+    "start_ranged": false,
+    "trader": false
+   },
+   "locomotion": [],
+   "loot_table": null,
+   "materials": [],
+   "meshes": [
+    "PolygonFiles/PolygonApocalypse/Meshes/Characters/SK_Chr_Cool_Female_AI",
+    "PolygonFiles/PolygonApocalypse/Meshes/Characters/SK_Chr_Emo_Female_AI",
+    "PolygonFiles/PolygonApocalypse/Meshes/Characters/SK_Chr_Nerd_Female_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Scout_Female_AI",
+    "PolygonFiles/PolygonApocalypse/Meshes/Characters/SK_Chr_Teen_Female_AI",
+    "Meshes/PlayerModels/NotInUseATM/SK_Chr_ApocMechanic_Female_AI"
+   ],
+   "name": "Friendly Scavenger",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 1.0,
+   "shovable": false,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  },
+  "BP_Scavenger_Male_C": {
+   "alert_speed": 4.0,
+   "attack_interval": [
+    1.0,
+    1.0
+   ],
+   "bleed": 0.0,
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.3,
+   "container": "Friendly Scavenger",
+   "damage": 0.0,
+   "health": 100.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.0,
+   "human": {
+    "accuracy": 2.5,
+    "backpack": {
+     "mesh": "Meshes/Items/Equipment/Backpacks/Large_Hicking_Backpack_Damaged",
+     "r": [
+      0.0,
+      0.0,
+      -0.065403,
+      -0.997859
+     ],
+     "t": [
+      -0.15,
+      0.0,
+      0.0
+     ]
+    },
+    "beard": [
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Biker_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Criminal_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Homeless_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Hunter_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Press_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_RiotCop_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Wanderer_Male_Beard_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Beard_01"
+    ],
+    "boss": false,
+    "corpse_secs": 600.0,
+    "death": [
+     "Animations/Player/Anims/Random/Anim_Regular_death1",
+     "Animations/Player/Anims/Random/Anim_Regular_death2"
+    ],
+    "faction": "Scavenger",
+    "hair": [
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Biker_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Business_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Cool_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Criminal_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Islander_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Press_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_RiotCop_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Sheriff_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Wanderer_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Hair_01",
+     "PolygonFiles/PolygonApocalypse/Meshes/Characters/Chr_Attach/SM_Chr_Attach_Zombie_Male_Hair_02"
+    ],
+    "health_row": "SCAVENGER / TRADER HEALTH MULTIPLIER",
+    "hearing": 160.0,
+    "killed": "Scavenger",
+    "lose_sight": 55.0,
+    "melee": [
+     "BP_AIWeapon_HuntingKnife_C",
+     "BP_AIWeapon_Axe_C",
+     "BP_AIWeapon_Shiv_C"
+    ],
+    "melee_distance": 2.0,
+    "melee_speed": 6.0,
+    "peripheral": 90.0,
+    "ranged": [
+     "BP_AIWeapon_M9_C",
+     "BP_AIWeapon_HuntingRifle_C"
+    ],
+    "roam": [
+     4.0,
+     12.0
+    ],
+    "roam_wait": [
+     8.0,
+     4.0
+    ],
+    "sight": 50.0,
+    "start_ranged": false,
+    "trader": false
+   },
+   "locomotion": [],
+   "loot_table": null,
+   "materials": [],
+   "meshes": [
+    "Meshes/PlayerModels/AI/SK_Chr_Teen_Male_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Wanderer_Male_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Sheriff_Male_AI",
+    "Meshes/PlayerModels/NotInUseATM/SK_Chr_Business_Male_AI",
+    "Meshes/PlayerModels/AI/SK_Chr_Islander_Male_01_AI"
+   ],
+   "name": "Friendly Scavenger",
+   "rad_chance": 0.0,
+   "rad_damage": 0.0,
+   "roam_speed": 1.0,
+   "shovable": false,
+   "xp": [
+    5.0,
+    10.0
+   ]
+  },
+  "BP_ZombieBossHorde_Infestation_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.35,
+    1.75
+   ],
+   "bleed": 0.2,
+   "boss": {
+    "attack": "Animations/Zombie/ZombieBoss/Anim_Zombie_attack1",
+    "corpse_secs": 1200.0,
+    "hand_radius": 0.6,
+    "hit_window": [
+     0.24824403,
+     0.41503024
+    ],
+    "killed": "Zombie Boss",
+    "peripheral": 110.0,
+    "rate": 0.5,
+    "reach": 5.0,
+    "scale": [
+     1.5,
+     1.5,
+     1.5
+    ],
+    "skill_point_chance": 0.25,
+    "unique_sets": [
+     "MilitarySet"
+    ],
+    "voice": "ZombieBossBreathLoopCue",
+    "waits": [
+     [
+      30.0,
+      15.0
+     ],
+     [
+      30.0,
+      15.0
+     ]
+    ]
+   },
+   "broken_bone": 0.0,
+   "capsule_half_height": 1.0,
+   "capsule_radius": 0.36,
+   "container": "Large Undead Boss",
+   "damage": 28.0,
+   "health": 4000.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace",
+     0.875
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ]
+   ],
+   "loot_table": "ZombieBoss",
+   "materials": [],
+   "meshes": [
+    "WIP/ZombieBoss_Infestation"
+   ],
+   "name": "Large Undead Boss",
+   "rad_chance": 1.0,
+   "rad_damage": 16.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    200.0,
+    400.0
+   ]
+  },
+  "BP_ZombieBossHorde_Military_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.35,
+    1.75
+   ],
+   "bleed": 0.2,
+   "boss": {
+    "attack": "Animations/Zombie/ZombieBoss/Anim_Zombie_attack1",
+    "corpse_secs": 1200.0,
+    "hand_radius": 0.6,
+    "hit_window": [
+     0.24824403,
+     0.41503024
+    ],
+    "killed": "Zombie Boss",
+    "peripheral": 110.0,
+    "rate": 0.5,
+    "reach": 5.0,
+    "scale": [
+     1.5,
+     1.5,
+     1.5
+    ],
+    "skill_point_chance": 0.25,
+    "unique_sets": [
+     "MilitarySet"
+    ],
+    "voice": "ZombieBossBreathLoopCue",
+    "waits": [
+     [
+      30.0,
+      15.0
+     ],
+     [
+      30.0,
+      15.0
+     ]
+    ]
+   },
+   "broken_bone": 0.0,
+   "capsule_half_height": 1.0,
+   "capsule_radius": 0.36,
+   "container": "Large Undead Boss",
+   "damage": 28.0,
+   "health": 4000.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace",
+     0.875
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ]
+   ],
+   "loot_table": "ZombieBoss",
+   "materials": [],
+   "meshes": [
+    "PolygonFiles/PolygonBossZombies/Meshes/Characters/SK_Chr_ZombieBoss_Brute_01"
+   ],
+   "name": "Large Undead Boss",
+   "rad_chance": 1.0,
+   "rad_damage": 16.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    200.0,
+    400.0
+   ]
+  },
+  "BP_ZombieBossHorde_Military_Small_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.35,
+    1.75
+   ],
+   "bleed": 0.2,
+   "boss": {
+    "attack": "Animations/Zombie/ZombieBoss/Anim_Zombie_attack1",
+    "corpse_secs": 1200.0,
+    "hand_radius": 0.6,
+    "hit_window": [
+     0.24824403,
+     0.41503024
+    ],
+    "killed": "Zombie Boss",
+    "peripheral": 110.0,
+    "rate": 0.5,
+    "reach": 5.0,
+    "scale": [
+     1.25,
+     1.25,
+     1.25
+    ],
+    "skill_point_chance": 0.25,
+    "unique_sets": [],
+    "voice": "ZombieBossBreathLoopCue",
+    "waits": [
+     [
+      30.0,
+      15.0
+     ],
+     [
+      30.0,
+      15.0
+     ]
+    ]
+   },
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.8,
+   "capsule_radius": 0.35,
+   "container": "Large Undead Boss",
+   "damage": 28.0,
+   "health": 2000.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace",
+     0.875
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ]
+   ],
+   "loot_table": "ZombieBoss",
+   "materials": [],
+   "meshes": [
+    "PolygonFiles/PolygonBossZombies/Meshes/Characters/SK_Chr_ZombieBoss_Brute_01"
+   ],
+   "name": "Large Undead Boss",
+   "rad_chance": 1.0,
+   "rad_damage": 16.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    200.0,
+    400.0
+   ]
+  },
+  "BP_ZombieBoss_Butcher_Small_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.35,
+    1.75
+   ],
+   "bleed": 0.2,
+   "boss": {
+    "attack": "Animations/Zombie/ZombieBoss/Anim_Zombie_attack1",
+    "corpse_secs": 1200.0,
+    "hand_radius": 0.6,
+    "hit_window": [
+     0.24824403,
+     0.41503024
+    ],
+    "killed": "Zombie Boss",
+    "peripheral": 110.0,
+    "rate": 0.5,
+    "reach": 5.0,
+    "scale": [
+     1.1,
+     1.2,
+     1.1
+    ],
+    "skill_point_chance": 0.25,
+    "unique_sets": [
+     "BattleReadyGlock",
+     "Cerberus",
+     "Deadeye"
+    ],
+    "voice": "ZombieBossBreathLoopCue",
+    "waits": [
+     [
+      30.0,
+      15.0
+     ],
+     [
+      30.0,
+      15.0
+     ]
+    ]
+   },
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.36,
+   "container": "Undead Boss",
+   "damage": 30.0,
+   "health": 2000.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace",
+     0.875
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ]
+   ],
+   "loot_table": "ZombieBossSmall",
+   "materials": [],
+   "meshes": [
+    "WIP/ZombieBoss_Butcher"
+   ],
+   "name": "Undead Boss",
+   "rad_chance": 1.0,
+   "rad_damage": 16.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    200.0,
+    400.0
+   ]
+  },
+  "BP_ZombieBoss_Juggernaut_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.35,
+    1.75
+   ],
+   "bleed": 0.2,
+   "boss": {
+    "attack": "Animations/Zombie/ZombieBoss/Anim_Zombie_attack1",
+    "corpse_secs": 1200.0,
+    "hand_radius": 0.6,
+    "hit_window": [
+     0.24824403,
+     0.41503024
+    ],
+    "killed": "Zombie Boss",
+    "peripheral": 110.0,
+    "rate": 0.5,
+    "reach": 5.0,
+    "scale": [
+     1.3,
+     1.4,
+     1.3
+    ],
+    "skill_point_chance": 0.25,
+    "unique_sets": [
+     "MilitarySet",
+     "BanditSet"
+    ],
+    "voice": "ZombieBossBreathLoopCue",
+    "waits": [
+     [
+      30.0,
+      15.0
+     ],
+     [
+      30.0,
+      15.0
+     ]
+    ]
+   },
+   "broken_bone": 0.0,
+   "capsule_half_height": 1.0,
+   "capsule_radius": 0.36,
+   "container": "Large Undead Boss",
+   "damage": 30.0,
+   "health": 4000.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace",
+     0.875
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ]
+   ],
+   "loot_table": "ZombieBoss",
+   "materials": [],
+   "meshes": [
+    "WIP/ZombieBoss_Jugger"
+   ],
+   "name": "Large Undead Boss",
+   "rad_chance": 1.0,
+   "rad_damage": 16.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    200.0,
+    400.0
+   ]
+  },
+  "BP_ZombieBoss_Military_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.35,
+    1.75
+   ],
+   "bleed": 0.2,
+   "boss": {
+    "attack": "Animations/Zombie/ZombieBoss/Anim_Zombie_attack1",
+    "corpse_secs": 1200.0,
+    "hand_radius": 0.6,
+    "hit_window": [
+     0.24824403,
+     0.41503024
+    ],
+    "killed": "Zombie Boss",
+    "peripheral": 110.0,
+    "rate": 0.5,
+    "reach": 5.0,
+    "scale": [
+     1.3,
+     1.4,
+     1.3
+    ],
+    "skill_point_chance": 0.25,
+    "unique_sets": [
+     "MilitarySet",
+     "BanditSet"
+    ],
+    "voice": "ZombieBossBreathLoopCue",
+    "waits": [
+     [
+      30.0,
+      15.0
+     ],
+     [
+      30.0,
+      15.0
+     ]
+    ]
+   },
+   "broken_bone": 0.0,
+   "capsule_half_height": 1.0,
+   "capsule_radius": 0.36,
+   "container": "Large Undead Boss",
+   "damage": 30.0,
+   "health": 4000.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace",
+     0.875
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ]
+   ],
+   "loot_table": "ZombieBoss",
+   "materials": [],
+   "meshes": [
+    "PolygonFiles/PolygonBossZombies/Meshes/Characters/SK_Chr_ZombieBoss_Brute_01"
+   ],
+   "name": "Large Undead Boss",
+   "rad_chance": 1.0,
+   "rad_damage": 16.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    200.0,
+    400.0
+   ]
+  },
+  "BP_ZombieBoss_Military_Small_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.35,
+    1.75
+   ],
+   "bleed": 0.2,
+   "boss": {
+    "attack": "Animations/Zombie/ZombieBoss/Anim_Zombie_attack1",
+    "corpse_secs": 1200.0,
+    "hand_radius": 0.6,
+    "hit_window": [
+     0.24824403,
+     0.41503024
+    ],
+    "killed": "Zombie Boss",
+    "peripheral": 110.0,
+    "rate": 0.5,
+    "reach": 5.0,
+    "scale": [
+     1.1,
+     1.2,
+     1.1
+    ],
+    "skill_point_chance": 0.25,
+    "unique_sets": [
+     "ColonelsRevenge",
+     "Crusher",
+     "Deadeye"
+    ],
+    "voice": "ZombieBossBreathLoopCue",
+    "waits": [
+     [
+      30.0,
+      15.0
+     ],
+     [
+      30.0,
+      15.0
+     ]
+    ]
+   },
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.36,
+   "container": "Undead Boss",
+   "damage": 30.0,
+   "health": 2000.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace",
+     0.875
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ]
+   ],
+   "loot_table": "ZombieBossSmall",
+   "materials": [],
+   "meshes": [
+    "PolygonFiles/PolygonBossZombies/Meshes/Characters/SK_Chr_ZombieBoss_Brute_01"
+   ],
+   "name": "Undead Boss",
+   "rad_chance": 1.0,
+   "rad_damage": 16.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    200.0,
+    400.0
+   ]
+  },
+  "BP_ZombieBoss_Scientist_Small_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.35,
+    1.75
+   ],
+   "bleed": 0.2,
+   "boss": {
+    "attack": "Animations/Zombie/ZombieBoss/Anim_Zombie_attack1",
+    "corpse_secs": 1200.0,
+    "hand_radius": 0.6,
+    "hit_window": [
+     0.24824403,
+     0.41503024
+    ],
+    "killed": "Zombie Boss",
+    "peripheral": 110.0,
+    "rate": 0.5,
+    "reach": 5.0,
+    "scale": [
+     1.1,
+     1.2,
+     1.1
+    ],
+    "skill_point_chance": 0.25,
+    "unique_sets": [
+     "Exterminator",
+     "Guardian",
+     "Lechie"
+    ],
+    "voice": "ZombieBossBreathLoopCue",
+    "waits": [
+     [
+      30.0,
+      15.0
+     ],
+     [
+      30.0,
+      15.0
+     ]
+    ]
+   },
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.36,
+   "container": "Undead Boss",
+   "damage": 30.0,
+   "health": 2000.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace",
+     0.875
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ]
+   ],
+   "loot_table": "ZombieBossSmall",
+   "materials": [],
+   "meshes": [
+    "WIP/ZombieBoss_Scientist"
+   ],
+   "name": "Undead Boss",
+   "rad_chance": 1.0,
+   "rad_damage": 16.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    200.0,
+    400.0
+   ]
+  },
+  "BP_ZombieBoss_Slobber_Small_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.35,
+    1.75
+   ],
+   "bleed": 0.2,
+   "boss": {
+    "attack": "Animations/Zombie/ZombieBoss/Anim_Zombie_attack1",
+    "corpse_secs": 1200.0,
+    "hand_radius": 0.6,
+    "hit_window": [
+     0.24824403,
+     0.41503024
+    ],
+    "killed": "Zombie Boss",
+    "peripheral": 110.0,
+    "rate": 0.5,
+    "reach": 5.0,
+    "scale": [
+     1.1,
+     1.2,
+     1.1
+    ],
+    "skill_point_chance": 0.25,
+    "unique_sets": [
+     "Guardian",
+     "BattleReadyGlock",
+     "Lechie"
+    ],
+    "voice": "ZombieBossBreathLoopCue",
+    "waits": [
+     [
+      30.0,
+      15.0
+     ],
+     [
+      30.0,
+      15.0
+     ]
+    ]
+   },
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.36,
+   "container": "Undead Boss",
+   "damage": 30.0,
+   "health": 2000.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace",
+     0.875
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ]
+   ],
+   "loot_table": "ZombieBossSmall",
+   "materials": [],
+   "meshes": [
+    "PolygonFiles/PolygonBossZombies/Meshes/Characters/SK_Chr_ZombieBoss_Slobber_01"
+   ],
+   "name": "Undead Boss",
+   "rad_chance": 1.0,
+   "rad_damage": 16.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    200.0,
+    400.0
+   ]
+  },
+  "BP_ZombieBoss_Survivor_Small_C": {
+   "alert_speed": 5.0,
+   "attack_interval": [
+    1.35,
+    1.75
+   ],
+   "bleed": 0.2,
+   "boss": {
+    "attack": "Animations/Zombie/ZombieBoss/Anim_Zombie_attack1",
+    "corpse_secs": 1200.0,
+    "hand_radius": 0.6,
+    "hit_window": [
+     0.24824403,
+     0.41503024
+    ],
+    "killed": "Zombie Boss",
+    "peripheral": 110.0,
+    "rate": 0.5,
+    "reach": 5.0,
+    "scale": [
+     1.1,
+     1.2,
+     1.1
+    ],
+    "skill_point_chance": 0.25,
+    "unique_sets": [
+     "ColonelsRevenge",
+     "Lechie",
+     "Guardian"
+    ],
+    "voice": "ZombieBossBreathLoopCue",
+    "waits": [
+     [
+      30.0,
+      15.0
+     ],
+     [
+      30.0,
+      15.0
+     ]
+    ]
+   },
+   "broken_bone": 0.0,
+   "capsule_half_height": 0.82,
+   "capsule_radius": 0.36,
+   "container": "Undead Boss",
+   "damage": 30.0,
+   "health": 2000.0,
+   "health_deviation": 0.0,
+   "heavy_bleed": 0.1,
+   "locomotion": [
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle",
+     0.0
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace",
+     0.875
+    ],
+    [
+     "Animations/Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace",
+     3.5
+    ]
+   ],
+   "loot_table": "ZombieBossSmall",
+   "materials": [],
+   "meshes": [
+    "WIP/ZombieBoss_Survivor"
+   ],
+   "name": "Undead Boss",
+   "rad_chance": 1.0,
+   "rad_damage": 16.0,
+   "roam_speed": 0.8,
+   "shovable": false,
+   "xp": [
+    200.0,
+    400.0
+   ]
+  },
   "BP_Zombie_Crawler_C": {
    "alert_speed": 1.0,
    "attack_interval": [
@@ -84,6 +2138,7 @@
    "rad_chance": 0.05,
    "rad_damage": 2.0,
    "roam_speed": 0.3,
+   "shovable": false,
    "xp": [
     5.0,
     10.0
@@ -134,6 +2189,7 @@
    "rad_chance": 1.0,
    "rad_damage": 6.0,
    "roam_speed": 1.0,
+   "shovable": false,
    "xp": [
     5.0,
     10.0
@@ -235,6 +2291,7 @@
    "rad_chance": 0.5,
    "rad_damage": 8.0,
    "roam_speed": 1.0,
+   "shovable": true,
    "xp": [
     5.0,
     10.0
@@ -346,6 +2403,7 @@
    "rad_chance": 0.5,
    "rad_damage": 8.0,
    "roam_speed": 1.0,
+   "shovable": true,
    "xp": [
     5.0,
     10.0
@@ -415,6 +2473,7 @@
    "rad_chance": 1.0,
    "rad_damage": 8.0,
    "roam_speed": 1.0,
+   "shovable": true,
    "xp": [
     5.0,
     10.0
@@ -512,6 +2571,7 @@
    "rad_chance": 0.05,
    "rad_damage": 2.0,
    "roam_speed": 1.0,
+   "shovable": true,
    "xp": [
     5.0,
     10.0
@@ -609,10 +2669,445 @@
    "rad_chance": 0.05,
    "rad_damage": 2.0,
    "roam_speed": 1.0,
+   "shovable": true,
    "xp": [
     5.0,
     10.0
    ]
+  }
+ },
+ "weapons": {
+  "BP_AIWeapon_Axe_C": {
+   "damage": [
+    46.0,
+    26.0,
+    26.0,
+    26.0,
+    26.0,
+    26.0,
+    26.0,
+    26.0
+   ],
+   "interval": [
+    1.0,
+    1.0
+   ],
+   "magazine": 0,
+   "melee": [
+    "Animations/Anims/Montages/Crouch_MeleeAttack_Montage",
+    "Animations/Anims/Montages/1HMeleeAttack1_Montage"
+   ],
+   "melee_interval": [
+    0.9,
+    1.1
+   ],
+   "mesh": "Meshes/Items/Melee/Damaged/FiremansAxe/SM_Wep_FireAxe_01_Damage",
+   "muzzle": [
+    0.0,
+    -1.6475111e-07,
+    21.153524
+   ],
+   "muzzle_flash": "TutorialParticleSystem",
+   "range": 0.0,
+   "ranged": false,
+   "reload": null,
+   "socket": "MeleeWeapon_r",
+   "sound": null,
+   "spread": 1.0
+  },
+  "BP_AIWeapon_BaseballBat_C": {
+   "damage": [
+    33.0,
+    23.0,
+    23.0,
+    23.0,
+    23.0,
+    23.0,
+    23.0,
+    23.0
+   ],
+   "interval": [
+    1.0,
+    1.0
+   ],
+   "magazine": 0,
+   "melee": [
+    "Animations/Anims/Montages/Crouch_MeleeAttack_Montage",
+    "Animations/Anims/Montages/1HMeleeAttack1_Montage"
+   ],
+   "melee_interval": [
+    0.9,
+    1.1
+   ],
+   "mesh": "PolygonFiles/PolygonApocalypse/Meshes/Weapons/SM_Wep_Bat_Wood_01",
+   "muzzle": [
+    0.0,
+    -1.6475111e-07,
+    21.153524
+   ],
+   "muzzle_flash": "TutorialParticleSystem",
+   "range": 0.0,
+   "ranged": false,
+   "reload": null,
+   "socket": "MeleeWeapon_r",
+   "sound": null,
+   "spread": 1.0
+  },
+  "BP_AIWeapon_ColonelsRevenge_C": {
+   "damage": [
+    75.0,
+    25.0,
+    25.0,
+    25.0,
+    25.0,
+    25.0,
+    25.0,
+    25.0
+   ],
+   "interval": [
+    0.6,
+    1.1
+   ],
+   "magazine": 30,
+   "melee": [],
+   "melee_interval": [
+    1.0,
+    1.0
+   ],
+   "mesh": "Meshes/Items/Firearms/Guns/CustomM4/Custom_M4",
+   "muzzle": [
+    -1.4921397e-13,
+    49.923527,
+    9.174824
+   ],
+   "muzzle_flash": "FX_GunshotSuppressedRifle",
+   "range": 70.0,
+   "ranged": true,
+   "reload": "Animations/Anims/Other/Reload_Rifle_Hip_Montage",
+   "socket": "Weapon_r",
+   "sound": "AR_Single_Shot__Suppressed__Cue",
+   "spread": 2.0
+  },
+  "BP_AIWeapon_HuntingKnife_C": {
+   "damage": [
+    42.0,
+    22.0,
+    22.0,
+    22.0,
+    22.0,
+    22.0,
+    22.0,
+    22.0
+   ],
+   "interval": [
+    1.0,
+    1.0
+   ],
+   "magazine": 0,
+   "melee": [
+    "Animations/Anims/Montages/Crouch_MeleeAttack_Montage",
+    "Animations/Anims/Montages/1HMeleeAttack1_Montage"
+   ],
+   "melee_interval": [
+    0.8,
+    0.9
+   ],
+   "mesh": "PolygonFiles/PolygonApocalypse/Meshes/Weapons/SM_Wep_Melee_HuntingKnife_01",
+   "muzzle": [
+    0.0,
+    -1.6475111e-07,
+    21.153524
+   ],
+   "muzzle_flash": "TutorialParticleSystem",
+   "range": 0.0,
+   "ranged": false,
+   "reload": null,
+   "socket": "MeleeWeapon_r",
+   "sound": null,
+   "spread": 1.0
+  },
+  "BP_AIWeapon_HuntingRifle_C": {
+   "damage": [
+    75.0,
+    44.0,
+    44.0,
+    44.0,
+    44.0,
+    44.0,
+    44.0,
+    44.0
+   ],
+   "interval": [
+    1.3,
+    1.8
+   ],
+   "magazine": 5,
+   "melee": [],
+   "melee_interval": [
+    1.0,
+    1.0
+   ],
+   "mesh": "Meshes/Firearms/Sniper/HuntingRifle/HuntingRifleNoScope",
+   "muzzle": [
+    60.00036,
+    0.0,
+    5.631755
+   ],
+   "muzzle_flash": "FX_GunshotRifle",
+   "range": 85.0,
+   "ranged": true,
+   "reload": "Animations/Anims/Other/Reload_Sniper_Hip_Montage",
+   "socket": "Weapon_r",
+   "sound": "Sniper_Single_Shot_Cue",
+   "spread": 1.0
+  },
+  "BP_AIWeapon_M20_C": {
+   "damage": [
+    95.0,
+    75.0,
+    75.0,
+    75.0,
+    75.0,
+    75.0,
+    75.0,
+    75.0
+   ],
+   "interval": [
+    1.8,
+    2.4
+   ],
+   "magazine": 4,
+   "melee": [],
+   "melee_interval": [
+    1.0,
+    1.0
+   ],
+   "mesh": "Meshes/Items/Firearms/Guns/XM2010/Custom_XM2010",
+   "muzzle": [
+    -1.2789769e-13,
+    80.95276,
+    8.835487
+   ],
+   "muzzle_flash": "FX_GunshotRifle",
+   "range": 90.0,
+   "ranged": true,
+   "reload": "Animations/Anims/Other/Reload_Sniper_Hip_Montage",
+   "socket": "Weapon_r",
+   "sound": "gun_silenced_sniper2_shot_01_Cue",
+   "spread": 1.0
+  },
+  "BP_AIWeapon_M249_C": {
+   "damage": [
+    65.0,
+    22.0,
+    22.0,
+    22.0,
+    22.0,
+    22.0,
+    22.0,
+    22.0
+   ],
+   "interval": [
+    0.7,
+    0.9
+   ],
+   "magazine": 100,
+   "melee": [],
+   "melee_interval": [
+    1.0,
+    1.0
+   ],
+   "mesh": "Meshes/Firearms/Damaged/M249/SK_Wep_MachineGun_01_Damaged",
+   "muzzle": [
+    -1.4921397e-13,
+    45.712074,
+    15.69017
+   ],
+   "muzzle_flash": "FX_GunshotRifle",
+   "range": 70.0,
+   "ranged": true,
+   "reload": "Animations/Anims/Other/Reload_Sniper_Hip_Montage",
+   "socket": "Weapon_r",
+   "sound": "M-249_01_Cue",
+   "spread": 3.0
+  },
+  "BP_AIWeapon_M4_C": {
+   "damage": [
+    60.0,
+    20.0,
+    20.0,
+    20.0,
+    20.0,
+    20.0,
+    20.0,
+    20.0
+   ],
+   "interval": [
+    0.8,
+    1.2
+   ],
+   "magazine": 30,
+   "melee": [],
+   "melee_interval": [
+    1.0,
+    1.0
+   ],
+   "mesh": "Meshes/Firearms/Damaged/M4/M4_Damaged",
+   "muzzle": [
+    -1.4210855e-13,
+    43.292408,
+    10.751331
+   ],
+   "muzzle_flash": "FX_GunshotRifle",
+   "range": 65.0,
+   "ranged": true,
+   "reload": "Animations/Anims/Other/Reload_Rifle_Hip_Montage",
+   "socket": "Weapon_r",
+   "sound": "gun_rifle_shot_01_Cue",
+   "spread": 2.0
+  },
+  "BP_AIWeapon_M9_C": {
+   "damage": [
+    50.0,
+    14.0,
+    14.0,
+    14.0,
+    14.0,
+    14.0,
+    14.0,
+    14.0
+   ],
+   "interval": [
+    0.9,
+    1.4
+   ],
+   "magazine": 12,
+   "melee": [],
+   "melee_interval": [
+    1.0,
+    1.0
+   ],
+   "mesh": "Meshes/Firearms/Damaged/M9/SK_Wep_Pistol_Metal_01_Damaged",
+   "muzzle": [
+    -9.2370556e-14,
+    23.868114,
+    6.0652976
+   ],
+   "muzzle_flash": "FX_GunshotPistol",
+   "range": 65.0,
+   "ranged": true,
+   "reload": "Animations/Anims/Other/Reload_Pistol_Montage",
+   "socket": "Sidearm_r",
+   "sound": "gun_pistol_shot_02_Cue",
+   "spread": 2.0
+  },
+  "BP_AIWeapon_Shiv_C": {
+   "damage": [
+    30.0,
+    20.0,
+    20.0,
+    20.0,
+    20.0,
+    20.0,
+    20.0,
+    20.0
+   ],
+   "interval": [
+    1.0,
+    1.0
+   ],
+   "magazine": 0,
+   "melee": [
+    "Animations/Anims/Montages/Crouch_MeleeAttack_Montage",
+    "Animations/Anims/Montages/1HMeleeAttack1_Montage"
+   ],
+   "melee_interval": [
+    0.8,
+    0.9
+   ],
+   "mesh": "PolygonFiles/PolygonGangWarfare/Meshes/Weapons/SM_Wep_Shiv_01",
+   "muzzle": [
+    0.0,
+    -1.6475111e-07,
+    21.153524
+   ],
+   "muzzle_flash": "TutorialParticleSystem",
+   "range": 0.0,
+   "ranged": false,
+   "reload": null,
+   "socket": "MeleeWeapon_r",
+   "sound": null,
+   "spread": 1.0
+  },
+  "BP_AIWeapon_SniperRifle_C": {
+   "damage": [
+    85.0,
+    65.0,
+    65.0,
+    65.0,
+    65.0,
+    65.0,
+    65.0,
+    65.0
+   ],
+   "interval": [
+    1.4,
+    2.0
+   ],
+   "magazine": 4,
+   "melee": [],
+   "melee_interval": [
+    1.0,
+    1.0
+   ],
+   "mesh": "Meshes/Firearms/Damaged/R700/SK_Wep_Sniper_Mil_01_Damaged",
+   "muzzle": [
+    -1.2789769e-13,
+    66.25927,
+    4.065614
+   ],
+   "muzzle_flash": "FX_GunshotRifle",
+   "range": 90.0,
+   "ranged": true,
+   "reload": "Animations/Anims/Other/Reload_Sniper_Hip_Montage",
+   "socket": "Weapon_r",
+   "sound": "Sniper_Single_Shot_Cue",
+   "spread": 1.0
+  },
+  "BP_AIWeapon_Valkyrie_C": {
+   "damage": [
+    80.0,
+    25.0,
+    25.0,
+    25.0,
+    25.0,
+    25.0,
+    25.0,
+    25.0
+   ],
+   "interval": [
+    0.6,
+    1.1
+   ],
+   "magazine": 30,
+   "melee": [],
+   "melee_interval": [
+    1.0,
+    1.0
+   ],
+   "mesh": "Meshes/Items/Firearms/Guns/CustomAR15/Custom_AR15",
+   "muzzle": [
+    -3.1974423e-13,
+    54.666492,
+    10.2277155
+   ],
+   "muzzle_flash": "FX_GunshotSuppressedRifle",
+   "range": 70.0,
+   "ranged": true,
+   "reload": "Animations/Anims/Other/Reload_Rifle_Hip_Montage",
+   "socket": "Weapon_r",
+   "sound": "gun_rifle_shot_01_Cue",
+   "spread": 2.0
   }
  }
 }

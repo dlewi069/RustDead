@@ -10,6 +10,12 @@
 //!   cloud coverage dims the sun and greys the sky, fog and dust pull the fog in (dust tints it
 //!   the level's Dust Particle Color), rain and snow fall around the camera except under a roof
 //!   (UDS_Occlusion_Volume's job), thunder flashes the sky in Lightning Flash colour.
+//! - **Lightning** (UDW_Lightning_Spawn_Manager's Timed Lightning Spawn): every Lightning Flash
+//!   Period (60 / Lightning Flash Frequency 14 x (1 ± 0.5 x Timing Randomization 1) s) a
+//!   threshold is rolled in 5-10, and a flash happens when Thunder/Lightning is above it, at a
+//!   random distance in Lightning Flash Distance Range (1.55-6.5 km; uniformly, a guess). Its
+//!   brightness is Lightning Distance Range's 1 -> 0 over that range, clamped to 0.15-1.
+//!   [`LightningFlash`] tells `weather_sounds` (the close thunder).
 
 use std::sync::OnceLock;
 
@@ -151,9 +157,43 @@ struct Precipitation {
     snow_mesh: Handle<Mesh>,
     rain_mat: Handle<StandardMaterial>,
     snow_mat: Handle<StandardMaterial>,
-    under_roof: bool,
     roof_check: f32,
     flash: f32,
+    /// Its brightness (Current Lightning Intensity).
+    flash_intensity: f32,
+    /// Seconds to the next Timed Lightning Spawn.
+    next_lightning: f32,
+}
+
+/// The camera has a roof over it (UDS's occlusion: no rain falls, weather sounds are muffled).
+#[derive(Resource, Default, Clone, Copy, Debug, PartialEq)]
+pub struct Sheltered(pub bool);
+
+/// A lightning flash `distance` metres away (Start Lightning Flash).
+#[derive(Message, Clone, Copy, Debug)]
+pub struct LightningFlash {
+    pub distance: f32,
+}
+
+/// Lightning Flash Frequency (flashes a minute) and Timing Randomization.
+const FLASH_FREQUENCY: f32 = 14.0;
+const FLASH_RANDOMIZATION: f32 = 1.0;
+/// Lightning Flash Distance Range (UE 155000-650000 cm).
+pub const FLASH_DISTANCE: [f32; 2] = [1550.0, 6500.0];
+
+/// Lightning Flash Period: 60 / frequency x (1 + randomization x rand(-0.5, 0.5)).
+pub fn flash_period(rng: &mut impl Rng) -> f32 {
+    60.0 / FLASH_FREQUENCY * (1.0 + FLASH_RANDOMIZATION * rng.gen_range(-0.5..0.5))
+}
+
+/// Timed Lightning Spawn's check: a flash when Thunder/Lightning beats a threshold rolled in 5-10.
+pub fn flash_strikes(thunder: f32, rng: &mut impl Rng) -> bool {
+    thunder > rng.gen_range(5.0..10.0)
+}
+
+/// Lightning Distance Range, clamped to 0.15-1: a flash's brightness at `distance` metres.
+pub fn flash_intensity(distance: f32) -> f32 {
+    (1.0 - (distance - FLASH_DISTANCE[0]) / (FLASH_DISTANCE[1] - FLASH_DISTANCE[0])).clamp(0.15, 1.0)
 }
 
 const MAX_DROPS: usize = 2500;
@@ -162,6 +202,8 @@ const BOX: f32 = 14.0;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<Weather>()
+        .init_resource::<Sheltered>()
+        .add_message::<LightningFlash>()
         .add_systems(OnEnter(AppState::InGame), setup_precipitation)
         .add_systems(Update, update_weather.run_if(in_state(AppState::InGame)).run_if(in_state(MenuScreen::None)))
         .add_systems(
@@ -177,9 +219,10 @@ fn setup_precipitation(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>,
         snow_mesh: meshes.add(Rectangle::new(0.04, 0.04)),
         rain_mat: materials.add(drop(Color::srgba(0.75, 0.8, 0.88, 0.35))),
         snow_mat: materials.add(drop(Color::srgba(0.95, 0.95, 1.0, 0.85))),
-        under_roof: false,
         roof_check: 0.0,
         flash: 0.0,
+        flash_intensity: 1.0,
+        next_lightning: flash_period(&mut rand::thread_rng()),
     });
 }
 
@@ -225,6 +268,7 @@ fn apply_weather(
     mut clear: ResMut<ClearColor>,
     players: Query<&Transform, With<crate::models::CharacterModel>>,
     precip: Option<ResMut<Precipitation>>,
+    mut flashes: MessageWriter<LightningFlash>,
 ) {
     let (Some(d), Some(state)) = (data(), &game.state) else { return };
     let w = &state.weather;
@@ -268,23 +312,33 @@ fn apply_weather(
     // Thunder: brief flashes in Lightning Flash Light Source Color (CCD9FF).
     if let Some(mut p) = precip {
         p.flash = (p.flash - time.delta_secs()).max(0.0);
-        if v.thunder > 0.0 && rand::thread_rng().gen_range(0.0..1.0) < v.thunder / 10.0 * 0.12 * time.delta_secs() {
-            p.flash = 0.18;
+        p.next_lightning -= time.delta_secs();
+        if p.next_lightning <= 0.0 {
+            let mut rng = rand::thread_rng();
+            p.next_lightning = flash_period(&mut rng);
+            if flash_strikes(v.thunder, &mut rng) {
+                let distance = rng.gen_range(FLASH_DISTANCE[0]..FLASH_DISTANCE[1]);
+                p.flash = 0.18;
+                p.flash_intensity = flash_intensity(distance);
+                flashes.write(LightningFlash { distance });
+                debug!("lightning {distance:.0} m away");
+            }
         }
         if p.flash > 0.0 {
-            ambient.brightness += 4000.0 * (p.flash / 0.18);
+            ambient.brightness += 4000.0 * p.flash_intensity * (p.flash / 0.18);
             ambient.color = Color::linear_rgb(0.598958, 0.692534, 1.0);
         }
     }
 }
 
 /// Rain and snow around the camera: a pool of drops recycled inside a box that follows it.
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 fn fall(
     mut commands: Commands,
     time: Res<Time>,
     weather: Res<Weather>,
     precip: Option<ResMut<Precipitation>>,
+    mut sheltered: ResMut<Sheltered>,
     camera: Query<&GlobalTransform, With<super::PlayerCamera>>,
     mut drops: Query<(&Drop, &mut Transform, &mut Visibility)>,
     mut props: crate::level::collision::PropRays,
@@ -295,11 +349,11 @@ fn fall(
     p.roof_check -= time.delta_secs();
     if p.roof_check <= 0.0 {
         p.roof_check = 0.25;
-        p.under_roof = props.cast(eye, Vec3::Y, 30.0).is_some();
+        sheltered.set_if_neq(Sheltered(props.cast(eye, Vec3::Y, 30.0).is_some()));
     }
     let v = weather.0;
-    let want_rain = if p.under_roof { 0 } else { (v.rain / 10.0 * MAX_DROPS as f32) as usize };
-    let want_snow = if p.under_roof { 0 } else { (v.snow / 10.0 * MAX_DROPS as f32) as usize };
+    let want_rain = if sheltered.0 { 0 } else { (v.rain / 10.0 * MAX_DROPS as f32) as usize };
+    let want_snow = if sheltered.0 { 0 } else { (v.snow / 10.0 * MAX_DROPS as f32) as usize };
     let snow_have = drops.iter().filter(|d| d.0.snow).count();
     let rain_have = drops.iter().count() - snow_have;
     let mut rng = rand::thread_rng();
@@ -375,5 +429,20 @@ mod tests {
         let m = a.lerp(&b, 0.5);
         assert_eq!(m.rain, b.rain / 2.0);
         assert_eq!(m.cloud, (a.cloud + b.cloud) / 2.0);
+    }
+
+    #[test]
+    fn lightning_follows_the_spawn_manager() {
+        let mut rng = rand::thread_rng();
+        for _ in 0..100 {
+            let p = flash_period(&mut rng);
+            assert!((60.0 / 14.0 * 0.5..=60.0 / 14.0 * 1.5).contains(&p), "{p}");
+        }
+        // The threshold is rolled in 5-10: a full thunderstorm always strikes, 5 never does.
+        assert!((0..100).all(|_| flash_strikes(10.0, &mut rng)));
+        assert!((0..100).all(|_| !flash_strikes(5.0, &mut rng)));
+        assert_eq!(flash_intensity(1550.0), 1.0);
+        assert_eq!(flash_intensity(6500.0), 0.15);
+        assert!((flash_intensity(4025.0) - 0.5).abs() < 1e-4);
     }
 }

@@ -42,6 +42,12 @@
    "model": "Linear",
    "spatialize": true
   },
+  "CampFire": {
+   "falloff": 6.0,
+   "inner": 2.0,
+   "model": "Linear",
+   "spatialize": true
+  },
   "DoorOpeningClosing": {
    "falloff": 10.0,
    "inner": 0.75,
@@ -114,6 +120,12 @@
    "model": "Linear",
    "spatialize": true
   },
+  "QuiteSounds": {
+   "falloff": 5.0,
+   "inner": 1.5,
+   "model": "Linear",
+   "spatialize": true
+  },
   "Radio": {
    "falloff": 25.0,
    "inner": 6.0,
@@ -124,6 +136,12 @@
    "falloff": 5.0,
    "inner": 1.0,
    "model": "Linear",
+   "spatialize": true
+  },
+  "VendorTruck_Attenuation": {
+   "falloff": 100.0,
+   "inner": 0.5,
+   "model": "NaturalSound",
    "spatialize": true
   },
   "Water": {
@@ -145,6 +163,49 @@
   "MusicAudio": "MUSIC",
   "RadioMusicAudio": "RADIO",
   "UIAudio": "UI"
+ },
+ "crossfades": {
+  "MasterVehicle_Audio": {
+   "inputs": [
+    {
+     "cue": "MasterVehicle_Audio#0",
+     "fade_in": [
+      0.0,
+      0.0
+     ],
+     "fade_out": [
+      15.0,
+      25.0
+     ],
+     "volume": 1.0
+    },
+    {
+     "cue": "MasterVehicle_Audio#1",
+     "fade_in": [
+      0.5,
+      20.0
+     ],
+     "fade_out": [
+      40.0,
+      50.0
+     ],
+     "volume": 1.0
+    },
+    {
+     "cue": "MasterVehicle_Audio#2",
+     "fade_in": [
+      35.0,
+      55.0
+     ],
+     "fade_out": [
+      60.0,
+      999.0
+     ],
+     "volume": 1.0
+    }
+   ],
+   "param": "RPM"
+  }
  },
  "cues": {
   "AK-74_echo_03_Cue": {
@@ -400,6 +461,52 @@
    ],
    "volume": 0.5
   },
+  "AirCraft_Cue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Blueprints/Events/Audio/samolety_039__2_.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.25
+  },
+  "AmbBunker1WAV_Cue": {
+   "attenuation": null,
+   "class": "MusicAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Music/Ingame/AmbBunker1WAV.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
   "Barret-M28_07_Cue": {
    "attenuation": "GunshotsSniper",
    "class": "EffectsAudio",
@@ -417,6 +524,142 @@
      ],
      "waves": [
       "game/SurrounDead/Content/Audio/Premium_Weapons_Bullets_SFX/WAV/Rifle/Sniper_rifle/Barret-M28/Barret-M28_07.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "BearCue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Bear/Sounds/ES_Bear_Vocals_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Bear/Sounds/ES_Bear_Vocals_2_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Bear/Sounds/ES_Bear_Vocals_3_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Bear/Sounds/ES_Bear_Vocals_4_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "BearSnarl_cue": {
+   "attenuation": "GunshotsPistol",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Bear/Sounds/ES_Bear_Vocals_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Bear/Sounds/ES_Bear_Vocals_2_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Bear/Sounds/ES_Bear_Vocals_3_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Bear/Sounds/ES_Bear_Vocals_4_-_SFX_Producer.wav"
      ],
      "weight": 1.0
     }
@@ -544,6 +787,127 @@
    "pitch": 1.0,
    "variants": [],
    "volume": 0.5
+  },
+  "ChopWoodRandom_Cue": {
+   "attenuation": "CampFire",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Chopping_wood.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Chopping_wood_2.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Chopping_wood_3.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Chopping_wood_4.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Chopping_wood_5.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Chopping_wood_6.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "CombatMusic_Cue": {
+   "attenuation": null,
+   "class": "MusicAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Music/Combat/FightWAV.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
   },
   "ConcreteSprint_Cue": {
    "attenuation": "FootSteps",
@@ -675,6 +1039,82 @@
      ],
      "waves": [
       "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_concrete_walk_05.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Cue_Horn": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.9,
+      0.9
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/VehicleSounds/Sounds/Wav/Car/A_Car_Horn.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Deer_Noises": {
+   "attenuation": null,
+   "class": "AmbientAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Deer/jelenie_deer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Deer/deer_meewing_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Deer/bellowing_deer_animal_nature_hirsch_rohren_tiere_wald.wav"
      ],
      "weight": 1.0
     }
@@ -839,6 +1279,29 @@
     }
    ],
    "volume": 0.5
+  },
+  "FishReelIN_Cue": {
+   "attenuation": "CampFire",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/ES_Fly_Fishing_Reel_Pull_2_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
   },
   "GrassSprint_Cue": {
    "attenuation": "FootSteps",
@@ -1144,6 +1607,157 @@
    ],
    "volume": 0.75
   },
+  "HitScrapMetalRandom_Cue": {
+   "attenuation": "CampFire",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_hit_small_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_hit_small_02.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_hit_small_03.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_hit_small_04.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_hit_small_05.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_hit_small_06.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "HittingTrash_Cue": {
+   "attenuation": "CampFire",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SurvivalSoundPack/Waves/axe_hitting_wood.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SurvivalSoundPack/Waves/axe_hitting_wood_v2.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SurvivalSoundPack/Waves/axe_hitting_wood_v3.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.35
+  },
   "HoundAttackCue": {
    "attenuation": "GunshotsPistol",
    "class": "EffectsAudio",
@@ -1356,6 +1970,264 @@
    ],
    "volume": 0.75
   },
+  "M16_Single_Shot_2_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/M16_AR/M16_Single_Shot_2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.35
+  },
+  "MainMenuMusic": {
+   "attenuation": null,
+   "class": "MusicAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Music/Menu/SurronDeadThemeWAV.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Music/Surrounddead_Ambient_Peaceful_1.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/R3VOL_Music1.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "Main_ExplorationMusic": {
+   "attenuation": null,
+   "class": "MusicAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Music/Ingame/Ambient11WAV.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Music/Surrounddead_Wilderness_Ambient_1__1_.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Seeker_revamped.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Surrounddead_Ambience_Peaceful_2__1_.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/String_Ambient.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/R3VOL_Music2.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/corvus_music.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "MasterVehicle_Audio#0": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/VehicleSounds/Sedan/Sedan_Engine_IdleRPM.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "MasterVehicle_Audio#1": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/VehicleSounds/Sedan/Sedan_Engine_LowRPM2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "MasterVehicle_Audio#2": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/VehicleSounds/Sedan/Sedan_Engine_MedRPM.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
   "MetalDoorImpact_Cue": {
    "attenuation": "DoorOpeningClosing",
    "class": "EffectsAudio",
@@ -1560,6 +2432,104 @@
    ],
    "volume": 0.75
   },
+  "MineStoneRandom_Cue": {
+   "attenuation": "CampFire",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Mining__Hitting_Stone_With_Pickaxe_.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Mining__Hitting_Stone_With_Pickaxe__2.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Mining__Hitting_Stone_With_Pickaxe__3.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Mining__Hitting_Stone_With_Pickaxe__4.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Mining__Hitting_Stone_With_Pickaxe__5.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Mining__Hitting_Stone_With_Pickaxe__6.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
   "Pistol_01_Cue": {
    "attenuation": "GunshotsPistol",
    "class": "EffectsAudio",
@@ -1669,6 +2639,29 @@
      ],
      "waves": [
       "game/SurrounDead/Content/Audio/Real_Recorded_Guns/Wavs/Guns/Pistol_05/Pistol_Single_Shot__Suppressed__2.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "RandomJet_Cue": {
+   "attenuation": "Aircraft",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Blueprints/Events/Audio/Jet_Fighter_Fly_By.wav"
      ],
      "weight": 1.0
     }
@@ -1926,6 +2919,29 @@
    ],
    "volume": 0.5
   },
+  "S_Build_Cue": {
+   "attenuation": "QuiteSounds",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Sounds/Wav/S_Build.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
   "S_EmptyFire_Cue": {
    "attenuation": "FootSteps",
    "class": "EffectsAudio",
@@ -1943,6 +2959,29 @@
      ],
      "waves": [
       "game/SurrounDead/Content/Audio/Sounds/Wav/S_EmptyFire.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "SafeZoneWAV_Cue": {
+   "attenuation": null,
+   "class": "MusicAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Music/Ingame/SafeZoneWAV.wav"
      ],
      "weight": 1.0
     }
@@ -2107,6 +3146,104 @@
     }
    ],
    "volume": 0.75
+  },
+  "ShipWreck_Background_Cue": {
+   "attenuation": "VendorTruck_Attenuation",
+   "class": "AmbientAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_low_creaking_ship_structure_10.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_low_creaking_ship_structure_08.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_low_creaking_ship_structure_03.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_low_creaking_ship_structure_11.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_low_creaking_ship_structure_04.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_low_creaking_ship_structure_02.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.2
   },
   "ShotGun_Boom_101__Suppressed__Cue": {
    "attenuation": "GunshotsRifleSuppressed",
@@ -2382,6 +3519,142 @@
    ],
    "volume": 0.75
   },
+  "SubwayMusic_Cue": {
+   "attenuation": null,
+   "class": "MusicAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Surroundead_Subway_Track_1.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "TreeFallingRandomCue": {
+   "attenuation": "CampFire",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SurvivalSoundPack/Waves/tree_falling.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Tree_Falling.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Tree_Falling_2.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Tree_Falling_3.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Tree_Falling_4.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Tree_Falling_5.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/SurvivalSoundPack/Waves/tree_falling_v2l.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
   "Turning_Flashlight_Off_3_Cue": {
    "attenuation": null,
    "class": "EffectsAudio",
@@ -2450,6 +3723,52 @@
     }
    ],
    "volume": 0.75
+  },
+  "Underground_Cue": {
+   "attenuation": null,
+   "class": "AmbientAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.85,
+      1.0
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/subway.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.5
+  },
+  "VehicleCollision_Cue": {
+   "attenuation": "BulletImpact",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.7,
+      1.5
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/VehicleSounds/_Collisions/VehicleCollision.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.6
   },
   "WaterSprint_Cue": {
    "attenuation": "FootSteps",
@@ -2702,12 +4021,231 @@
    ],
    "volume": 0.1
   },
+  "WolfCue": {
+   "attenuation": "GunshotsSniper",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Wolf/Sounds/ES_Wolf_Growls_2_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Wolf/Sounds/ES_Wolf_Howls_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Wolf/Sounds/ES_Wolf_Snarl_4_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.8,
+      1.0
+     ],
+     "volume": [
+      0.8,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/AI/Animals/Wolf/Sounds/ES_Wolf_Snorts_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "WolfSnarl_Cue": {
+   "attenuation": "GunshotsPistol",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/PolygonFiles/PolyArtWolf/ES_Wolf_Growl_3_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/PolygonFiles/PolyArtWolf/ES_Wolf_Growls_3_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/PolygonFiles/PolyArtWolf/ES_Wolf_Snarl_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.95,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/PolygonFiles/PolyArtWolf/ES_Wolf_Snarl_6_-_SFX_Producer.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
   "WoodBreak_cue": {
    "attenuation": "Radio",
    "class": "EffectsAudio",
    "pitch": 1.0,
    "variants": [],
    "volume": 0.5
+  },
+  "WoodBreaking_Cue": {
+   "attenuation": "CampFire",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Wood_Break.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Wood_Break_4.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Wood_Break_7.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Wood_Break_9.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Survival_Sound_Kit_HD_Remake/Wavs/Wood_Break_10.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.35
   },
   "WoodSprint_Cue": {
    "attenuation": "FootSteps",
@@ -2839,6 +4377,44 @@
      ],
      "waves": [
       "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Footsteps/Wavs/footstep_wood_walk_08.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "ZombieBossBreathLoopCue": {
+   "attenuation": "FootSteps",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.6,
+      0.6
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie_Sounds_Pro/Wavs/Zombie_Large_01.wav"
+     ],
+     "weight": 1.0
+    },
+    {
+     "loop": true,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      0.6,
+      0.6
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/Zombie_Sounds_Pro/Wavs/Zombie_Large_02.wav"
      ],
      "weight": 1.0
     }
@@ -3303,6 +4879,29 @@
    ],
    "volume": 0.25
   },
+  "explosion_deep_low_1_Cue": {
+   "attenuation": "Nuke",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      0.95,
+      1.05
+     ],
+     "volume": [
+      1.0,
+      1.05
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Explosion_Fire_Gas/Wavs/explosion_deep_low_1.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
   "explosion_large_06_Cue": {
    "attenuation": "GunshotsSniper",
    "class": "EffectsAudio",
@@ -3320,6 +4919,29 @@
      ],
      "waves": [
       "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Explosion_Fire_Gas/Wavs/explosion_large_06.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
+  "explosions_Cue": {
+   "attenuation": "Aircraft",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/explosions.wav"
      ],
      "weight": 1.0
     }
@@ -3602,6 +5224,29 @@
    ],
    "volume": 0.75
   },
+  "metal_med_impact_01_Cue": {
+   "attenuation": "GunshotsRifle",
+   "class": "EffectsAudio",
+   "pitch": 1.0,
+   "variants": [
+    {
+     "loop": false,
+     "pitch": [
+      1.0,
+      1.0
+     ],
+     "volume": [
+      1.0,
+      1.0
+     ],
+     "waves": [
+      "game/SurrounDead/Content/Audio/WARFARE_SOUNDS/Miscellaneous_Sounds/Metal/Wavs/metal_med_impact_01.wav"
+     ],
+     "weight": 1.0
+    }
+   ],
+   "volume": 0.75
+  },
   "night_and_crickets_ambient_loop_Cue": {
    "attenuation": null,
    "class": "AmbientAudio",
@@ -3662,5 +5307,57 @@
   "Sand_LayerInfo": "Sand",
   "Tropical_LayerInfo": "Grass",
   "Wetland_LayerInfo": "Grass"
+ },
+ "weather": {
+  "class": "AmbientAudio",
+  "waves": {
+   "UDS_Close_Thunder.Thunder Sounds": [
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Close_Thunder/CloseThunder_1.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Close_Thunder/CloseThunder_2.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Close_Thunder/CloseThunder_3.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Close_Thunder/CloseThunder_4.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Close_Thunder/CloseThunder_5.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Close_Thunder/CloseThunder_6.wav"
+   ],
+   "UDS_Distant_Thunder_Loop.Thunder Sounds": [
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_1.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_2.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_3.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_4.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_5.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_6.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_7.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_8.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_9.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_10.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Distant_Thunder/DistantThunder_11.wav"
+   ],
+   "UDS_Global_WeatherSounds.Wave Player": [
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Wind/Wind_Whistling.wav"
+   ],
+   "UDS_Rain_Loop.Heavy Rain Sounds": [
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/MediumRain_1.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/MediumRain_2.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/MediumRain_3.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/MediumRain_4.wav"
+   ],
+   "UDS_Rain_Loop.Light Rain Sounds": [
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/LightRain_1.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/LightRain_2.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/LightRain_3.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/LightRain_4.wav"
+   ],
+   "UDS_Rain_Loop.Rain Hit Sounds": [
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/RainHit_1.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/RainHit_2.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Rain/RainHit_3.wav"
+   ],
+   "UDS_Wind_Loop.Wind Sounds": [
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Wind/BrownianNoise_1.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Wind/BrownianNoise_2.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Wind/BrownianNoise_3.wav",
+    "game/SurrounDead/Content/UltraDynamicSky/Sound/Wind/BrownianNoise_4.wav"
+   ]
+  }
  }
 }

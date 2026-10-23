@@ -106,7 +106,8 @@ pub fn plugin(app: &mut App) {
             .after(super::combat::CombatSet)
             .run_if(in_state(AppState::InGame))
             .run_if(in_state(MenuScreen::None))
-            .run_if(super::player_in_control),
+            .run_if(super::on_foot)
+            .run_if(super::swim::not_swimming),
     );
 }
 
@@ -146,7 +147,9 @@ fn shove(
     let Some(m) = shoving.0.as_mut().filter(|m| m.tracing()) else { return };
     let facing = me.rotation * Vec3::Z;
     let (centre, r) = trace_sphere(m.kind, me.translation, facing);
-    let Some((e, t, z, _, mut h, flinch)) = zombies.iter_mut().find(|(_, t, _, b, _, _)| touches(centre, r, t.translation, b.radius, b.height)) else { return };
+    // BP_ZombieBoss's CanStompAI? is false (and it can't be shoved): the trace passes it by.
+    let stomp = m.kind == ActionKind::Stomp;
+    let Some((e, t, z, _, mut h, flinch)) = zombies.iter_mut().find(|(_, t, z, b, _, _)| !(stomp && z.kind.boss().is_some()) && touches(centre, r, t.translation, b.radius, b.height)) else { return };
     m.hit = true;
     if m.kind == ActionKind::Stomp {
         h.hp -= rand::thread_rng().gen_range(20.0..40.0);

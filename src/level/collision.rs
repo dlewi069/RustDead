@@ -24,6 +24,11 @@ pub struct KinematicBody {
     pub jump: Option<f32>,
     /// On a ladder (`ladders`): no gravity; gameplay moves it up and down, the floor stops it.
     pub climbing: bool,
+    /// Swimming (`gameplay::swim`): no gravity either; the floor (river bed) still stops it.
+    pub swimming: bool,
+    /// Moved by a montage's root motion (`gameplay::vault`, the BP's Flying movement mode): no
+    /// gravity, floors or walls; gameplay sets the position.
+    pub scripted: bool,
     /// Seconds spent held in the air waiting for the props below to load (see `move_bodies`).
     held: f32,
     /// Set for one frame on touching down from a fall: the downward speed, m/s (OnLanded's
@@ -33,11 +38,12 @@ pub struct KinematicBody {
 
 impl KinematicBody {
     pub fn new(radius: f32, height: f32) -> Self {
-        Self { radius, height, vertical_velocity: 0.0, grounded: true, jump: None, climbing: false, landed: None, held: 0.0 }
+        Self { radius, height, vertical_velocity: 0.0, grounded: true, jump: None, climbing: false, swimming: false, scripted: false, landed: None, held: 0.0 }
     }
 }
 
-const STEP: f32 = 0.45;
+/// The highest kerb or stair the body walks up.
+pub const STEP: f32 = 0.45;
 /// Longest a falling body waits for the props under it to load.
 const HOLD_FOR: f32 = 5.0;
 /// UE gravity (-980 cm/s^2) x BP_PlayerCharacter CharMoveComp GravityScale 1.75.
@@ -59,10 +65,16 @@ pub struct CollisionCache {
     pinned: HashMap<IVec2, f32>,
     /// Moving props (doors), keyed by their owner's index; rebuilt by the owner when they move.
     dynamic: HashMap<usize, ItemTris>,
+    /// Water surfaces (BP_WaterBox / BP_WaterSpline), like `items`.
+    water: HashMap<(IVec2, u32), Option<ItemTris>>,
+    /// Every water item in the level, found once. They're searched all together: a BP_WaterBox
+    /// is bucketed by its origin but can reach hundreds of metres past its cell (the sea's does
+    /// ~680 m), so looking only in the cells around a point missed water near a lake's shore.
+    water_keys: Option<Arc<Vec<(IVec2, u32)>>>,
 }
 
 /// World-space triangles of `mesh` placed at `t`.
-pub(super) fn tris_of(mesh: &Mesh, t: &Transform) -> Vec<[Vec3; 3]> {
+pub fn tris_of(mesh: &Mesh, t: &Transform) -> Vec<[Vec3; 3]> {
     let mut out = Vec::new();
     mesh_tris(mesh, t, &mut out);
     out
@@ -104,7 +116,7 @@ impl CollisionCache {
     }
 
     /// Replace a moving prop's triangles (an empty list still marks it as built).
-    pub(super) fn set_dynamic(&mut self, key: usize, tris: Vec<[Vec3; 3]>) {
+    pub fn set_dynamic(&mut self, key: usize, tris: Vec<[Vec3; 3]>) {
         let item = bounded(tris).unwrap_or(ItemTris { min: Vec3::MAX, max: Vec3::MIN, tris: Arc::default() });
         self.dynamic.insert(key, item);
     }
@@ -122,9 +134,18 @@ impl CollisionCache {
         if let Some(c) = self.items.get(&(cell, index)) {
             return c.clone();
         }
+        if streaming.is_removed((cell, index)) {
+            self.items.insert((cell, index), None);
+            return None;
+        }
         let item = level.cells.get(&cell)?.get(index as usize)?;
         let mut tris = Vec::new();
         let ready = match *item {
+            Item::Static { mesh, transform } if let Some(simple) = &level.meshes[mesh as usize].simple => {
+                let m = transform.to_matrix();
+                tris.extend(simple.iter().map(|t| t.map(|v| m.transform_point3(v))));
+                true
+            }
             Item::Static { mesh, transform } => {
                 let Some(parts) = &level.meshes[mesh as usize].parts else { return None };
                 for p in parts.iter().filter(|p| p.collide) {
@@ -146,6 +167,66 @@ impl CollisionCache {
         let built = if ready { bounded(tris) } else { None };
         self.items.insert((cell, index), built.clone());
         built
+    }
+
+    /// A placed item's water-surface triangles (None: not water, or not loaded yet).
+    fn water_item(&mut self, level: &Level, streaming: &PropStreaming, meshes: &Assets<Mesh>, cell: IVec2, index: u32) -> Option<ItemTris> {
+        if let Some(c) = self.water.get(&(cell, index)) {
+            return c.clone();
+        }
+        let item = level.cells.get(&cell)?.get(index as usize)?;
+        let mut tris = Vec::new();
+        match *item {
+            Item::Static { mesh, transform } => {
+                let parts = level.meshes[mesh as usize].parts.as_ref()?;
+                for p in parts.iter().filter(|p| p.water) {
+                    let m = meshes.get(&p.mesh)?;
+                    mesh_tris(m, &transform, &mut tris);
+                }
+            }
+            Item::Spline { index: s, mesh } => {
+                if super::is_water(&level.meshes[mesh as usize].path) {
+                    let parts = streaming.spline_meshes.get(&s)?;
+                    let t = affine(&level.splines[s as usize].transform);
+                    for (h, _, _) in parts {
+                        let m = meshes.get(h)?;
+                        mesh_tris(m, &t, &mut tris);
+                    }
+                }
+            }
+        }
+        let built = bounded(tris);
+        self.water.insert((cell, index), built.clone());
+        built
+    }
+
+    /// Water triangles of items overlapping the box around `p` (those whose meshes are in).
+    fn near_water(&mut self, level: &Level, streaming: &PropStreaming, meshes: &Assets<Mesh>, p: Vec3, reach: Vec3) -> Vec<Arc<Vec<[Vec3; 3]>>> {
+        let (lo, hi) = (p - reach, p + reach);
+        let keys = self
+            .water_keys
+            .get_or_insert_with(|| {
+                let mut keys: Vec<(IVec2, u32)> = level
+                    .cells
+                    .iter()
+                    .flat_map(|(cell, items)| {
+                        items.iter().enumerate().filter(|(_, it)| matches!(it, Item::Static { mesh, .. } | Item::Spline { mesh, .. } if super::is_water(&level.meshes[*mesh as usize].path))).map(move |(i, _)| (*cell, i as u32))
+                    })
+                    .collect();
+                keys.sort_by_key(|(c, i)| (c.x, c.y, *i));
+                Arc::new(keys)
+            })
+            .clone();
+        let mut out = Vec::new();
+        for &(cell, i) in keys.iter() {
+            if let Some(it) = self.water_item(level, streaming, meshes, cell, i)
+                && it.min.cmple(hi).all()
+                && it.max.cmpge(lo).all()
+            {
+                out.push(it.tris.clone());
+            }
+        }
+        out
     }
 
     /// Triangles of items whose bounds overlap the box around `p`.
@@ -185,6 +266,41 @@ impl CollisionCache {
         (out, pending)
     }
 
+    /// Drop a prop's cached triangles (it was taken out of the world).
+    pub fn forget(&mut self, key: super::PropKey) {
+        self.items.remove(&key);
+    }
+
+    /// The first streamed prop along `dir` (unit) within `max` (a short ray: a melee swing),
+    /// with its distance.
+    pub fn cast_item(&mut self, level: &Level, streaming: &PropStreaming, meshes: &Assets<Mesh>, origin: Vec3, dir: Vec3, max: f32) -> Option<(f32, super::PropKey)> {
+        let end = origin + dir * max;
+        let (lo, hi) = (origin.min(end) - Vec3::splat(0.05), origin.max(end) + Vec3::splat(0.05));
+        let mut best: Option<(f32, super::PropKey)> = None;
+        let (c0, c1) = (cell_of(lo), cell_of(hi));
+        for cz in c0.y..=c1.y {
+            for cx in c0.x..=c1.x {
+                let cell = IVec2::new(cx, cz);
+                let Some(items) = level.cells.get(&cell) else { continue };
+                if !streaming.loaded.contains_key(&cell) {
+                    continue;
+                }
+                for i in 0..items.len() as u32 {
+                    let Some(it) = self.item(level, streaming, meshes, cell, i) else { continue };
+                    if it.min.cmpgt(hi).any() || it.max.cmplt(lo).any() {
+                        continue;
+                    }
+                    if let Some((d, _)) = first_hit(std::slice::from_ref(&it.tris), origin, dir, max)
+                        && best.is_none_or(|b| d < b.0)
+                    {
+                        best = Some((d, (cell, i)));
+                    }
+                }
+            }
+        }
+        best
+    }
+
     /// Highest walkable prop surface under `xz` between heights `below..=above` (props must be
     /// streamed in; spawners use it to tell landscape from rooftops).
     pub fn prop_floor(&mut self, level: &Level, streaming: &PropStreaming, meshes: &Assets<Mesh>, xz: Vec2, (below, above): (f32, f32)) -> Option<f32> {
@@ -200,13 +316,15 @@ impl CollisionCache {
             *t > 0.0
         });
         let pinned = &self.pinned;
-        self.items.retain(|(cell, _), _| {
+        let wanted = |cell: &IVec2| {
             pinned.contains_key(cell)
                 || keep.iter().any(|p| {
-                let c = cell_of(*p);
-                (cell.x - c.x).abs() <= 1 && (cell.y - c.y).abs() <= 1
-            })
-        });
+                    let c = cell_of(*p);
+                    (cell.x - c.x).abs() <= 1 && (cell.y - c.y).abs() <= 1
+                })
+        };
+        self.items.retain(|(cell, _), _| wanted(cell));
+        self.water.retain(|(cell, _), _| wanted(cell));
     }
 }
 
@@ -318,6 +436,13 @@ pub fn move_bodies(
     for (mut body, mut t) in &mut bodies {
         let mut p = t.translation;
         body.landed = None;
+        if body.scripted {
+            body.jump = None;
+            body.grounded = false;
+            body.vertical_velocity = 0.0;
+            positions.push(p);
+            continue;
+        }
         let (tris, pending) = match (&level, &streaming) {
             (Some(l), Some(s)) => cache.near_pending(l, s, &meshes, p + Vec3::Y * body.height * 0.5, Vec3::new(body.radius + 1.0, body.height, body.radius + 1.0)),
             _ => (Vec::new(), false),
@@ -333,7 +458,7 @@ pub fn move_bodies(
             (a, b) => a.or(b).unwrap_or(0.0),
         };
 
-        if body.climbing {
+        if body.climbing || body.swimming {
             body.jump = None;
             body.grounded = false;
             p.y = (p.y + body.vertical_velocity * dt).max(ground);
@@ -414,6 +539,26 @@ fn first_hit(sets: &[Arc<Vec<[Vec3; 3]>>], origin: Vec3, dir: Vec3, max: f32) ->
     sets.iter().flat_map(|s| s.iter()).filter_map(|t| ray_triangle(origin, dir, *t).map(|d| (d, *t))).filter(|&(d, _)| d <= max).min_by(|a, b| a.0.total_cmp(&b.0))
 }
 
+/// Whether a triangle (in the box's frame) touches the box centred at the origin with half
+/// extents `half`: the separating axis test over the box's faces, the triangle's plane and the
+/// nine edge cross products.
+pub fn tri_box(tri: [Vec3; 3], half: Vec3) -> bool {
+    let edges = [tri[1] - tri[0], tri[2] - tri[1], tri[0] - tri[2]];
+    let separated = |axis: Vec3| {
+        if axis.length_squared() < 1e-12 {
+            return false;
+        }
+        let p = tri.map(|v| v.dot(axis));
+        let r = half.x * axis.x.abs() + half.y * axis.y.abs() + half.z * axis.z.abs();
+        p[0].min(p[1]).min(p[2]) > r || p[0].max(p[1]).max(p[2]) < -r
+    };
+    let box_axes = [Vec3::X, Vec3::Y, Vec3::Z];
+    if box_axes.iter().any(|&a| separated(a)) || separated(edges[0].cross(edges[1])) {
+        return false;
+    }
+    !box_axes.iter().any(|&a| edges.iter().any(|&e| separated(a.cross(e))))
+}
+
 /// A triangle's unit normal, turned to face against `dir`.
 pub fn facing_normal([a, b, c]: [Vec3; 3], dir: Vec3) -> Vec3 {
     let n = (b - a).cross(c - a).normalize_or_zero();
@@ -431,6 +576,38 @@ pub struct PropRays<'w> {
 }
 
 impl PropRays<'_> {
+    /// Set a moving prop's triangles (`CollisionCache::set_dynamic`) where this param already
+    /// holds the cache, with the meshes to read them from.
+    /// Replace moving prop `key`'s triangles (empty: none).
+    pub fn set_dynamic(&mut self, key: usize, tris: Vec<[Vec3; 3]>) {
+        self.cache.set_dynamic(key, tris);
+    }
+
+    pub fn set_dynamic_from(&mut self, key: usize, mesh: &Handle<Mesh>, t: &Transform) -> bool {
+        let Some(m) = self.meshes.get(mesh) else { return false };
+        let tris = tris_of(m, t);
+        self.cache.set_dynamic(key, tris);
+        true
+    }
+
+    /// The highest water surface over (x, z) between heights `below..=above`.
+    pub fn water_surface(&mut self, x: f32, z: f32, below: f32, above: f32) -> Option<f32> {
+        let (Some(level), Some(streaming)) = (self.level.as_deref(), self.streaming.as_deref()) else { return None };
+        let mid = (below + above) * 0.5;
+        let tris = self.cache.near_water(level, streaming, &self.meshes, Vec3::new(x, mid, z), Vec3::new(0.5, (above - below) * 0.5 + 0.1, 0.5));
+        floor_under(&tris, x, z, below, above)
+    }
+
+    /// Whether a streamed or moving prop's triangle crosses the box at `centre` with half extents
+    /// `half` turned by `rot` (a BoxTraceSingle whose start and end are the same point).
+    pub fn overlaps_box(&mut self, centre: Vec3, half: Vec3, rot: Quat) -> bool {
+        let (Some(level), Some(streaming)) = (self.level.as_deref(), self.streaming.as_deref()) else { return false };
+        let reach = (rot * Vec3::X * half.x).abs() + (rot * Vec3::Y * half.y).abs() + (rot * Vec3::Z * half.z).abs();
+        let sets = self.cache.near(level, streaming, &self.meshes, centre, reach);
+        let inv = rot.inverse();
+        sets.iter().flat_map(|s| s.iter()).any(|t| tri_box(t.map(|v| inv * (v - centre)), half))
+    }
+
     /// Distance to the first prop surface along `dir` (unit) within `max`.
     pub fn cast(&mut self, origin: Vec3, dir: Vec3, max: f32) -> Option<f32> {
         self.cast_hit(origin, dir, max).map(|(d, _)| d)
@@ -476,6 +653,19 @@ const _: f32 = CELL;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn triangles_against_a_box() {
+        let half = Vec3::new(1.0, 0.5, 1.0);
+        // Ground just under the box, then crossing its bottom.
+        let ground = |y: f32| [Vec3::new(-5.0, y, -5.0), Vec3::new(5.0, y, -5.0), Vec3::new(0.0, y, 5.0)];
+        assert!(!tri_box(ground(-0.6), half));
+        assert!(tri_box(ground(-0.4), half));
+        // A triangle wholly inside, and one off to the side whose bounds overlap the box's.
+        assert!(tri_box([Vec3::ZERO, Vec3::X * 0.1, Vec3::Z * 0.1], half));
+        assert!(!tri_box([Vec3::new(0.5, 0.0, 1.6), Vec3::new(1.6, 0.0, 0.5), Vec3::new(1.6, 0.0, 1.6)], half));
+        assert!(tri_box([Vec3::new(0.4, 0.0, 1.5), Vec3::new(1.5, 0.0, 0.4), Vec3::new(1.6, 0.0, 1.6)], half));
+    }
 
     #[test]
     fn spring_arm_stops_short_of_walls() {

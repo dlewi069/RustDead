@@ -105,6 +105,18 @@ if (cmd == "levellights")
     return 0;
 }
 
+if (cmd == "levelparticles")
+{
+    LevelExport.Particles(provider, args[2], args[1]);
+    return 0;
+}
+
+if (cmd == "levelharvest")
+{
+    LevelExport.Harvest(provider, args[1], args[2]);
+    return 0;
+}
+
 if (cmd == "levelactors")
 {
     LevelExport.Actors(provider, args[2], args[1]);

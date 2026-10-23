@@ -1,5 +1,53 @@
 {
  "containers": {
+  "AirdropContainer_Medical_C": {
+   "airdrop": {
+    "color": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "title": "Medical Airdrop"
+   },
+   "hold": 6.0,
+   "lockpick": false,
+   "mesh": "SurrounDead/Content/Meshes/World/AirdropCrate",
+   "name": "Airdrop",
+   "noise": 10.0,
+   "table": "AirdropMedical"
+  },
+  "AirdropContainer_Military_C": {
+   "airdrop": {
+    "color": [
+     0.020988,
+     0.25,
+     0.0
+    ],
+    "title": "Military Airdrop"
+   },
+   "hold": 6.0,
+   "lockpick": false,
+   "mesh": "SurrounDead/Content/Meshes/World/AirdropCrate",
+   "name": "Airdrop",
+   "noise": 10.0,
+   "table": "AirdropMilitary"
+  },
+  "AirdropContainer_Supplies_C": {
+   "airdrop": {
+    "color": [
+     0.0,
+     0.010391,
+     0.5
+    ],
+    "title": "Food Airdrop"
+   },
+   "hold": 6.0,
+   "lockpick": false,
+   "mesh": "SurrounDead/Content/Meshes/World/AirdropCrate",
+   "name": "Airdrop",
+   "noise": 10.0,
+   "table": "AirdropSupplies"
+  },
   "BP_KeycardBriefcaseContainer_C": {
    "hold": 3.0,
    "lockpick": false,
@@ -915,6 +963,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "12GaugeAmmo",
    "inspect_rotation": [
     0.09998886,
@@ -984,6 +1033,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "2xAimpointScope",
    "inspect_rotation": [
     0.0,
@@ -1053,6 +1103,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "300WinchesterAmmo",
    "inspect_rotation": [
     -0.40557978,
@@ -1122,6 +1173,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "308Ammo",
    "inspect_rotation": [
     -0.15304592,
@@ -1191,6 +1243,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "40mmGrenade",
    "inspect_rotation": [
     0.6532815,
@@ -1260,6 +1313,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "45ACPAmmo",
    "inspect_rotation": [
     0.2931525,
@@ -1329,6 +1383,7 @@
    "flashlight_intensity": 0.0,
    "fov": 20.0,
    "grids": [],
+   "harvests": [],
    "id": "50CalAmmo",
    "inspect_rotation": [
     0.011376107,
@@ -1398,6 +1453,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "556Ammo",
    "inspect_rotation": [
     0.2931525,
@@ -1479,6 +1535,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.5,
    "grids": [],
+   "harvests": [],
    "id": "556DrumMag",
    "inspect_rotation": [
     -0.0,
@@ -1565,6 +1622,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "556Mag",
    "inspect_rotation": [
     0.0,
@@ -1634,6 +1692,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "66mmRocket",
    "inspect_rotation": [
     -0.70441604,
@@ -1703,6 +1762,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "762Ammo",
    "inspect_rotation": [
     0.2931525,
@@ -1784,6 +1844,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "762DrumMag",
    "inspect_rotation": [
     -0.0,
@@ -1870,6 +1931,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.5,
    "grids": [],
+   "harvests": [],
    "id": "762Mag",
    "inspect_rotation": [
     -0.087155744,
@@ -1939,6 +2001,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "9mmAmmo",
    "inspect_rotation": [
     0.2931525,
@@ -2020,6 +2083,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "9mmClip",
    "inspect_rotation": [
     0.0,
@@ -2101,6 +2165,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "9mmDrumMag",
    "inspect_rotation": [
     -0.0,
@@ -2194,8 +2259,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.4,
     "recoil_horizontal_deviation": 0.05,
@@ -2205,12 +2272,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "AR_Single_Shot_Cue",
     "sound_radius": 70.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "ACR",
    "inspect_rotation": [
     0.0,
@@ -2348,8 +2417,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.03,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.15,
     "recoil_horizontal_deviation": 0.05,
@@ -2359,12 +2430,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "AKM_Single_Shot2_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot__Suppressed__2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "AK15",
    "inspect_rotation": [
     0.0,
@@ -2502,8 +2575,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.03,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.0,
     "recoil_horizontal_deviation": 0.15,
@@ -2513,12 +2588,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "AKM_Single_Shot2_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AKM_suppressed_fire_102_with_Reverb_2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 33.5,
    "grids": [],
+   "harvests": [],
    "id": "AK74",
    "inspect_rotation": [
     0.0,
@@ -2656,8 +2733,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.4,
     "recoil_horizontal_deviation": 0.0,
@@ -2667,12 +2746,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 70.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 29.0,
    "grids": [],
+   "harvests": [],
    "id": "AR15",
    "inspect_rotation": [
     0.0,
@@ -2810,8 +2891,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "PistolBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.15,
     "recoil_horizontal_deviation": 0.05,
@@ -2821,12 +2904,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "SMG_Single_Shot_5_Cue",
     "sound_radius": 60.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedPistol",
     "suppressed_sound": "SMG_Single_Shot__Suppressed__2_Cue",
     "type": 1
    },
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "AR45",
    "inspect_rotation": [
     0.0,
@@ -2957,6 +3042,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.5,
    "grids": [],
+   "harvests": [],
    "id": "AR45Clip",
    "inspect_rotation": [
     -0.0,
@@ -3038,6 +3124,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.5,
    "grids": [],
+   "harvests": [],
    "id": "AR45ExtendedMag",
    "inspect_rotation": [
     0.0,
@@ -3107,6 +3194,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.5,
    "grids": [],
+   "harvests": [],
    "id": "Acog4x32Scope",
    "inspect_rotation": [
     0.0,
@@ -3196,6 +3284,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "AliceBackpack",
    "inspect_rotation": [
     0.0,
@@ -3267,6 +3356,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "AllAccessKeycard",
    "inspect_rotation": [
     -0.653281,
@@ -3339,6 +3429,7 @@
    "flashlight_intensity": 0.0,
    "fov": 24.0,
    "grids": [],
+   "harvests": [],
    "id": "AmmoCrate",
    "inspect_rotation": [
     0.0,
@@ -3418,6 +3509,7 @@
      5
     ]
    ],
+   "harvests": [],
    "id": "AmmoTin",
    "inspect_rotation": [
     0.0,
@@ -3489,6 +3581,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "ArmorRepairKit",
    "inspect_rotation": [
     0.0,
@@ -3560,6 +3653,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "Aviators",
    "inspect_rotation": [
     -0.0,
@@ -3629,6 +3723,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "BagOfConcrete",
    "inspect_rotation": [
     -0.0,
@@ -3699,6 +3794,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "Bandages",
    "inspect_rotation": [
     -0.0,
@@ -3797,8 +3893,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "50CalBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.25,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.9,
     "recoil_horizontal_deviation": 0.25,
@@ -3808,12 +3906,14 @@
     "reset_recoil_divider": 2.0,
     "sound": "Barret-M28_07_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 3
    },
    "flashlight_intensity": 0.0,
    "fov": 51.0,
    "grids": [],
+   "harvests": [],
    "id": "BarrettM82",
    "inspect_rotation": [
     -0.0,
@@ -3944,6 +4044,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "BarrettM82Mag",
    "inspect_rotation": [
     0.0,
@@ -4014,6 +4115,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "BarricadedMetalDoor",
    "inspect_rotation": [
     0.0,
@@ -4086,6 +4188,7 @@
    "flashlight_intensity": 0.0,
    "fov": 20.0,
    "grids": [],
+   "harvests": [],
    "id": "BaseMarker",
    "inspect_rotation": [
     0.0,
@@ -4160,6 +4263,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "BaseballBat",
    "inspect_rotation": [
     0.0,
@@ -4266,6 +4370,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.5,
    "grids": [],
+   "harvests": [],
    "id": "Battery",
    "inspect_rotation": [
     0.6532815,
@@ -4336,6 +4441,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "BatteryChargingBench",
    "inspect_rotation": [
     -0.0,
@@ -4424,8 +4530,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "PistolBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.15,
     "recoil_horizontal_deviation": 0.075,
@@ -4435,12 +4543,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "Pistol_Single_Shot_2_Cue",
     "sound_radius": 50.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedPistol",
     "suppressed_sound": "Pistol_Single_Shot__Suppressed__2_Cue",
     "type": 0
    },
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "BattleReadyGlock",
    "inspect_rotation": [
     0.0,
@@ -4571,6 +4681,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "BattleReadyGlockClip",
    "inspect_rotation": [
     0.0,
@@ -4657,6 +4768,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "BattleReadyGlockDrumMag",
    "inspect_rotation": [
     -0.0,
@@ -4743,6 +4855,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.5,
    "grids": [],
+   "harvests": [],
    "id": "BattleReadyGlockExtendedClip",
    "inspect_rotation": [
     0.0,
@@ -4818,6 +4931,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "BattleReadyGlockMuzzleBrake",
    "inspect_rotation": [
     0.0,
@@ -4896,6 +5010,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "BattleReadyGlockSight",
    "inspect_rotation": [
     0.0,
@@ -4971,6 +5086,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "BattleReadyGlockSuppressor",
    "inspect_rotation": [
     0.0,
@@ -5047,6 +5163,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "Beanie",
    "inspect_rotation": [
     -0.0,
@@ -5118,6 +5235,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "Beanie2",
    "inspect_rotation": [
     -0.0,
@@ -5189,6 +5307,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "Beanie3",
    "inspect_rotation": [
     -0.0,
@@ -5258,6 +5377,7 @@
    "flashlight_intensity": 0.0,
    "fov": 18.0,
    "grids": [],
+   "harvests": [],
    "id": "BearHead",
    "inspect_rotation": [
     -0.0,
@@ -5328,6 +5448,7 @@
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "BearHeadMount",
    "inspect_rotation": [
     -0.0,
@@ -5398,6 +5519,7 @@
    "flashlight_intensity": 0.0,
    "fov": 22.0,
    "grids": [],
+   "harvests": [],
    "id": "BearTrap",
    "inspect_rotation": [
     -0.0,
@@ -5466,6 +5588,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "BenelliLoader",
    "inspect_rotation": [
     0.0,
@@ -5554,8 +5677,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "ShotgunShells",
     "chamber_sound": null,
     "malfunction_chance": 0.2,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.3,
     "recoil_horizontal_deviation": 0.15,
@@ -5565,12 +5690,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "gun_shotgun_sawed_off_shot_04_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "ShotGun_Boom_101__Suppressed__Cue",
     "type": 4
    },
    "flashlight_intensity": 0.0,
    "fov": 37.0,
    "grids": [],
+   "harvests": [],
    "id": "BenelliM4",
    "inspect_rotation": [
     0.0,
@@ -5691,6 +5818,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "Beret1",
    "inspect_rotation": [
     -0.0,
@@ -5762,6 +5890,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "Beret2",
    "inspect_rotation": [
     -0.0,
@@ -5833,6 +5962,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "Binoculars",
    "inspect_rotation": [
     -0.0,
@@ -5940,6 +6070,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackEnhancedMilitaryRespirator",
    "inspect_rotation": [
     -0.0,
@@ -6058,6 +6189,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackFaceMask",
    "inspect_rotation": [
     -0.0,
@@ -6156,6 +6288,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackFingerlessGloves",
    "inspect_rotation": [
     0.18301271,
@@ -6254,6 +6387,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackGloves",
    "inspect_rotation": [
     0.24184476,
@@ -6352,6 +6486,7 @@
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackHeavyJeans",
    "inspect_rotation": [
     -0.0,
@@ -6450,6 +6585,7 @@
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackMilitaryGloves",
    "inspect_rotation": [
     0.18301271,
@@ -6558,6 +6694,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "BlackMilitaryJacket",
    "inspect_rotation": [
     -0.0,
@@ -6668,6 +6805,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "BlackMilitaryPants",
    "inspect_rotation": [
     -0.0,
@@ -6759,6 +6897,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackOpsHelmet",
    "inspect_rotation": [
     -0.0,
@@ -6877,6 +7016,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "BlackOpsJacket",
    "inspect_rotation": [
     -0.0,
@@ -6967,8 +7107,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "PistolBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotSuppressedPistol",
     "pellets": 6,
     "recoil_horizontal": 0.4,
     "recoil_horizontal_deviation": 0.15,
@@ -6978,12 +7120,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "SMG_Single_Shot__Suppressed__2_Cue",
     "sound_radius": 7.5,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 1
    },
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackOpsMP5",
    "inspect_rotation": [
     0.0,
@@ -7141,6 +7285,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "BlackOpsPants",
    "inspect_rotation": [
     -0.0,
@@ -7255,6 +7400,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "BlackOpsPlateCarrier",
    "inspect_rotation": [
     -0.0,
@@ -7356,8 +7502,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "PistolBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.0,
     "recoil_horizontal_deviation": 0.125,
@@ -7367,12 +7515,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "Pistol_Single_Shot_2_Cue",
     "sound_radius": 50.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedPistol",
     "suppressed_sound": "Pistol_Single_Shot__Suppressed__2_Cue",
     "type": 0
    },
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackOpsUSP",
    "inspect_rotation": [
     0.0,
@@ -7520,6 +7670,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackPlaidShirt",
    "inspect_rotation": [
     0.0,
@@ -7628,6 +7779,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "BlackPuffyCoat",
    "inspect_rotation": [
     -0.0,
@@ -7728,6 +7880,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "BlackShirt",
    "inspect_rotation": [
     -0.0,
@@ -7836,6 +7989,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "BlueCargoPants",
    "inspect_rotation": [
     -0.0,
@@ -7936,6 +8090,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "BlueFingerlessGloves",
    "inspect_rotation": [
     0.18301271,
@@ -8034,6 +8189,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "BlueGloves",
    "inspect_rotation": [
     0.24184476,
@@ -8132,6 +8288,7 @@
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "BlueHeavyJeans",
    "inspect_rotation": [
     -0.0,
@@ -8230,6 +8387,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "BluePlaidShirt",
    "inspect_rotation": [
     0.0,
@@ -8338,6 +8496,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "BluePuffyCoat",
    "inspect_rotation": [
     -0.0,
@@ -8438,6 +8597,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "BlueShirt",
    "inspect_rotation": [
     -0.0,
@@ -8536,6 +8696,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "BlueShorts",
    "inspect_rotation": [
     -0.0,
@@ -8606,6 +8767,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "BoatHelmOrnament",
    "inspect_rotation": [
     0.0,
@@ -8704,6 +8866,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "BodyArmor",
    "inspect_rotation": [
     -0.0,
@@ -8812,6 +8975,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "BodyArmor2",
    "inspect_rotation": [
     -0.0,
@@ -8891,6 +9055,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "BoltCutters",
    "inspect_rotation": [
     0.13052619,
@@ -8988,6 +9153,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "Boots1",
    "inspect_rotation": [
     -0.0,
@@ -9085,6 +9251,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "Boots2",
    "inspect_rotation": [
     -0.0,
@@ -9154,6 +9321,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "BottleOfAlcohol",
    "inspect_rotation": [
     -0.0,
@@ -9223,6 +9391,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "BottleOfAntiseptic",
    "inspect_rotation": [
     -0.0,
@@ -9300,6 +9469,7 @@
      5
     ]
    ],
+   "harvests": [],
    "id": "Briefcase",
    "inspect_rotation": [
     0.0,
@@ -9371,6 +9541,7 @@
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "BrokenGlass",
    "inspect_rotation": [
     -0.2126311,
@@ -9469,6 +9640,7 @@
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "BrownHeavyJeans",
    "inspect_rotation": [
     -0.0,
@@ -9538,6 +9710,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "BulletCasing",
    "inspect_rotation": [
     0.6532815,
@@ -9608,6 +9781,7 @@
    "flashlight_intensity": 0.0,
    "fov": 18.0,
    "grids": [],
+   "harvests": [],
    "id": "BunkerDoor",
    "inspect_rotation": [
     0.0,
@@ -9682,6 +9856,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "ButcherKnife",
    "inspect_rotation": [
     -4.3297803e-17,
@@ -9807,8 +9982,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.04,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.3,
     "recoil_horizontal_deviation": 0.2,
@@ -9818,12 +9995,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "AK-74_echo_03_Cue",
     "sound_radius": 70.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AKM_suppressed_fire_102_with_Reverb_2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 36.0,
    "grids": [],
+   "harvests": [],
    "id": "CR308",
    "inspect_rotation": [
     0.0,
@@ -9954,6 +10133,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.5,
    "grids": [],
+   "harvests": [],
    "id": "CR308Mag",
    "inspect_rotation": [
     0.0,
@@ -10023,6 +10203,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "Camera",
    "inspect_rotation": [
     0.0,
@@ -10120,6 +10301,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "CamoFaceMask",
    "inspect_rotation": [
     -0.0,
@@ -10228,6 +10410,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "CamoSkirt",
    "inspect_rotation": [
     -0.0,
@@ -10300,6 +10483,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "Campfire",
    "inspect_rotation": [
     -0.0,
@@ -10372,6 +10556,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "CampingLamp",
    "inspect_rotation": [
     -0.0,
@@ -10442,6 +10627,7 @@
    "flashlight_intensity": 0.0,
    "fov": 26.0,
    "grids": [],
+   "harvests": [],
    "id": "CampsiteTent",
    "inspect_rotation": [
     0.0,
@@ -10513,6 +10699,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.5,
    "grids": [],
+   "harvests": [],
    "id": "Can",
    "inspect_rotation": [
     0.0,
@@ -10582,6 +10769,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "Can2",
    "inspect_rotation": [
     0.0,
@@ -10651,6 +10839,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "CanOpener",
    "inspect_rotation": [
     0.27059805,
@@ -10721,6 +10910,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "CannedBakedBeans",
    "inspect_rotation": [
     -0.048676264,
@@ -10796,6 +10986,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.5,
    "grids": [],
+   "harvests": [],
    "id": "CannedCatFood",
    "inspect_rotation": [
     0.07003593,
@@ -10871,6 +11062,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "CannedSardines",
    "inspect_rotation": [
     -0.017037086,
@@ -10946,6 +11138,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "CannedSoup",
    "inspect_rotation": [
     -0.048676264,
@@ -11025,6 +11218,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "CannedSpaghetti",
    "inspect_rotation": [
     -0.048676264,
@@ -11100,6 +11294,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.5,
    "grids": [],
+   "harvests": [],
    "id": "CannedTuna",
    "inspect_rotation": [
     -0.0,
@@ -11176,6 +11371,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "Cap",
    "inspect_rotation": [
     -0.0,
@@ -11247,6 +11443,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "Cap2",
    "inspect_rotation": [
     -0.0,
@@ -11316,6 +11513,7 @@
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "CarBattery",
    "inspect_rotation": [
     -0.0010644133,
@@ -11424,6 +11622,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "CargoPants",
    "inspect_rotation": [
     -0.0,
@@ -11496,6 +11695,7 @@
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "CeilingLight1",
    "inspect_rotation": [
     -0.0,
@@ -11566,6 +11766,7 @@
    "flashlight_intensity": 0.0,
    "fov": 23.0,
    "grids": [],
+   "harvests": [],
    "id": "CeilingLight2",
    "inspect_rotation": [
     0.38268343,
@@ -11654,8 +11855,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.035,
+    "muzzle_flash": "FX_GunshotSuppressedRifle",
     "pellets": 6,
     "recoil_horizontal": 0.25,
     "recoil_horizontal_deviation": 0.125,
@@ -11665,12 +11868,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "AR_Single_Shot__Suppressed__Cue",
     "sound_radius": 15.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 33.0,
    "grids": [],
+   "harvests": [],
    "id": "Cerberus",
    "inspect_rotation": [
     0.0,
@@ -11801,6 +12006,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "CerberusMag",
    "inspect_rotation": [
     0.0,
@@ -11876,6 +12082,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "Chair1",
    "inspect_rotation": [
     -0.0,
@@ -11946,6 +12153,7 @@
    "flashlight_intensity": 0.0,
    "fov": 40.0,
    "grids": [],
+   "harvests": [],
    "id": "Chair2",
    "inspect_rotation": [
     -0.0,
@@ -12015,6 +12223,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "CharcoalTablets",
    "inspect_rotation": [
     0.044642586,
@@ -12085,6 +12294,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "Cigarette",
    "inspect_rotation": [
     0.38268343,
@@ -12172,6 +12382,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "CivilianNVG",
    "inspect_rotation": [
     -0.0,
@@ -12241,6 +12452,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.5,
    "grids": [],
+   "harvests": [],
    "id": "Clipboard",
    "inspect_rotation": [
     -0.579228,
@@ -12310,6 +12522,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "Cloth",
    "inspect_rotation": [
     -0.27059805,
@@ -12380,6 +12593,7 @@
    "flashlight_intensity": 0.0,
    "fov": 22.0,
    "grids": [],
+   "harvests": [],
    "id": "ClothingCupboard",
    "inspect_rotation": [
     0.0,
@@ -12470,8 +12684,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.35,
     "recoil_horizontal_deviation": 0.0,
@@ -12481,12 +12697,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 50.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 31.0,
    "grids": [],
+   "harvests": [],
    "id": "ColonelsRevenge",
    "inspect_rotation": [
     0.0,
@@ -12605,6 +12823,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "ColonelsRevengeAcog",
    "inspect_rotation": [
     0.0,
@@ -12691,6 +12910,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "ColonelsRevengeDrumMag",
    "inspect_rotation": [
     -0.0,
@@ -12765,6 +12985,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.6,
    "grids": [],
+   "harvests": [],
    "id": "ColonelsRevengeHoloSight",
    "inspect_rotation": [
     0.0,
@@ -12851,6 +13072,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.5,
    "grids": [],
+   "harvests": [],
    "id": "ColonelsRevengeMag",
    "inspect_rotation": [
     0.0,
@@ -12926,6 +13148,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "ColonelsRevengeMuzzleBrake",
    "inspect_rotation": [
     0.0,
@@ -13005,6 +13228,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.5,
    "grids": [],
+   "harvests": [],
    "id": "ColonelsRevengeSuppressor",
    "inspect_rotation": [
     0.0,
@@ -13079,6 +13303,7 @@
    "flashlight_intensity": 0.0,
    "fov": 2.5,
    "grids": [],
+   "harvests": [],
    "id": "CompactForegrip",
    "inspect_rotation": [
     0.0,
@@ -13159,6 +13384,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "Compass",
    "inspect_rotation": [
     -0.22414386,
@@ -13229,6 +13455,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "ConstructionLight",
    "inspect_rotation": [
     -0.0,
@@ -13299,6 +13526,7 @@
    "flashlight_intensity": 0.0,
    "fov": 24.0,
    "grids": [],
+   "harvests": [],
    "id": "ConstructionWorkbench",
    "inspect_rotation": [
     -0.0,
@@ -13371,6 +13599,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "CookedFish",
    "inspect_rotation": [
     -0.0,
@@ -13446,6 +13675,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "CookedMeat",
    "inspect_rotation": [
     -0.5416752,
@@ -13521,6 +13751,7 @@
    "flashlight_intensity": 0.0,
    "fov": 41.0,
    "grids": [],
+   "harvests": [],
    "id": "Couch",
    "inspect_rotation": [
     -0.0,
@@ -13592,6 +13823,7 @@
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "CowboysHat",
    "inspect_rotation": [
     -0.0,
@@ -13662,6 +13894,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "CowgirlOrnament",
    "inspect_rotation": [
     -0.0,
@@ -13747,6 +13980,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "CoyoteBackpack",
    "inspect_rotation": [
     -0.0,
@@ -13819,6 +14053,7 @@
    "flashlight_intensity": 0.0,
    "fov": 24.0,
    "grids": [],
+   "harvests": [],
    "id": "CraftingWorkbench",
    "inspect_rotation": [
     -0.0,
@@ -13890,6 +14125,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "Credits",
    "inspect_rotation": [
     -0.29883623,
@@ -13962,6 +14198,9 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [
+    "trash"
+   ],
    "id": "Crowbar",
    "inspect_rotation": [
     0.70710677,
@@ -14089,8 +14328,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotSuppressedRifle",
     "pellets": 6,
     "recoil_horizontal": 0.15,
     "recoil_horizontal_deviation": 0.025,
@@ -14100,12 +14341,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "AR_Single_Shot__Suppressed__2_Cue",
     "sound_radius": 15.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 33.0,
    "grids": [],
+   "harvests": [],
    "id": "Crusher",
    "inspect_rotation": [
     0.0,
@@ -14224,6 +14467,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "CrusherAcog",
    "inspect_rotation": [
     0.0,
@@ -14310,6 +14554,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.5,
    "grids": [],
+   "harvests": [],
    "id": "CrusherDrumMag",
    "inspect_rotation": [
     -0.0,
@@ -14396,6 +14641,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "CrusherMag",
    "inspect_rotation": [
     -0.087155744,
@@ -14470,6 +14716,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "CrusherSight",
    "inspect_rotation": [
     0.0,
@@ -14547,6 +14794,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "DarkMachete",
    "inspect_rotation": [
     0.0,
@@ -14665,8 +14913,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": null,
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.3,
     "recoil_horizontal_deviation": 0.0,
@@ -14676,12 +14926,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "Revolver_Single_Shot_3_Cue",
     "sound_radius": 50.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 0
    },
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "Deadeye",
    "inspect_rotation": [
     0.0,
@@ -14799,6 +15051,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "DeadeyeLoader",
    "inspect_rotation": [
     0.0,
@@ -14887,8 +15140,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "50CalBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.05,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.0,
     "recoil_horizontal_deviation": 0.15,
@@ -14898,12 +15153,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "Weapon_Fire_22_Cue",
     "sound_radius": 70.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "Weapon_Silencer_22_Cue",
     "type": 0
    },
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "Deagle",
    "inspect_rotation": [
     0.0,
@@ -15034,6 +15291,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "DeagleClip",
    "inspect_rotation": [
     0.0,
@@ -15104,6 +15362,7 @@
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "DecontaminationShower",
    "inspect_rotation": [
     0.0,
@@ -15173,6 +15432,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "DeerHead",
    "inspect_rotation": [
     -0.0,
@@ -15243,6 +15503,7 @@
    "flashlight_intensity": 0.0,
    "fov": 24.0,
    "grids": [],
+   "harvests": [],
    "id": "DeerHeadMount",
    "inspect_rotation": [
     -0.0,
@@ -15313,6 +15574,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "DirtyWaterBottle",
    "inspect_rotation": [
     0.0,
@@ -15392,6 +15654,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.5,
    "grids": [],
+   "harvests": [],
    "id": "DirtyWaterCanteen",
    "inspect_rotation": [
     0.0,
@@ -15471,6 +15734,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.5,
    "grids": [],
+   "harvests": [],
    "id": "DirtyWaterJug",
    "inspect_rotation": [
     0.0,
@@ -15550,6 +15814,7 @@
    "flashlight_intensity": 0.0,
    "fov": 24.0,
    "grids": [],
+   "harvests": [],
    "id": "DisassemblyWorkbench",
    "inspect_rotation": [
     -0.0,
@@ -15620,6 +15885,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "DisplayPlaque",
    "inspect_rotation": [
     -0.0,
@@ -15690,6 +15956,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.5,
    "grids": [],
+   "harvests": [],
    "id": "DogOrnament",
    "inspect_rotation": [
     -0.0,
@@ -15760,6 +16027,7 @@
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "DoubleBed",
    "inspect_rotation": [
     -0.21643962,
@@ -15830,6 +16098,7 @@
    "flashlight_intensity": 0.0,
    "fov": 31.0,
    "grids": [],
+   "harvests": [],
    "id": "Dresser",
    "inspect_rotation": [
     0.0,
@@ -15909,6 +16178,7 @@
      6
     ]
    ],
+   "harvests": [],
    "id": "DryBag",
    "inspect_rotation": [
     0.0,
@@ -15988,6 +16258,7 @@
      8
     ]
    ],
+   "harvests": [],
    "id": "DuffleBag",
    "inspect_rotation": [
     0.0,
@@ -16059,6 +16330,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "ElectronicParts",
    "inspect_rotation": [
     0.0,
@@ -16128,6 +16400,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "ElectronicWire",
    "inspect_rotation": [
     -0.45451948,
@@ -16198,6 +16471,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "EmptyWaterBottle",
    "inspect_rotation": [
     -0.5,
@@ -16268,6 +16542,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.5,
    "grids": [],
+   "harvests": [],
    "id": "EmptyWaterCanteen",
    "inspect_rotation": [
     0.0,
@@ -16338,6 +16613,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.5,
    "grids": [],
+   "harvests": [],
    "id": "EmptyWaterJug",
    "inspect_rotation": [
     0.0,
@@ -16408,6 +16684,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "EnergyBar",
    "inspect_rotation": [
     -0.30337557,
@@ -16487,6 +16764,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "EnergyBottle",
    "inspect_rotation": [
     0.0,
@@ -16603,6 +16881,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "EnhancedMilitaryRespirator",
    "inspect_rotation": [
     -0.0,
@@ -16712,8 +16991,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "ShotgunShells",
     "chamber_sound": "gun_shotgun_cock_01_Cue",
     "malfunction_chance": 0.125,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 8,
     "recoil_horizontal": 0.85,
     "recoil_horizontal_deviation": 0.15,
@@ -16723,12 +17004,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "gun_shotgun_sawed_off_shot_01_Cue",
     "sound_radius": 60.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "ShotGun_Boom_101__Suppressed__Cue",
     "type": 4
    },
    "flashlight_intensity": 0.0,
    "fov": 37.0,
    "grids": [],
+   "harvests": [],
    "id": "Exterminator",
    "inspect_rotation": [
     0.0,
@@ -16837,6 +17120,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "ExterminatorLoader",
    "inspect_rotation": [
     0.0,
@@ -16906,6 +17190,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "ExterminatorSight",
    "inspect_rotation": [
     0.0,
@@ -16981,6 +17266,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "ExterminatorSuppressor",
    "inspect_rotation": [
     0.0,
@@ -17074,8 +17360,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.05,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.4,
     "recoil_horizontal_deviation": 0.0,
@@ -17085,12 +17373,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "AR-15_02_Cue",
     "sound_radius": 70.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AKM_suppressed_fire_102_with_Reverb_2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 38.0,
    "grids": [],
+   "harvests": [],
    "id": "FNFal",
    "inspect_rotation": [
     0.0,
@@ -17221,6 +17511,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.5,
    "grids": [],
+   "harvests": [],
    "id": "FNFalMag",
    "inspect_rotation": [
     0.0,
@@ -17328,6 +17619,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "FilterMask",
    "inspect_rotation": [
     -0.0,
@@ -17418,6 +17710,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "FireExtinguisher",
    "inspect_rotation": [
     -0.0,
@@ -17490,6 +17783,9 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [
+    "tree"
+   ],
    "id": "FiremansAxe",
    "inspect_rotation": [
     -0.49999997,
@@ -17599,6 +17895,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "FirstAidBook",
    "inspect_rotation": [
     -0.45451948,
@@ -17669,6 +17966,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "FirstAidMagazine",
    "inspect_rotation": [
     -0.45451948,
@@ -17739,6 +18037,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "FishingBook",
    "inspect_rotation": [
     -0.45451948,
@@ -17809,6 +18108,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "FishingMagazine",
    "inspect_rotation": [
     -0.45451948,
@@ -17880,6 +18180,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "FishingRod",
    "inspect_rotation": [
     0.0,
@@ -17950,6 +18251,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "FitnessBook",
    "inspect_rotation": [
     -0.45451948,
@@ -18020,6 +18322,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "FitnessMagazine",
    "inspect_rotation": [
     -0.45451948,
@@ -18107,8 +18410,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": null,
     "chamber_sound": null,
     "malfunction_chance": 0.15,
+    "muzzle_flash": null,
     "pellets": 6,
     "recoil_horizontal": 0.5,
     "recoil_horizontal_deviation": 0.25,
@@ -18118,12 +18423,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "fire_flare_gun_Cue",
     "sound_radius": 5.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 8
    },
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "FlareGun",
    "inspect_rotation": [
     0.0,
@@ -18195,6 +18502,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "FlareGunLoader",
    "inspect_rotation": [
     0.0,
@@ -18264,6 +18572,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "FlareRound",
    "inspect_rotation": [
     -0.6532815,
@@ -18344,6 +18653,7 @@
    "flashlight_intensity": 75000.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "Flashlight",
    "inspect_rotation": [
     -0.0,
@@ -18415,6 +18725,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "FragGrenade",
    "inspect_rotation": [
     0.0,
@@ -18492,6 +18803,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "Fridge",
    "inspect_rotation": [
     0.0,
@@ -18582,8 +18894,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "PistolBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.25,
     "recoil_horizontal_deviation": 0.125,
@@ -18593,12 +18907,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "Pistol_Single_Shot_2_Cue",
     "sound_radius": 50.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedPistol",
     "suppressed_sound": "Pistol_Single_Shot__Suppressed__2_Cue",
     "type": 0
    },
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "G18",
    "inspect_rotation": [
     0.0,
@@ -18719,6 +19035,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "GPS",
    "inspect_rotation": [
     -0.0,
@@ -18789,6 +19106,7 @@
    "flashlight_intensity": 0.0,
    "fov": 45.0,
    "grids": [],
+   "harvests": [],
    "id": "GarageDoor",
    "inspect_rotation": [
     0.0,
@@ -18860,6 +19178,7 @@
    "flashlight_intensity": 0.0,
    "fov": 20.0,
    "grids": [],
+   "harvests": [],
    "id": "GasCan",
    "inspect_rotation": [
     0.0,
@@ -18976,6 +19295,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "GhillieBodyArmorFall",
    "inspect_rotation": [
     -0.0,
@@ -19105,6 +19425,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "GhillieBodyArmorGreen",
    "inspect_rotation": [
     -0.0,
@@ -19215,6 +19536,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "GhillieBootsFall",
    "inspect_rotation": [
     -0.0,
@@ -19312,6 +19634,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "GhillieBootsGreen",
    "inspect_rotation": [
     -0.0,
@@ -19409,6 +19732,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "GhillieFaceMaskFall",
    "inspect_rotation": [
     -0.0,
@@ -19506,6 +19830,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "GhillieFaceMaskGreen",
    "inspect_rotation": [
     -0.0,
@@ -19604,6 +19929,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "GhillieGlovesFall",
    "inspect_rotation": [
     0.18301271,
@@ -19702,6 +20028,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "GhillieGlovesGreen",
    "inspect_rotation": [
     0.18301271,
@@ -19782,6 +20109,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "GhillieHoodFall",
    "inspect_rotation": [
     -0.0,
@@ -19872,6 +20200,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "GhillieHoodGreen",
    "inspect_rotation": [
     -0.0,
@@ -19990,6 +20319,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "GhilliePantsFall",
    "inspect_rotation": [
     -0.0,
@@ -20100,6 +20430,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "GhilliePantsGreen",
    "inspect_rotation": [
     -0.0,
@@ -20210,6 +20541,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "GhillieSuitTopFall",
    "inspect_rotation": [
     -0.0,
@@ -20320,6 +20652,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "GhillieSuitTopGreen",
    "inspect_rotation": [
     -0.0,
@@ -20393,6 +20726,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "Glasses",
    "inspect_rotation": [
     0.0,
@@ -20464,6 +20798,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "Glasses2",
    "inspect_rotation": [
     0.0,
@@ -20534,6 +20869,7 @@
    "flashlight_intensity": 0.0,
    "fov": 20.0,
    "grids": [],
+   "harvests": [],
    "id": "GlobeOrnament",
    "inspect_rotation": [
     -0.0,
@@ -20604,6 +20940,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "GoblinOrnament",
    "inspect_rotation": [
     -0.0,
@@ -20702,6 +21039,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "GreenFingerlessGloves",
    "inspect_rotation": [
     0.18301271,
@@ -20800,6 +21138,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "GreenGloves",
    "inspect_rotation": [
     0.24184476,
@@ -20908,6 +21247,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "GreenPuffyCoat",
    "inspect_rotation": [
     -0.0,
@@ -21008,6 +21348,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "GreenShirt",
    "inspect_rotation": [
     -0.0,
@@ -21106,6 +21447,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "GreenShorts",
    "inspect_rotation": [
     -0.0,
@@ -21193,8 +21535,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": null,
     "chamber_sound": null,
     "malfunction_chance": 0.15,
+    "muzzle_flash": null,
     "pellets": 6,
     "recoil_horizontal": 1.0,
     "recoil_horizontal_deviation": 0.5,
@@ -21204,12 +21548,14 @@
     "reset_recoil_divider": 2.0,
     "sound": "gun_grenade_launcher_shot_01_Cue",
     "sound_radius": 20.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 5
    },
    "flashlight_intensity": 0.0,
    "fov": 33.5,
    "grids": [],
+   "harvests": [],
    "id": "GrenadeLauncher",
    "inspect_rotation": [
     0.0,
@@ -21300,6 +21646,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "GrenadeLauncherLoader",
    "inspect_rotation": [
     0.0,
@@ -21388,8 +21735,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.3,
     "recoil_horizontal_deviation": 0.0,
@@ -21399,12 +21748,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 50.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 31.0,
    "grids": [],
+   "harvests": [],
    "id": "Guardian",
    "inspect_rotation": [
     0.0,
@@ -21523,6 +21874,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "GuardianAcog",
    "inspect_rotation": [
     0.0,
@@ -21609,6 +21961,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "GuardianExtendedMag",
    "inspect_rotation": [
     -0.087155744,
@@ -21695,6 +22048,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "GuardianMag",
    "inspect_rotation": [
     -0.087155744,
@@ -21765,6 +22119,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "GuardianMuzzleBrake",
    "inspect_rotation": [
     0.0,
@@ -21843,6 +22198,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.6,
    "grids": [],
+   "harvests": [],
    "id": "GuardianSight",
    "inspect_rotation": [
     0.0,
@@ -21918,6 +22274,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "GuardianSuppressor",
    "inspect_rotation": [
     0.0,
@@ -21993,6 +22350,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "GunLocker",
    "inspect_rotation": [
     -0.0,
@@ -22064,6 +22422,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "Gunpowder",
    "inspect_rotation": [
     -0.0,
@@ -22152,8 +22511,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.1,
     "recoil_horizontal_deviation": 0.025,
@@ -22163,12 +22524,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "AR_Single_Shot_2_Cue",
     "sound_radius": 70.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot__Suppressed__2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "HK416",
    "inspect_rotation": [
     0.0,
@@ -22316,6 +22679,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "HawaiianShirt",
    "inspect_rotation": [
     -0.0,
@@ -22423,6 +22787,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "HazmatRespirator",
    "inspect_rotation": [
     -0.0,
@@ -22542,6 +22907,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "HeavyMilitaryBodyArmor",
    "inspect_rotation": [
     -0.0,
@@ -22650,6 +23016,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "HeavyMilitaryBodyArmor2",
    "inspect_rotation": [
     -0.0,
@@ -22729,6 +23096,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "HeavyScope",
    "inspect_rotation": [
     -0.0,
@@ -22809,6 +23177,7 @@
    "flashlight_intensity": 175000.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "HighPoweredFlashlight",
    "inspect_rotation": [
     -0.0,
@@ -22878,6 +23247,7 @@
    "flashlight_intensity": 0.0,
    "fov": 20.0,
    "grids": [],
+   "harvests": [],
    "id": "HighQualityMetal",
    "inspect_rotation": [
     -0.16773126,
@@ -22971,6 +23341,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "HikingBackpack",
    "inspect_rotation": [
     -0.0,
@@ -23062,6 +23433,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "HikingBackpack2",
    "inspect_rotation": [
     -0.0,
@@ -23153,6 +23525,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "HikingBackpack3",
    "inspect_rotation": [
     0.0,
@@ -23252,6 +23625,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "HockeyMask",
    "inspect_rotation": [
     0.0,
@@ -23321,6 +23695,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "HolographicSight",
    "inspect_rotation": [
     0.0,
@@ -23391,6 +23766,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "HordeBeacon",
    "inspect_rotation": [
     -0.0,
@@ -23460,6 +23836,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "HorizontalForegrip",
    "inspect_rotation": [
     0.0,
@@ -23573,6 +23950,7 @@
      4
     ]
    ],
+   "harvests": [],
    "id": "HuntersVest",
    "inspect_rotation": [
     -0.0,
@@ -23682,6 +24060,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "HuntingBoots1",
    "inspect_rotation": [
     -0.0,
@@ -23779,6 +24158,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "HuntingBoots2",
    "inspect_rotation": [
     -0.0,
@@ -23876,6 +24256,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "HuntingBoots3",
    "inspect_rotation": [
     -0.0,
@@ -23964,8 +24345,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "RifleBrass",
     "chamber_sound": "gun_rifle_sniper_cock_03_Cue",
     "malfunction_chance": 0.2,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.6,
     "recoil_horizontal_deviation": 0.0,
@@ -23975,12 +24358,14 @@
     "reset_recoil_divider": 2.0,
     "sound": "Sniper_Single_Shot_4_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "Sniper_Single_Shot__Suppressed__2_Cue",
     "type": 3
    },
    "flashlight_intensity": 0.0,
    "fov": 39.0,
    "grids": [],
+   "harvests": [],
    "id": "HuntingRifle",
    "inspect_rotation": [
     -0.0,
@@ -24089,6 +24474,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "HuntingRifleLoader",
    "inspect_rotation": [
     0.0,
@@ -24158,6 +24544,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.5,
    "grids": [],
+   "harvests": [],
    "id": "HuntingScope",
    "inspect_rotation": [
     -0.0,
@@ -24230,6 +24617,10 @@
    "flashlight_intensity": 0.0,
    "fov": 10.5,
    "grids": [],
+   "harvests": [
+    "rock",
+    "trash"
+   ],
    "id": "IceAxe",
    "inspect_rotation": [
     0.0,
@@ -24339,6 +24730,7 @@
    "flashlight_intensity": 0.0,
    "fov": 23.0,
    "grids": [],
+   "harvests": [],
    "id": "IndustrialGenerator",
    "inspect_rotation": [
     -0.0,
@@ -24409,6 +24801,7 @@
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "Jukebox",
    "inspect_rotation": [
     -0.0,
@@ -24481,6 +24874,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "Katana",
    "inspect_rotation": [
     0.5,
@@ -24590,6 +24984,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "Knife",
    "inspect_rotation": [
     0.0,
@@ -24697,6 +25092,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "KnightOrnament",
    "inspect_rotation": [
     -0.0,
@@ -24785,8 +25181,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "PistolBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.125,
     "recoil_horizontal_deviation": 0.0,
@@ -24796,12 +25194,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "SMG_Single_Shot_5_Cue",
     "sound_radius": 60.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedPistol",
     "suppressed_sound": "SMG_Single_Shot__Suppressed__2_Cue",
     "type": 1
    },
    "flashlight_intensity": 0.0,
    "fov": 23.0,
    "grids": [],
+   "harvests": [],
    "id": "KrissVector",
    "inspect_rotation": [
     -0.0,
@@ -24932,6 +25332,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "KrissVectorDrumMag",
    "inspect_rotation": [
     0.0,
@@ -25018,6 +25419,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "KrissVectorMag",
    "inspect_rotation": [
     0.0,
@@ -25115,6 +25517,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "LaboratoryBackpack",
    "inspect_rotation": [
     0.0,
@@ -25187,6 +25590,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "Lamp",
    "inspect_rotation": [
     -0.0,
@@ -25257,6 +25661,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "LandMine",
    "inspect_rotation": [
     -0.0,
@@ -25346,6 +25751,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "LargeBlackMilitaryBackpack",
    "inspect_rotation": [
     0.0,
@@ -25418,6 +25824,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.5,
    "grids": [],
+   "harvests": [],
    "id": "LargeConcreteWall1",
    "inspect_rotation": [
     0.0,
@@ -25490,6 +25897,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.5,
    "grids": [],
+   "harvests": [],
    "id": "LargeConcreteWall2",
    "inspect_rotation": [
     0.0,
@@ -25562,6 +25970,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "LargeCookedFish",
    "inspect_rotation": [
     -0.0,
@@ -25656,6 +26065,7 @@
      4
     ]
    ],
+   "harvests": [],
    "id": "LargeCoyoteBackpack",
    "inspect_rotation": [
     0.0,
@@ -25728,6 +26138,7 @@
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "LargeGenerator",
    "inspect_rotation": [
     -0.0,
@@ -25798,6 +26209,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.5,
    "grids": [],
+   "harvests": [],
    "id": "LargeMedkit",
    "inspect_rotation": [
     -0.113039,
@@ -25883,6 +26295,7 @@
    "flashlight_intensity": 0.0,
    "fov": 40.0,
    "grids": [],
+   "harvests": [],
    "id": "LargeRawFish",
    "inspect_rotation": [
     -0.5213338,
@@ -25969,6 +26382,7 @@
      5
     ]
    ],
+   "harvests": [],
    "id": "LargeToolbox",
    "inspect_rotation": [
     -0.022665635,
@@ -26059,8 +26473,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "50CalBrass",
     "chamber_sound": "gun_rifle_sniper_cock_01_Cue",
     "malfunction_chance": 0.1,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 1.0,
     "recoil_horizontal_deviation": 0.5,
@@ -26070,12 +26486,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "Sniper_Single_Shot_2_Cue",
     "sound_radius": 60.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "gun_silenced_sniper2_shot_01_Cue",
     "type": 3
    },
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "Lechie",
    "inspect_rotation": [
     0.0,
@@ -26185,6 +26603,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "LechieAcog",
    "inspect_rotation": [
     0.0,
@@ -26271,6 +26690,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "LechieExtendedMag",
    "inspect_rotation": [
     0.0,
@@ -26357,6 +26777,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "LechieMag",
    "inspect_rotation": [
     0.0,
@@ -26432,6 +26853,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "LechieMuzzleBrake",
    "inspect_rotation": [
     0.0,
@@ -26510,6 +26932,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "LechieScope",
    "inspect_rotation": [
     0.0,
@@ -26585,6 +27008,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "LechieSuppressor",
    "inspect_rotation": [
     0.0,
@@ -26659,6 +27083,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "Level0Keycard",
    "inspect_rotation": [
     -0.6532815,
@@ -26730,6 +27155,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "Level1Keycard",
    "inspect_rotation": [
     -0.6532815,
@@ -26801,6 +27227,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "Level2Keycard",
    "inspect_rotation": [
     -0.6532815,
@@ -26872,6 +27299,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "Level3Keycard",
    "inspect_rotation": [
     -0.6532815,
@@ -26943,6 +27371,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "Lockpick",
    "inspect_rotation": [
     -0.27059805,
@@ -27013,6 +27442,7 @@
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "LogWireTrap",
    "inspect_rotation": [
     0.0,
@@ -27090,6 +27520,7 @@
      4
     ]
    ],
+   "harvests": [],
    "id": "LunchBox",
    "inspect_rotation": [
     -0.11148285,
@@ -27180,8 +27611,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "50CalBrass",
     "chamber_sound": "gun_rifle_sniper_cock_03_Cue",
     "malfunction_chance": 0.2,
+    "muzzle_flash": "FX_GunshotSuppressedRifle",
     "pellets": 6,
     "recoil_horizontal": 0.8,
     "recoil_horizontal_deviation": 0.2,
@@ -27191,12 +27624,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "Sniper_Single_Shot__Suppressed__2_Cue",
     "sound_radius": 15.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 3
    },
    "flashlight_intensity": 0.0,
    "fov": 40.0,
    "grids": [],
+   "harvests": [],
    "id": "M2010",
    "inspect_rotation": [
     0.0,
@@ -27318,6 +27753,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "M2010Mag",
    "inspect_rotation": [
     0.0,
@@ -27406,8 +27842,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.03,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.35,
     "recoil_horizontal_deviation": 0.025,
@@ -27417,12 +27855,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "M-249_01_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 29.0,
    "grids": [],
+   "harvests": [],
    "id": "M249",
    "inspect_rotation": [
     0.0,
@@ -27553,6 +27993,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "M249BoxMag",
    "inspect_rotation": [
     0.0,
@@ -27641,8 +28082,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.25,
     "recoil_horizontal_deviation": 0.0,
@@ -27652,12 +28095,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 70.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot_Suppressed_3_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "M4CQB",
    "inspect_rotation": [
     0.0,
@@ -27795,8 +28240,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "PistolBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.175,
     "recoil_horizontal_deviation": 0.0,
@@ -27806,12 +28253,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "Pistol_Single_Shot_2_Cue",
     "sound_radius": 50.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedPistol",
     "suppressed_sound": "Pistol_Single_Shot__Suppressed__2_Cue",
     "type": 0
    },
    "flashlight_intensity": 0.0,
    "fov": 9.5,
    "grids": [],
+   "harvests": [],
    "id": "M9",
    "inspect_rotation": [
     0.0,
@@ -27949,8 +28398,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "PistolBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.325,
     "recoil_horizontal_deviation": 0.0,
@@ -27960,12 +28411,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "Pistol_01_Cue",
     "sound_radius": 60.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedPistol",
     "suppressed_sound": "SMG_Single_Shot__Suppressed__2_Cue",
     "type": 1
    },
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "MP5",
    "inspect_rotation": [
     0.0,
@@ -28096,6 +28549,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "MP5DrumMag",
    "inspect_rotation": [
     -0.0,
@@ -28177,6 +28631,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.5,
    "grids": [],
+   "harvests": [],
    "id": "MP5Mag",
    "inspect_rotation": [
     0.0,
@@ -28265,8 +28720,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "PistolBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.15,
     "recoil_horizontal_deviation": 0.05,
@@ -28276,12 +28733,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "SMG_Single_Shot_5_Cue",
     "sound_radius": 60.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedPistol",
     "suppressed_sound": "SMG_Single_Shot__Suppressed__2_Cue",
     "type": 1
    },
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "MP7",
    "inspect_rotation": [
     0.0,
@@ -28412,6 +28871,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "MP7Mag",
    "inspect_rotation": [
     0.0,
@@ -28482,6 +28942,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.6,
    "grids": [],
+   "harvests": [],
    "id": "MRE",
    "inspect_rotation": [
     -0.43045932,
@@ -28567,6 +29028,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "Machete",
    "inspect_rotation": [
     0.0,
@@ -28673,6 +29135,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.5,
    "grids": [],
+   "harvests": [],
    "id": "MakeshiftArmorRepairKit",
    "inspect_rotation": [
     0.10355339,
@@ -28771,6 +29234,7 @@
    "flashlight_intensity": 0.0,
    "fov": 22.0,
    "grids": [],
+   "harvests": [],
    "id": "MakeshiftMetalArmor",
    "inspect_rotation": [
     -0.0,
@@ -28850,6 +29314,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "MakeshiftMuffler",
    "inspect_rotation": [
     0.9238795,
@@ -28928,6 +29393,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "MakeshiftMuffler2",
    "inspect_rotation": [
     1.0,
@@ -29007,6 +29473,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "MakeshiftSplint",
    "inspect_rotation": [
     0.019113293,
@@ -29080,6 +29547,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "MakeshiftWeaponCleaningKit",
    "inspect_rotation": [
     0.17949052,
@@ -29178,6 +29646,7 @@
    "flashlight_intensity": 0.0,
    "fov": 22.0,
    "grids": [],
+   "harvests": [],
    "id": "MakeshiftWoodenArmor",
    "inspect_rotation": [
     -0.0,
@@ -29276,8 +29745,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "RifleBrass",
     "chamber_sound": "gun_rifle_sniper_cock_01_Cue",
     "malfunction_chance": 0.1,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 1.75,
     "recoil_horizontal_deviation": 0.75,
@@ -29287,12 +29758,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "Sniper_Single_Shot_Cue",
     "sound_radius": 65.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "Sniper_Single_Shot__Suppressed__2_Cue",
     "type": 3
    },
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "MarksmansLegacy",
    "inspect_rotation": [
     0.0,
@@ -29401,6 +29874,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "MarksmansLegacyLoader",
    "inspect_rotation": [
     0.0,
@@ -29471,6 +29945,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "MarksmanshipBook",
    "inspect_rotation": [
     -0.45451948,
@@ -29541,6 +30016,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "MarksmanshipMagazine",
    "inspect_rotation": [
     -0.45451948,
@@ -29638,6 +30114,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "Mask",
    "inspect_rotation": [
     -0.0,
@@ -29715,6 +30192,7 @@
      7
     ]
    ],
+   "harvests": [],
    "id": "MedBag",
    "inspect_rotation": [
     0.0,
@@ -29787,6 +30265,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "MetalFence",
    "inspect_rotation": [
     0.0,
@@ -29858,6 +30337,7 @@
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "MetalRods",
    "inspect_rotation": [
     0.0,
@@ -29939,6 +30419,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "MilitaryBackpack",
    "inspect_rotation": [
     0.0,
@@ -30038,6 +30519,7 @@
    "flashlight_intensity": 0.0,
    "fov": 18.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryBoots",
    "inspect_rotation": [
     -0.0,
@@ -30108,6 +30590,7 @@
    "flashlight_intensity": 0.0,
    "fov": 22.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryCrate",
    "inspect_rotation": [
     0.0,
@@ -30208,6 +30691,7 @@
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryGloves",
    "inspect_rotation": [
     0.18301271,
@@ -30279,6 +30763,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryGradeBinoculars",
    "inspect_rotation": [
     -0.0,
@@ -30349,6 +30834,7 @@
    "flashlight_intensity": 0.0,
    "fov": 21.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryIntelLaptop",
    "inspect_rotation": [
     -0.0713938,
@@ -30457,6 +30943,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "MilitaryJacket",
    "inspect_rotation": [
     -0.0,
@@ -30529,6 +31016,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryNVG",
    "inspect_rotation": [
     -0.0,
@@ -30637,6 +31125,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "MilitaryPants",
    "inspect_rotation": [
     -0.0,
@@ -30751,6 +31240,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "MilitaryPlateCarrier",
    "inspect_rotation": [
     -0.0,
@@ -30871,6 +31361,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryRespirator",
    "inspect_rotation": [
     0.0,
@@ -30969,6 +31460,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "MilitarySecureContainer",
    "inspect_rotation": [
     -0.0,
@@ -31041,6 +31533,7 @@
    "flashlight_intensity": 0.0,
    "fov": 31.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitarySupplyCrates",
    "inspect_rotation": [
     0.0,
@@ -31113,6 +31606,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.5,
    "grids": [],
+   "harvests": [],
    "id": "MilitarySuppressor",
    "inspect_rotation": [
     -0.70710677,
@@ -31219,6 +31713,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryTacticalHeadset",
    "inspect_rotation": [
     -0.0,
@@ -31292,6 +31787,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryTacticalHelmet",
    "inspect_rotation": [
     -0.0,
@@ -31375,6 +31871,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryTacticalHelmet2",
    "inspect_rotation": [
     -0.0,
@@ -31458,6 +31955,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "MilitaryTacticalHelmet3",
    "inspect_rotation": [
     -0.0,
@@ -31539,6 +32037,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.5,
    "grids": [],
+   "harvests": [],
    "id": "MolotovCocktail",
    "inspect_rotation": [
     0.0,
@@ -31615,6 +32114,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "Money",
    "inspect_rotation": [
     0.66446304,
@@ -31703,8 +32203,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "RifleBrass",
     "chamber_sound": "gun_rifle_sniper_cock_03_Cue",
     "malfunction_chance": 0.2,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.8,
     "recoil_horizontal_deviation": 0.25,
@@ -31714,12 +32216,14 @@
     "reset_recoil_divider": 2.0,
     "sound": "Sniper_rifle_03_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "Sniper_Single_Shot__Suppressed__2_Cue",
     "type": 3
    },
    "flashlight_intensity": 0.0,
    "fov": 34.0,
    "grids": [],
+   "harvests": [],
    "id": "MosinNagant",
    "inspect_rotation": [
     0.0,
@@ -31828,6 +32332,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "MosinNagantLoader",
    "inspect_rotation": [
     0.0,
@@ -31898,6 +32403,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.0,
    "grids": [],
+   "harvests": [],
    "id": "MuzzleBrake",
    "inspect_rotation": [
     -1.0,
@@ -31980,6 +32486,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "NXSScope",
    "inspect_rotation": [
     0.0,
@@ -32049,6 +32556,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "Nails",
    "inspect_rotation": [
     0.0,
@@ -32119,6 +32627,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "NeonCactusOrnament",
    "inspect_rotation": [
     -0.0,
@@ -32189,6 +32698,7 @@
    "flashlight_intensity": 0.0,
    "fov": 18.0,
    "grids": [],
+   "harvests": [],
    "id": "NewtonsCradleOrnament",
    "inspect_rotation": [
     -0.0,
@@ -32260,6 +32770,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "NoiseMaker",
    "inspect_rotation": [
     0.0,
@@ -32334,6 +32845,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "Notepad",
    "inspect_rotation": [
     -0.27059805,
@@ -32432,6 +32944,7 @@
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "OfficePants",
    "inspect_rotation": [
     0.0,
@@ -32530,6 +33043,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "OfficeShirt",
    "inspect_rotation": [
     0.0,
@@ -32627,6 +33141,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "OfficeShoes",
    "inspect_rotation": [
     -0.0,
@@ -32696,6 +33211,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "Oil",
    "inspect_rotation": [
     0.18301271,
@@ -32793,6 +33309,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "OilRigBoots",
    "inspect_rotation": [
     -0.0,
@@ -32901,6 +33418,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "OilRigJacket",
    "inspect_rotation": [
     -0.0,
@@ -33011,6 +33529,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "OilRigPants",
    "inspect_rotation": [
     -0.0,
@@ -33102,6 +33621,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "OilRigTacticalHelmet",
    "inspect_rotation": [
     -0.0,
@@ -33182,6 +33702,7 @@
    "flashlight_intensity": 0.0,
    "fov": 20.0,
    "grids": [],
+   "harvests": [],
    "id": "OldChest",
    "inspect_rotation": [
     -0.0,
@@ -33282,6 +33803,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "OrangeFingerlessGloves",
    "inspect_rotation": [
     0.18301271,
@@ -33380,6 +33902,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "OrangeGloves",
    "inspect_rotation": [
     0.24184476,
@@ -33478,6 +34001,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "OrangePlaidShirt",
    "inspect_rotation": [
     0.0,
@@ -33586,6 +34110,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "OrangePuffyCoat",
    "inspect_rotation": [
     -0.0,
@@ -33686,6 +34211,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "OrangeShirt",
    "inspect_rotation": [
     -0.0,
@@ -33784,6 +34310,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "OrangeShorts",
    "inspect_rotation": [
     -0.0,
@@ -33854,6 +34381,7 @@
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "OrbiterOrnament",
    "inspect_rotation": [
     0.0,
@@ -33942,8 +34470,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "PistolBrassMP5",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.4,
     "recoil_horizontal_deviation": 0.15,
@@ -33953,12 +34483,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "SMG_Single_Shot_3_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedPistol",
     "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 1
    },
    "flashlight_intensity": 0.0,
    "fov": 21.0,
    "grids": [],
+   "harvests": [],
    "id": "P90",
    "inspect_rotation": [
     0.0,
@@ -34089,6 +34621,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "P90Mag",
    "inspect_rotation": [
     0.0,
@@ -34158,6 +34691,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "PUScope",
    "inspect_rotation": [
     0.0,
@@ -34266,6 +34800,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "PaddedJeans",
    "inspect_rotation": [
     0.0,
@@ -34338,6 +34873,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "Painkillers",
    "inspect_rotation": [
     -0.0,
@@ -34455,6 +34991,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "ParamedicJacket",
    "inspect_rotation": [
     -0.0,
@@ -34565,6 +35102,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "ParamedicPants",
    "inspect_rotation": [
     -0.0,
@@ -34636,6 +35174,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.5,
    "grids": [],
+   "harvests": [],
    "id": "Pencil",
    "inspect_rotation": [
     -0.9238795,
@@ -34724,8 +35263,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotSuppressedRifle",
     "pellets": 6,
     "recoil_horizontal": 0.4,
     "recoil_horizontal_deviation": 0.025,
@@ -34735,12 +35276,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "AR_Single_Shot__Suppressed__Cue",
     "sound_radius": 10.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 31.0,
    "grids": [],
+   "harvests": [],
    "id": "Phantasm",
    "inspect_rotation": [
     0.0,
@@ -34860,6 +35403,7 @@
    "flashlight_intensity": 0.0,
    "fov": 40.0,
    "grids": [],
+   "harvests": [],
    "id": "Piano",
    "inspect_rotation": [
     -0.0,
@@ -34932,6 +35476,10 @@
    "flashlight_intensity": 0.0,
    "fov": 18.0,
    "grids": [],
+   "harvests": [
+    "rock",
+    "trash"
+   ],
    "id": "Pickaxe",
    "inspect_rotation": [
     0.6830127,
@@ -35042,6 +35590,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "PipeBomb",
    "inspect_rotation": [
     0.0,
@@ -35118,6 +35667,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "Plastic",
    "inspect_rotation": [
     -0.27059805,
@@ -35188,6 +35738,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "PlasticBottle",
    "inspect_rotation": [
     0.37940952,
@@ -35285,6 +35836,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "PoliceBoots",
    "inspect_rotation": [
     -0.0,
@@ -35355,6 +35907,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "PoliceGeneratorKey",
    "inspect_rotation": [
     -0.38268343,
@@ -35463,6 +36016,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "PolicePants",
    "inspect_rotation": [
     -0.0,
@@ -35573,6 +36127,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "PoliceShirt",
    "inspect_rotation": [
     -0.0,
@@ -35683,6 +36238,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "PoliceShirt",
    "inspect_rotation": [
     -0.0,
@@ -35754,6 +36310,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "PostItNotes",
    "inspect_rotation": [
     0.3043807,
@@ -35824,6 +36381,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "ProfessionalSuppressor",
    "inspect_rotation": [
     -1.0,
@@ -35921,8 +36479,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "ShotgunShells",
     "chamber_sound": "gun_shotgun_cock_01_Cue",
     "malfunction_chance": 0.25,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.5,
     "recoil_horizontal_deviation": 0.25,
@@ -35932,12 +36492,14 @@
     "reset_recoil_divider": 2.0,
     "sound": "gun_shotgun_sawed_off_shot_01_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "ShotGun_Boom_101__Suppressed__Cue",
     "type": 4
    },
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "PumpActionShotgun",
    "inspect_rotation": [
     0.0,
@@ -36046,6 +36608,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "PumpShotgunLoader",
    "inspect_rotation": [
     0.0,
@@ -36115,6 +36678,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.5,
    "grids": [],
+   "harvests": [],
    "id": "RadiationFilter",
    "inspect_rotation": [
     0.06645228,
@@ -36185,6 +36749,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "RadiationPills",
    "inspect_rotation": [
     0.0,
@@ -36264,6 +36829,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "Radio",
    "inspect_rotation": [
     -0.0,
@@ -36334,6 +36900,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "Rags",
    "inspect_rotation": [
     -0.0,
@@ -36412,6 +36979,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "RandomTools",
    "inspect_rotation": [
     0.0,
@@ -36482,6 +37050,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "RangeFinder",
    "inspect_rotation": [
     -0.0,
@@ -36552,6 +37121,7 @@
    "flashlight_intensity": 0.0,
    "fov": 29.0,
    "grids": [],
+   "harvests": [],
    "id": "RawFish",
    "inspect_rotation": [
     -0.579228,
@@ -36631,6 +37201,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "RawMeat",
    "inspect_rotation": [
     -0.5416752,
@@ -36710,6 +37281,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "RazorWire",
    "inspect_rotation": [
     0.0,
@@ -36779,6 +37351,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "RedDotSight",
    "inspect_rotation": [
     0.0,
@@ -36877,6 +37450,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "RedPlaidShirt",
    "inspect_rotation": [
     0.0,
@@ -36975,6 +37549,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "RedShorts",
    "inspect_rotation": [
     -0.0,
@@ -37045,6 +37620,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "ReloadingBook",
    "inspect_rotation": [
     -0.45451948,
@@ -37115,6 +37691,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "ReloadingMagazine",
    "inspect_rotation": [
     -0.45451948,
@@ -37185,6 +37762,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.5,
    "grids": [],
+   "harvests": [],
    "id": "Rice",
    "inspect_rotation": [
     -0.017037086,
@@ -37298,6 +37876,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "RiderJacket",
    "inspect_rotation": [
     -0.0,
@@ -37397,6 +37976,7 @@
    "flashlight_intensity": 0.0,
    "fov": 18.0,
    "grids": [],
+   "harvests": [],
    "id": "RiotBoots",
    "inspect_rotation": [
     -0.0,
@@ -37495,6 +38075,7 @@
    "flashlight_intensity": 0.0,
    "fov": 18.0,
    "grids": [],
+   "harvests": [],
    "id": "RiotGloves",
    "inspect_rotation": [
     0.18301271,
@@ -37568,6 +38149,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "RiotHelmet",
    "inspect_rotation": [
     0.0,
@@ -37686,6 +38268,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "RiotPants",
    "inspect_rotation": [
     -0.0,
@@ -37786,6 +38369,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "RiotPoliceBodyArmor",
    "inspect_rotation": [
     -0.0,
@@ -37904,6 +38488,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "RiotPoliceJacket",
    "inspect_rotation": [
     -0.0,
@@ -38004,6 +38589,7 @@
    "flashlight_intensity": 0.0,
    "fov": 46.0,
    "grids": [],
+   "harvests": [],
    "id": "Robe",
    "inspect_rotation": [
     -0.0,
@@ -38073,6 +38659,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "Rock",
    "inspect_rotation": [
     0.0,
@@ -38160,8 +38747,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": null,
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_RocketLauncherSmoke",
     "pellets": 6,
     "recoil_horizontal": 0.1,
     "recoil_horizontal_deviation": 0.025,
@@ -38171,12 +38760,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "ES_Grenade_Launcher_7_-_SFX_Producer_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 6
    },
    "flashlight_intensity": 0.0,
    "fov": 43.0,
    "grids": [],
+   "harvests": [],
    "id": "RocketLauncher",
    "inspect_rotation": [
     0.0,
@@ -38258,6 +38849,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "RocketLauncherLoader",
    "inspect_rotation": [
     0.0,
@@ -38327,6 +38919,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "Rope",
    "inspect_rotation": [
     -0.27059805,
@@ -38415,8 +39008,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.06,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.0,
     "recoil_horizontal_deviation": 0.0,
@@ -38426,12 +39021,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "Weapon_Fire_25_Cue",
     "sound_radius": 70.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AKM_suppressed_fire_102_with_Reverb_2_Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 44.0,
    "grids": [],
+   "harvests": [],
    "id": "SVD",
    "inspect_rotation": [
     0.0,
@@ -38562,6 +39159,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "SVDMag",
    "inspect_rotation": [
     0.0,
@@ -38632,6 +39230,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "Safe",
    "inspect_rotation": [
     -0.0,
@@ -38704,6 +39303,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "SamuraiOrnament",
    "inspect_rotation": [
     -0.0,
@@ -38792,8 +39392,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": "ShotgunShells",
     "chamber_sound": "gun_shotgun_cock_01_Cue",
     "malfunction_chance": 0.075,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 1.25,
     "recoil_horizontal_deviation": 0.25,
@@ -38803,12 +39405,14 @@
     "reset_recoil_divider": 2.0,
     "sound": "gun_shotgun_sawed_off_shot_01_Cue",
     "sound_radius": 75.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "ShotGun_Boom_101__Suppressed__Cue",
     "type": 4
    },
    "flashlight_intensity": 0.0,
    "fov": 23.0,
    "grids": [],
+   "harvests": [],
    "id": "SawnOffShotgun",
    "inspect_rotation": [
     0.0,
@@ -38917,6 +39521,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "SawnOffShotgunLoader",
    "inspect_rotation": [
     0.0,
@@ -39005,8 +39610,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.03,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.125,
     "recoil_horizontal_deviation": 0.0,
@@ -39016,12 +39623,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "AR_Single_Shot_2_Cue",
     "sound_radius": 80.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 31.5,
    "grids": [],
+   "harvests": [],
    "id": "ScarH",
    "inspect_rotation": [
     0.0,
@@ -39152,6 +39761,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.5,
    "grids": [],
+   "harvests": [],
    "id": "ScarHMag",
    "inspect_rotation": [
     0.0,
@@ -39250,6 +39860,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.5,
    "grids": [],
+   "harvests": [],
    "id": "Scarf",
    "inspect_rotation": [
     -0.0,
@@ -39320,6 +39931,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "ScavengingBook",
    "inspect_rotation": [
     -0.45451948,
@@ -39390,6 +40002,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "ScavengingMagazine",
    "inspect_rotation": [
     -0.45451948,
@@ -39467,6 +40080,7 @@
      5
     ]
    ],
+   "harvests": [],
    "id": "SchoolBackpack",
    "inspect_rotation": [
     0.0,
@@ -39538,6 +40152,7 @@
    "flashlight_intensity": 0.0,
    "fov": 20.0,
    "grids": [],
+   "harvests": [],
    "id": "ScrapMetal",
    "inspect_rotation": [
     -0.16317591,
@@ -39615,6 +40230,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "SecureContainer",
    "inspect_rotation": [
     -0.0,
@@ -39687,6 +40303,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "SharkOrnament",
    "inspect_rotation": [
     -0.0,
@@ -39756,6 +40373,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "SharpBlade",
    "inspect_rotation": [
     0.6532815,
@@ -39826,6 +40444,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "Shelf",
    "inspect_rotation": [
     -0.0,
@@ -39895,6 +40514,7 @@
    "flashlight_intensity": 0.0,
    "fov": 4.0,
    "grids": [],
+   "harvests": [],
    "id": "ShellCasing",
    "inspect_rotation": [
     0.38268343,
@@ -39993,6 +40613,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "Shemagh",
    "inspect_rotation": [
     -0.0,
@@ -40091,6 +40712,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "Shemagh2",
    "inspect_rotation": [
     -0.0,
@@ -40189,6 +40811,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "Shemagh3",
    "inspect_rotation": [
     -0.0,
@@ -40259,6 +40882,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "ShippingContainer",
    "inspect_rotation": [
     0.0,
@@ -40331,6 +40955,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "ShotgunSuppressor",
    "inspect_rotation": [
     -6.123234e-17,
@@ -40448,6 +41073,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "Skirt",
    "inspect_rotation": [
     -0.0,
@@ -40547,6 +41173,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "SkullFaceMask",
    "inspect_rotation": [
     -0.0,
@@ -40619,6 +41246,10 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [
+    "rock",
+    "trash"
+   ],
    "id": "Sledgehammer",
    "inspect_rotation": [
     0.6532815,
@@ -40728,6 +41359,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "SleepingBag",
    "inspect_rotation": [
     -0.0,
@@ -40825,6 +41457,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "Slippers",
    "inspect_rotation": [
     -0.0,
@@ -40895,6 +41528,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.5,
    "grids": [],
+   "harvests": [],
    "id": "SmallConcreteWall",
    "inspect_rotation": [
     0.0,
@@ -40967,6 +41601,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "SmallCookedFish",
    "inspect_rotation": [
     -0.20729013,
@@ -41042,6 +41677,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "SmallCookedMeat",
    "inspect_rotation": [
     -0.61237246,
@@ -41117,6 +41753,7 @@
    "flashlight_intensity": 0.0,
    "fov": 41.0,
    "grids": [],
+   "harvests": [],
    "id": "SmallCouch",
    "inspect_rotation": [
     -0.0,
@@ -41187,6 +41824,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "SmallGenerator",
    "inspect_rotation": [
     0.0,
@@ -41257,6 +41895,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "SmallMedkit",
    "inspect_rotation": [
     -0.061628416,
@@ -41341,6 +41980,7 @@
    "flashlight_intensity": 0.0,
    "fov": 5.0,
    "grids": [],
+   "harvests": [],
    "id": "SmallRawFish",
    "inspect_rotation": [
     2.3432602e-17,
@@ -41420,6 +42060,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "SmallRawMeat",
    "inspect_rotation": [
     -0.61237246,
@@ -41498,6 +42139,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.0,
    "grids": [],
+   "harvests": [],
    "id": "SmallRedDotSight",
    "inspect_rotation": [
     0.0,
@@ -41587,6 +42229,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "SmallSurvivalBackpack",
    "inspect_rotation": [
     0.0,
@@ -41658,6 +42301,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.5,
    "grids": [],
+   "harvests": [],
    "id": "SmallTacticalLaserSight",
    "inspect_rotation": [
     0.38268343,
@@ -41741,6 +42385,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.5,
    "grids": [],
+   "harvests": [],
    "id": "SmallTacticalLight",
    "inspect_rotation": [
     0.0,
@@ -41818,6 +42463,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "SmallToolbox",
    "inspect_rotation": [
     -0.03015369,
@@ -41890,6 +42536,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "SmallTurret",
    "inspect_rotation": [
     0.0,
@@ -41959,6 +42606,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "Smartphone",
    "inspect_rotation": [
     0.27059805,
@@ -42029,6 +42677,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "SneakingBook",
    "inspect_rotation": [
     -0.45451948,
@@ -42099,6 +42748,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "SneakingMagazine",
    "inspect_rotation": [
     -0.45451948,
@@ -42169,6 +42819,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "SpaceShuttleOrnament",
    "inspect_rotation": [
     -0.0,
@@ -42238,6 +42889,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "SparkPlug",
    "inspect_rotation": [
     0.27059805,
@@ -42327,6 +42979,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "SpecOpsHelmet",
    "inspect_rotation": [
     -0.0,
@@ -42407,6 +43060,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "SpecOpsNVG",
    "inspect_rotation": [
     -0.0,
@@ -42519,6 +43173,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "SpecOpsPlateCarrier",
    "inspect_rotation": [
     -0.0,
@@ -42602,6 +43257,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.5,
    "grids": [],
+   "harvests": [],
    "id": "SpikedWall",
    "inspect_rotation": [
     -0.0,
@@ -42674,6 +43330,7 @@
    "flashlight_intensity": 0.0,
    "fov": 23.0,
    "grids": [],
+   "harvests": [],
    "id": "SpikesTrap",
    "inspect_rotation": [
     0.0,
@@ -42744,6 +43401,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "Splint",
    "inspect_rotation": [
     0.019113293,
@@ -42836,8 +43494,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.0,
     "recoil_horizontal_deviation": 0.05,
@@ -42847,12 +43507,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 70.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 29.0,
    "grids": [],
+   "harvests": [],
    "id": "SteyrAug",
    "inspect_rotation": [
     -0.0,
@@ -42972,6 +43634,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "StorageCrate",
    "inspect_rotation": [
     0.0,
@@ -43044,6 +43707,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "StorageCrate2",
    "inspect_rotation": [
     0.0,
@@ -43116,6 +43780,7 @@
    "flashlight_intensity": 0.0,
    "fov": 18.0,
    "grids": [],
+   "harvests": [],
    "id": "StorageCrate3",
    "inspect_rotation": [
     0.0,
@@ -43188,6 +43853,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "StorageCrate4",
    "inspect_rotation": [
     -0.015134436,
@@ -43260,6 +43926,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "StrengthBook",
    "inspect_rotation": [
     -0.45451948,
@@ -43330,6 +43997,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "StrengthMagazine",
    "inspect_rotation": [
     -0.45451948,
@@ -43418,8 +44086,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotSuppressedRifle",
     "pellets": 6,
     "recoil_horizontal": 0.1,
     "recoil_horizontal_deviation": 0.0,
@@ -43429,12 +44099,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "AR_Single_Shot__Suppressed__2_Cue",
     "sound_radius": 10.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 38.0,
    "grids": [],
+   "harvests": [],
    "id": "Survivor",
    "inspect_rotation": [
     0.0,
@@ -43582,6 +44254,7 @@
    "flashlight_intensity": 0.0,
    "fov": 20.0,
    "grids": [],
+   "harvests": [],
    "id": "SwimmingTrunks",
    "inspect_rotation": [
     -0.0,
@@ -43652,6 +44325,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "Table1",
    "inspect_rotation": [
     -0.0,
@@ -43722,6 +44396,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "Table2",
    "inspect_rotation": [
     -0.0,
@@ -43794,6 +44469,9 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [
+    "tree"
+   ],
    "id": "TacticalHatchet",
    "inspect_rotation": [
     0.70710677,
@@ -43903,6 +44581,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "TacticalLaserLightCombo",
    "inspect_rotation": [
     0.38268343,
@@ -43986,6 +44665,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "TacticalLight",
    "inspect_rotation": [
     0.0,
@@ -44056,6 +44736,7 @@
    "flashlight_intensity": 0.0,
    "fov": 12.0,
    "grids": [],
+   "harvests": [],
    "id": "TankTrap",
    "inspect_rotation": [
     0.0,
@@ -44125,6 +44806,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "Tape",
    "inspect_rotation": [
     -0.0,
@@ -44195,6 +44877,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "Tent1",
    "inspect_rotation": [
     -0.0,
@@ -44267,6 +44950,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "Tent2",
    "inspect_rotation": [
     -0.0,
@@ -44339,6 +45023,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "Tent3",
    "inspect_rotation": [
     -0.0,
@@ -44411,6 +45096,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "Tent4",
    "inspect_rotation": [
     -0.0,
@@ -44483,6 +45169,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "TentCover",
    "inspect_rotation": [
     -0.0,
@@ -44553,6 +45240,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "ThiefBook",
    "inspect_rotation": [
     -0.45451948,
@@ -44623,6 +45311,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "ThiefMagazine",
    "inspect_rotation": [
     -0.45451948,
@@ -44693,6 +45382,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "Tier1LootBox",
    "inspect_rotation": [
     0.1227878,
@@ -44763,6 +45453,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "Tier2LootBox",
    "inspect_rotation": [
     0.1227878,
@@ -44833,6 +45524,7 @@
    "flashlight_intensity": 0.0,
    "fov": 37.0,
    "grids": [],
+   "harvests": [],
    "id": "Tier3LootBox",
    "inspect_rotation": [
     -0.1227878,
@@ -44902,6 +45594,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "ToiletRoll",
    "inspect_rotation": [
     -0.11435968,
@@ -44972,6 +45665,7 @@
    "flashlight_intensity": 0.0,
    "fov": 22.0,
    "grids": [],
+   "harvests": [],
    "id": "ToolsCabinet",
    "inspect_rotation": [
     -0.0,
@@ -45043,6 +45737,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "Toothbrush",
    "inspect_rotation": [
     0.09904576,
@@ -45113,6 +45808,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "ToughnessBook",
    "inspect_rotation": [
     -0.45451948,
@@ -45183,6 +45879,7 @@
    "flashlight_intensity": 0.0,
    "fov": 17.0,
    "grids": [],
+   "harvests": [],
    "id": "ToughnessMagazine",
    "inspect_rotation": [
     -0.45451948,
@@ -45253,6 +45950,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "ToyBearOrnament",
    "inspect_rotation": [
     0.0,
@@ -45351,6 +46049,7 @@
    "flashlight_intensity": 0.0,
    "fov": 27.0,
    "grids": [],
+   "harvests": [],
    "id": "TracksuitPants",
    "inspect_rotation": [
     -0.0,
@@ -45448,6 +46147,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "TrailShoes1",
    "inspect_rotation": [
     -0.0,
@@ -45545,6 +46245,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "TrailShoes2",
    "inspect_rotation": [
     -0.0,
@@ -45642,6 +46343,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "Trainers1",
    "inspect_rotation": [
     -0.0,
@@ -45739,6 +46441,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "Trainers2",
    "inspect_rotation": [
     -0.0,
@@ -45810,6 +46513,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "TrapperHat",
    "inspect_rotation": [
     0.0,
@@ -45881,6 +46585,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "TrapperHat2",
    "inspect_rotation": [
     0.0,
@@ -45951,6 +46656,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "TrashBin",
    "inspect_rotation": [
     -0.0,
@@ -46021,6 +46727,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "Turret",
    "inspect_rotation": [
     0.0,
@@ -46090,6 +46797,7 @@
    "flashlight_intensity": 0.0,
    "fov": 40.0,
    "grids": [],
+   "harvests": [],
    "id": "TurretGun",
    "inspect_rotation": [
     -0.0,
@@ -46159,6 +46867,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "UsedCigarettes",
    "inspect_rotation": [
     -0.0,
@@ -46247,8 +46956,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotRifle",
     "pellets": 6,
     "recoil_horizontal": 0.25,
     "recoil_horizontal_deviation": 0.0,
@@ -46258,12 +46969,14 @@
     "reset_recoil_divider": 1.0,
     "sound": "gun_rifle_shot_01_Cue",
     "sound_radius": 50.0,
+    "suppressed_muzzle_flash": "FX_GunshotSuppressedRifle",
     "suppressed_sound": "AR_Single_Shot__Suppressed__Cue",
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 33.0,
    "grids": [],
+   "harvests": [],
    "id": "Valkyrie",
    "inspect_rotation": [
     0.0,
@@ -46382,6 +47095,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "ValkyrieAcog",
    "inspect_rotation": [
     0.0,
@@ -46468,6 +47182,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "ValkyrieDrumMag",
    "inspect_rotation": [
     -0.0,
@@ -46554,6 +47269,7 @@
    "flashlight_intensity": 0.0,
    "fov": 3.5,
    "grids": [],
+   "harvests": [],
    "id": "ValkyrieMag",
    "inspect_rotation": [
     0.0,
@@ -46629,6 +47345,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.0,
    "grids": [],
+   "harvests": [],
    "id": "ValkyrieMuzzleBrake",
    "inspect_rotation": [
     0.0,
@@ -46707,6 +47424,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "ValkyrieSight",
    "inspect_rotation": [
     0.0,
@@ -46782,6 +47500,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "ValkyrieSuppressor",
    "inspect_rotation": [
     0.0,
@@ -46856,6 +47575,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "VehicleRepairKit",
    "inspect_rotation": [
     0.011289529,
@@ -46925,6 +47645,7 @@
    "flashlight_intensity": 0.0,
    "fov": 2.5,
    "grids": [],
+   "harvests": [],
    "id": "VerticalForegrip",
    "inspect_rotation": [
     0.0,
@@ -47000,6 +47721,7 @@
    "flashlight_intensity": 0.0,
    "fov": 8.0,
    "grids": [],
+   "harvests": [],
    "id": "VikingOrnament",
    "inspect_rotation": [
     -0.0,
@@ -47070,6 +47792,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "WallLight",
    "inspect_rotation": [
     -0.0,
@@ -47147,6 +47870,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "Wallet",
    "inspect_rotation": [
     0.43045932,
@@ -47257,6 +47981,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "WandererJacket",
    "inspect_rotation": [
     -0.0,
@@ -47367,6 +48092,7 @@
      2
     ]
    ],
+   "harvests": [],
    "id": "WandererPants",
    "inspect_rotation": [
     -0.0,
@@ -47439,6 +48165,7 @@
    "flashlight_intensity": 0.0,
    "fov": 38.0,
    "grids": [],
+   "harvests": [],
    "id": "WatchTower",
    "inspect_rotation": [
     0.0,
@@ -47509,6 +48236,7 @@
    "flashlight_intensity": 0.0,
    "fov": 6.5,
    "grids": [],
+   "harvests": [],
    "id": "WaterBottle",
    "inspect_rotation": [
     0.0,
@@ -47584,6 +48312,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.5,
    "grids": [],
+   "harvests": [],
    "id": "WaterCanteen",
    "inspect_rotation": [
     0.0,
@@ -47659,6 +48388,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.5,
    "grids": [],
+   "harvests": [],
    "id": "WaterJug",
    "inspect_rotation": [
     0.0,
@@ -47733,6 +48463,7 @@
    "flashlight_intensity": 0.0,
    "fov": 9.0,
    "grids": [],
+   "harvests": [],
    "id": "WaterPurificationTablets",
    "inspect_rotation": [
     -0.0,
@@ -47803,6 +48534,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "WaterWell",
    "inspect_rotation": [
     0.0,
@@ -47872,6 +48604,7 @@
    "flashlight_intensity": 0.0,
    "fov": 21.0,
    "grids": [],
+   "harvests": [],
    "id": "WeaponCleaningKit",
    "inspect_rotation": [
     0.044943456,
@@ -47949,6 +48682,7 @@
      4
     ]
    ],
+   "harvests": [],
    "id": "WeaponsCase",
    "inspect_rotation": [
     0.0,
@@ -48021,6 +48755,7 @@
    "flashlight_intensity": 0.0,
    "fov": 24.0,
    "grids": [],
+   "harvests": [],
    "id": "WeaponsEquipmentWorkbench",
    "inspect_rotation": [
     -0.0,
@@ -48120,6 +48855,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "WeldersMask",
    "inspect_rotation": [
     -0.0,
@@ -48208,8 +48944,10 @@
    },
    "firearm": {
     "automatic": false,
+    "brass": null,
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotPistol",
     "pellets": 6,
     "recoil_horizontal": 0.3,
     "recoil_horizontal_deviation": 0.0,
@@ -48219,12 +48957,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "gun_revolver_pistol_shot_01_Cue",
     "sound_radius": 60.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 0
    },
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "Winchester45",
    "inspect_rotation": [
     0.0,
@@ -48342,6 +49082,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "Winchester45Loader",
    "inspect_rotation": [
     0.0,
@@ -48450,6 +49191,7 @@
      3
     ]
    ],
+   "harvests": [],
    "id": "WinterCoat",
    "inspect_rotation": [
     -0.0,
@@ -48521,6 +49263,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "WireCutters",
    "inspect_rotation": [
     0.27059805,
@@ -48590,6 +49333,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "WolfHead",
    "inspect_rotation": [
     -0.0,
@@ -48660,6 +49404,7 @@
    "flashlight_intensity": 0.0,
    "fov": 16.0,
    "grids": [],
+   "harvests": [],
    "id": "WolfHeadMount",
    "inspect_rotation": [
     -0.0,
@@ -48729,6 +49474,7 @@
    "flashlight_intensity": 0.0,
    "fov": 33.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodPlank",
    "inspect_rotation": [
     0.18301271,
@@ -48799,6 +49545,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenCornerStairs",
    "inspect_rotation": [
     0.1227878,
@@ -48869,6 +49616,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenDoor1",
    "inspect_rotation": [
     0.0,
@@ -48941,6 +49689,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenDoor2",
    "inspect_rotation": [
     0.0,
@@ -49013,6 +49762,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenDoorway1",
    "inspect_rotation": [
     0.0,
@@ -49083,6 +49833,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenDoorway2",
    "inspect_rotation": [
     0.0,
@@ -49153,6 +49904,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenFence1",
    "inspect_rotation": [
     0.0,
@@ -49225,6 +49977,7 @@
    "flashlight_intensity": 0.0,
    "fov": 11.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenFence2",
    "inspect_rotation": [
     0.0,
@@ -49297,6 +50050,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenFloor",
    "inspect_rotation": [
     0.1227878,
@@ -49367,6 +50121,7 @@
    "flashlight_intensity": 0.0,
    "fov": 31.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenFoundation",
    "inspect_rotation": [
     -0.0,
@@ -49437,6 +50192,7 @@
    "flashlight_intensity": 0.0,
    "fov": 26.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenGable45",
    "inspect_rotation": [
     0.0,
@@ -49507,6 +50263,7 @@
    "flashlight_intensity": 0.0,
    "fov": 26.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenGable45Top",
    "inspect_rotation": [
     0.0,
@@ -49577,6 +50334,7 @@
    "flashlight_intensity": 0.0,
    "fov": 59.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenGate",
    "inspect_rotation": [
     0.0,
@@ -49649,6 +50407,7 @@
    "flashlight_intensity": 0.0,
    "fov": 25.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenHalfFloor",
    "inspect_rotation": [
     0.1227878,
@@ -49719,6 +50478,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenHalfFoundation",
    "inspect_rotation": [
     0.1227878,
@@ -49789,6 +50549,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenHalfMidWall1",
    "inspect_rotation": [
     0.0,
@@ -49859,6 +50620,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenHalfMidWall2",
    "inspect_rotation": [
     0.0,
@@ -49929,6 +50691,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenHalfMidShort1",
    "inspect_rotation": [
     0.0,
@@ -49999,6 +50762,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenHalfMidShort2",
    "inspect_rotation": [
     0.0,
@@ -50069,6 +50833,7 @@
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenHalfStairs",
    "inspect_rotation": [
     0.1227878,
@@ -50139,6 +50904,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenHalfWall1",
    "inspect_rotation": [
     0.0,
@@ -50209,6 +50975,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenHalfWall2",
    "inspect_rotation": [
     0.0,
@@ -50278,6 +51045,7 @@
    "flashlight_intensity": 0.0,
    "fov": 19.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenLog",
    "inspect_rotation": [
     -0.70710677,
@@ -50348,6 +51116,7 @@
    "flashlight_intensity": 0.0,
    "fov": 14.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenQuarterFloor",
    "inspect_rotation": [
     0.1227878,
@@ -50418,6 +51187,7 @@
    "flashlight_intensity": 0.0,
    "fov": 15.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenQuarterFoundation",
    "inspect_rotation": [
     0.1227878,
@@ -50488,6 +51258,7 @@
    "flashlight_intensity": 0.0,
    "fov": 50.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenRoof",
    "inspect_rotation": [
     0.033782665,
@@ -50558,6 +51329,7 @@
    "flashlight_intensity": 0.0,
    "fov": 60.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenRoofCorner",
    "inspect_rotation": [
     0.0,
@@ -50628,6 +51400,7 @@
    "flashlight_intensity": 0.0,
    "fov": 40.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenRoofTop",
    "inspect_rotation": [
     0.0,
@@ -50698,6 +51471,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenTriangularFloor",
    "inspect_rotation": [
     0.1227878,
@@ -50768,6 +51542,7 @@
    "flashlight_intensity": 0.0,
    "fov": 30.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenTriangularFoundation",
    "inspect_rotation": [
     0.1227878,
@@ -50838,6 +51613,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenWall1",
    "inspect_rotation": [
     0.0,
@@ -50908,6 +51684,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenWall2",
    "inspect_rotation": [
     0.0,
@@ -50978,6 +51755,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenWallMid1",
    "inspect_rotation": [
     0.0,
@@ -51048,6 +51826,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenWallMid2",
    "inspect_rotation": [
     0.0,
@@ -51118,6 +51897,7 @@
    "flashlight_intensity": 0.0,
    "fov": 24.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenWallShort1",
    "inspect_rotation": [
     0.0,
@@ -51188,6 +51968,7 @@
    "flashlight_intensity": 0.0,
    "fov": 24.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenWallShort2",
    "inspect_rotation": [
     0.0,
@@ -51258,6 +52039,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenWindow1",
    "inspect_rotation": [
     0.0,
@@ -51328,6 +52110,7 @@
    "flashlight_intensity": 0.0,
    "fov": 28.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenWindow2",
    "inspect_rotation": [
     0.0,
@@ -51398,6 +52181,7 @@
    "flashlight_intensity": 0.0,
    "fov": 10.0,
    "grids": [],
+   "harvests": [],
    "id": "WoodenWindowBarricade",
    "inspect_rotation": [
     0.0,
@@ -51495,6 +52279,7 @@
    "flashlight_intensity": 0.0,
    "fov": 13.0,
    "grids": [],
+   "harvests": [],
    "id": "WorkBoots",
    "inspect_rotation": [
     -0.0,
@@ -51583,8 +52368,10 @@
    },
    "firearm": {
     "automatic": true,
+    "brass": "RifleBrass",
     "chamber_sound": null,
     "malfunction_chance": 0.025,
+    "muzzle_flash": "FX_GunshotSuppressedRifle",
     "pellets": 6,
     "recoil_horizontal": 0.3,
     "recoil_horizontal_deviation": 0.025,
@@ -51594,12 +52381,14 @@
     "reset_recoil_divider": 1.5,
     "sound": "AR_Single_Shot__Suppressed__Cue",
     "sound_radius": 10.0,
+    "suppressed_muzzle_flash": null,
     "suppressed_sound": null,
     "type": 2
    },
    "flashlight_intensity": 0.0,
    "fov": 35.0,
    "grids": [],
+   "harvests": [],
    "id": "XM250",
    "inspect_rotation": [
     0.0,
@@ -51731,6 +52520,7 @@
    "flashlight_intensity": 0.0,
    "fov": 7.0,
    "grids": [],
+   "harvests": [],
    "id": "XM250BoxMag",
    "inspect_rotation": [
     0.0,

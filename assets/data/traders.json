@@ -1,0 +1,2016 @@
+{
+ "classes": {
+  "BP_BlackMarketTrader_C": {
+   "amount": 500.0,
+   "beard": [],
+   "currency": "DA_Money",
+   "dialogue": {
+    "lines": [
+     "You better have some some cash...",
+     "It took me a long time to get this here...",
+     "I've had to bend some rules, but I've got some stuff from far away..."
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [],
+        "events": [
+         "Event_OnInteractNPC"
+        ],
+        "line": null,
+        "next": []
+       }
+      ],
+      "text": "What are you selling?",
+      "trade": true
+     },
+     {
+      "branches": [],
+      "text": "Goodbye.",
+      "trade": false
+     }
+    ],
+    "speaker": "Black Market Trader"
+   },
+   "grid": [
+    13,
+    10
+   ],
+   "hair": [],
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Characters/SK_Chr_Contractor_Male_02",
+   "name": "Black Market Trader",
+   "pool": [
+    300.0,
+    600.0
+   ],
+   "resell": false,
+   "selling": false,
+   "table": "Level1BlackMarketTrader"
+  },
+  "BP_BooksTrader_C": {
+   "amount": 500.0,
+   "beard": [],
+   "currency": "DA_Money",
+   "dialogue": {
+    "lines": [
+     "I've got the books you need to learn a new skill today.",
+     "Even in the apocalypse, reading is still important.",
+     "All the knowledge you need!"
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [],
+        "events": [
+         "Event_OnInteractNPC"
+        ],
+        "line": null,
+        "next": []
+       }
+      ],
+      "text": "What are you selling?",
+      "trade": true
+     },
+     {
+      "branches": [],
+      "text": "Goodbye.",
+      "trade": false
+     }
+    ],
+    "speaker": "Books Trader"
+   },
+   "grid": [
+    13,
+    10
+   ],
+   "hair": [
+    "SurrounDead/Content/PlayerModel/Hair/HairMesh/Chr_FemaleHair5",
+    "SurrounDead/Content/PlayerModel/Hair/HairMesh/Chr_FemaleHair4"
+   ],
+   "mesh": "SurrounDead/Content/Meshes/PlayerModels/NotInUseATM/SK_Chr_Musician_Female_01",
+   "name": "Books Trader",
+   "pool": [
+    300.0,
+    600.0
+   ],
+   "resell": false,
+   "selling": false,
+   "table": "Level1BookTrader"
+  },
+  "BP_EquipmentAndWeaponsItemTrader_C": {
+   "amount": 500.0,
+   "beard": [],
+   "currency": "DA_Money",
+   "dialogue": {
+    "lines": [
+     "Get all the equipment you need right here!",
+     "You've come to buy and I'm here to sell what you need!",
+     "We've had some good scavenging runs, come take a look."
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [],
+        "events": [
+         "Event_OnInteractNPC"
+        ],
+        "line": null,
+        "next": []
+       }
+      ],
+      "text": "What are you selling?",
+      "trade": true
+     },
+     {
+      "branches": [],
+      "text": "Goodbye.",
+      "trade": false
+     }
+    ],
+    "speaker": "Equipment Trader"
+   },
+   "grid": [
+    13,
+    30
+   ],
+   "hair": [],
+   "mesh": "SurrounDead/Content/Meshes/PlayerModels/AI/SK_Chr_Cool_Male_01_AI",
+   "name": "Equipment & Weapons Trader",
+   "pool": [
+    300.0,
+    600.0
+   ],
+   "resell": true,
+   "selling": true,
+   "table": "Level1WeaponsEquipmentTrader"
+  },
+  "BP_MasterTrader_C": {
+   "amount": 700.0,
+   "beard": [],
+   "currency": "DA_Money",
+   "dialogue": {
+    "lines": [
+     "I don't want no trouble... But I do have stuff to sell.",
+     "Over here, I've got stuff you need survivor.",
+     "A selection of things to buy, come have a look.",
+     "What're ya buyin'?"
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [],
+        "events": [
+         "Event_OnInteractNPC"
+        ],
+        "line": null,
+        "next": []
+       }
+      ],
+      "text": "What are you selling?",
+      "trade": true
+     },
+     {
+      "branches": [],
+      "text": "Goodbye.",
+      "trade": false
+     }
+    ],
+    "speaker": "Wandering Trader"
+   },
+   "grid": [
+    13,
+    15
+   ],
+   "hair": [],
+   "mesh": null,
+   "name": "Wandering Trader",
+   "pool": [
+    500.0,
+    800.0
+   ],
+   "resell": false,
+   "selling": true,
+   "table": "WanderingTraderEquipment",
+   "wandering": true
+  },
+  "BP_MaterialsTrader_C": {
+   "amount": 500.0,
+   "beard": [],
+   "currency": "DA_Money",
+   "dialogue": {
+    "lines": [
+     "I'm saving you the work from having to get this stuff yourself... you hear me?",
+     "Materials for your crafting requirements.",
+     "Materials to help you on the road and further."
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [],
+        "events": [
+         "Event_OnInteractNPC"
+        ],
+        "line": null,
+        "next": []
+       }
+      ],
+      "text": "What are you selling?",
+      "trade": true
+     },
+     {
+      "branches": [],
+      "text": "Goodbye.",
+      "trade": false
+     }
+    ],
+    "speaker": "Materials Trader"
+   },
+   "grid": [
+    13,
+    30
+   ],
+   "hair": [],
+   "mesh": "SurrounDead/Content/Meshes/PlayerModels/NotInUseATM/SK_Chr_Builder_Singlet_01",
+   "name": "Materials Trader",
+   "pool": [
+    300.0,
+    600.0
+   ],
+   "resell": true,
+   "selling": true,
+   "table": "Level1MaterialsTrader"
+  },
+  "BP_MedicalTrader_C": {
+   "amount": 500.0,
+   "beard": [],
+   "currency": "DA_Money",
+   "dialogue": {
+    "lines": [
+     "Everything you need to get yourself patched up.",
+     "You look a bit hurt. I can fix that.",
+     "The bandages have an expiry date. . . Wait you didn't hear that."
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [],
+        "events": [
+         "Event_OnInteractNPC"
+        ],
+        "line": null,
+        "next": []
+       }
+      ],
+      "text": "What are you selling?",
+      "trade": true
+     },
+     {
+      "branches": [],
+      "text": "Goodbye.",
+      "trade": false
+     }
+    ],
+    "speaker": "Medical Trader"
+   },
+   "grid": [
+    13,
+    30
+   ],
+   "hair": [
+    "SurrounDead/Content/PlayerModel/Hair/HairMesh/Chr_FemaleHair1",
+    "SurrounDead/Content/PlayerModel/Hair/HairMesh/Chr_FemaleHair2",
+    "SurrounDead/Content/PlayerModel/Hair/HairMesh/Chr_FemaleHair4",
+    "SurrounDead/Content/PlayerModel/Hair/HairMesh/Chr_FemaleHair7"
+   ],
+   "mesh": "SurrounDead/Content/Meshes/PlayerModels/NotInUseATM/SK_Chr_MercenaryFemale_01",
+   "name": "Medical Trader",
+   "pool": [
+    300.0,
+    600.0
+   ],
+   "resell": true,
+   "selling": true,
+   "table": "Level1MedicalTrader"
+  },
+  "BP_MilitaryTrader_C": {
+   "amount": 500.0,
+   "beard": [],
+   "currency": "DA_Money",
+   "dialogue": {
+    "lines": [
+     "You better have some items to trade.",
+     "We're always around, come find us.",
+     "This is all we've got, we're spread thin now due to 'The Coyotes'."
+    ],
+    "replies": [],
+    "speaker": "Military Trader"
+   },
+   "grid": [
+    13,
+    15
+   ],
+   "hair": [],
+   "mesh": "SurrounDead/Content/PolygonFiles/PolygonApocalypse/Meshes/Characters/SK_Chr_Soldier_Male_01",
+   "name": "Military Trader",
+   "pool": [
+    300.0,
+    600.0
+   ],
+   "resell": false,
+   "selling": false,
+   "table": "MilitaryTrader"
+  },
+  "BP_QuestGiver_SettlementOfficer_C": {
+   "amount": 0.0,
+   "argument": "",
+   "beard": [],
+   "currency": null,
+   "dialogue": {
+    "lines": [
+     "Hey. I've got some intel you may want. 2500 cash a piece. You got that much?"
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [
+         {
+          "class": "Condition_CheckMoney",
+          "currency": "DA_Money",
+          "not": false,
+          "price": 2500
+         }
+        ],
+        "events": [
+         "Event_RandomLaptopQuest"
+        ],
+        "line": null,
+        "next": [
+         {
+          "conditions": [],
+          "events": [],
+          "line": "I've marked the location on your GPS.",
+          "next": [
+           {
+            "conditions": [],
+            "events": [],
+            "line": "Go out and find it. Good luck.",
+            "next": []
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "conditions": [
+         {
+          "class": "Condition_CheckMoney",
+          "currency": "DA_Money",
+          "not": true,
+          "price": 2500
+         }
+        ],
+        "events": [],
+        "line": null,
+        "next": [
+         {
+          "conditions": [],
+          "events": [],
+          "line": "It doesn't look like you have the right amount of cash yet.",
+          "next": [
+           {
+            "conditions": [],
+            "events": [],
+            "line": "Make sure to come back when you can pay up.",
+            "next": []
+           }
+          ]
+         }
+        ]
+       }
+      ],
+      "text": "What intel do you have? (2500 Cash)",
+      "trade": false
+     },
+     {
+      "branches": [],
+      "text": "I'm busy at the moment.",
+      "trade": false
+     }
+    ],
+    "speaker": "Settlement Officer"
+   },
+   "grid": [
+    0,
+    0
+   ],
+   "gun": "SurrounDead/Content/PolygonFiles/PolygonBattleRoyale/Meshes/Weapons/SK_Wep_Pistol_Revolver_01",
+   "hair": [],
+   "mesh": "SurrounDead/Content/Meshes/PlayerModels/SK_Chr_Sheriff_Male_01",
+   "name": "Settlement Officer",
+   "pool": [
+    0.0,
+    0.0
+   ],
+   "quest_giver": true,
+   "resell": false,
+   "selling": false,
+   "table": null
+  },
+  "BP_SafeZoneTrader_C": {
+   "amount": 500.0,
+   "beard": [
+    "SurrounDead/Content/PlayerModel/Hair/Beard/Chr_Beard1",
+    "SurrounDead/Content/PlayerModel/Hair/Beard/Chr_Goatee2",
+    "SurrounDead/Content/PlayerModel/Hair/Beard/Chr_Moustache1",
+    null
+   ],
+   "currency": "DA_Money",
+   "dialogue": {
+    "lines": [
+     "I've got all the goods you need!",
+     "A multitude of items for you to pick from.",
+     "I hope I can supply you with what you need most."
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [],
+        "events": [
+         "Event_OnInteractNPC"
+        ],
+        "line": null,
+        "next": []
+       }
+      ],
+      "text": "What are you selling?",
+      "trade": true
+     },
+     {
+      "branches": [],
+      "text": "Goodbye.",
+      "trade": false
+     }
+    ],
+    "speaker": "Safe Zone Trader"
+   },
+   "grid": [
+    13,
+    30
+   ],
+   "hair": [],
+   "mesh": "SurrounDead/Content/Meshes/PlayerModels/AI/SK_Chr_Homeless_Male_AI",
+   "name": "Supplies Trader",
+   "pool": [
+    300.0,
+    600.0
+   ],
+   "resell": true,
+   "selling": true,
+   "table": "Level1SuppliesTrader"
+  },
+  "BP_ShakesConesTrader_C": {
+   "amount": 500.0,
+   "beard": [],
+   "currency": "DA_Credits",
+   "dialogue": {
+    "lines": [
+     "Welcome!",
+     "Don't ask me where I found all this stuff, you may not like the answer...",
+     "I'm always where you least expect it..."
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [],
+        "events": [
+         "Event_OnInteractNPC"
+        ],
+        "line": null,
+        "next": []
+       }
+      ],
+      "text": "What are you selling?",
+      "trade": true
+     },
+     {
+      "branches": [],
+      "text": "Uhh... goodbye.",
+      "trade": false
+     }
+    ],
+    "speaker": "Shakes Cones Trader"
+   },
+   "grid": [
+    13,
+    15
+   ],
+   "hair": [
+    "SurrounDead/Content/PolygonFiles/PolygonHeist/Meshes/Items/SM_Item_Mask_Clown_01"
+   ],
+   "mesh": "SurrounDead/Content/Meshes/PlayerModels/SK_Chr_Hunter_Male_01",
+   "name": "Shakes Cones Trader",
+   "pool": [
+    300.0,
+    600.0
+   ],
+   "resell": false,
+   "selling": false,
+   "table": "ShakesConesShop"
+  },
+  "BP_SuppliesTrader_C": {
+   "amount": 500.0,
+   "beard": [],
+   "currency": "DA_Money",
+   "dialogue": {
+    "lines": [
+     "I was able to scavenge these around The Valley. I hope you can make good use of them.",
+     "We've had some good scavenging runs. Now come and see what we got!",
+     "The supplies you need right here!"
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [],
+        "events": [
+         "Event_OnInteractNPC"
+        ],
+        "line": null,
+        "next": []
+       }
+      ],
+      "text": "What are you selling?",
+      "trade": true
+     },
+     {
+      "branches": [],
+      "text": "Goodbye.",
+      "trade": false
+     }
+    ],
+    "speaker": "Supplies Trader"
+   },
+   "grid": [
+    13,
+    30
+   ],
+   "hair": [],
+   "mesh": "SurrounDead/Content/Meshes/PlayerModels/AI/SK_Chr_Islander_Male_01_AI",
+   "name": "Supplies Trader",
+   "pool": [
+    300.0,
+    600.0
+   ],
+   "resell": false,
+   "selling": true,
+   "table": "Level1SuppliesTrader"
+  },
+  "BP_VehicleTrader_C": {
+   "amount": 500.0,
+   "beard": [
+    "SurrounDead/Content/PlayerModel/Hair/Beard/Chr_Moustache1"
+   ],
+   "currency": "DA_Money",
+   "dialogue": {
+    "lines": [
+     "The vehicles may be damaged, but they work.",
+     "I promise you they all work...",
+     "Vehicles from across 'The Valley'. Come get your very own here!"
+    ],
+    "replies": [
+     {
+      "branches": [
+       {
+        "conditions": [],
+        "events": [
+         "Event_OnInteractNPC"
+        ],
+        "line": null,
+        "next": []
+       }
+      ],
+      "text": "What vehicles are you selling?",
+      "trade": true
+     },
+     {
+      "branches": [],
+      "text": "Goodbye.",
+      "trade": false
+     }
+    ],
+    "speaker": "Trader"
+   },
+   "grid": [
+    13,
+    6
+   ],
+   "hair": [
+    "SurrounDead/Content/PlayerModel/Hair/HairMesh/Chr_MaleHair5"
+   ],
+   "mesh": "SurrounDead/Content/Meshes/PlayerModels/NotInUseATM/SK_Chr_Jacket_Male_01",
+   "name": "Vehicle Trader",
+   "pool": [
+    300.0,
+    600.0
+   ],
+   "resell": false,
+   "selling": false,
+   "table": "Level1VehicleTrader"
+  }
+ },
+ "tables": {
+  "Level1BlackMarketTrader": [
+   {
+    "chance": 100.0,
+    "item": "DA_Credits",
+    "max": 10,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_Credits",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_Level0Keycard",
+    "max": 2,
+    "min": 1
+   },
+   {
+    "chance": 25.0,
+    "item": "DA_Level1Keycard",
+    "max": 2,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_Tier2LootBox",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 20.0,
+    "item": "DA_Tier3LootBox",
+    "max": 2,
+    "min": 1
+   }
+  ],
+  "Level1BookTrader": [
+   {
+    "chance": 50.0,
+    "item": "DA_FirstAidBook",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_FirstAidMagazine",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_FishingBook",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_FishingMagazine",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_FitnessBook",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_FitnessMagazine",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_MarksmanshipBook",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_MarksmanshipMagazine",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_ReloadingBook",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_ReloadingMagazine",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_SneakingBook",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_SneakingMagazine",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_StrengthBook",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_StrengthMagazine",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_ThiefBook",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_ThiefMagazine",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_ToughnessBook",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_ToughnessMagazine",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_ScavengingBook",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_ScavengingMagazine",
+    "max": 1,
+    "min": 1
+   }
+  ],
+  "Level1MaterialsTrader": [
+   {
+    "chance": 75.0,
+    "item": "DA_BagOfConcrete",
+    "max": 25,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_ElectronicParts",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ElectronicWire",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_Gunpowder",
+    "max": 50,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Plastic",
+    "max": 50,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_Rock",
+    "max": 50,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Rope",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_ScrapMetal",
+    "max": 50,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_SparkPlug",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Tape",
+    "max": 25,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_WoodenLog",
+    "max": 50,
+    "min": 1
+   }
+  ],
+  "Level1MedicalTrader": [
+   {
+    "chance": 100.0,
+    "item": "DA_SmallMedkit",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_LargeMedkit",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_Bandages",
+    "max": 10,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_Painkillers",
+    "max": 10,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_RadiationPills",
+    "max": 10,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_Splint",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_BottleOfAlcohol",
+    "max": 25,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_CharcoalTablets",
+    "max": 25,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_WaterPurificationTablets",
+    "max": 25,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_BottleOfAntiseptic",
+    "max": 25,
+    "min": 1
+   }
+  ],
+  "Level1SuppliesTrader": [
+   {
+    "chance": 100.0,
+    "item": "DA_12GaugeAmmo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_308Ammo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_9mmAmmo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_45ACPAmmo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_556Ammo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_762Ammo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_WeaponCleaningKit",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ArmorRepairKit",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Painkillers",
+    "max": 3,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_SmallMedkit",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_CannedBakedBeans",
+    "max": 3,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_CannedTuna",
+    "max": 3,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_Splint",
+    "max": 3,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_EnergyBar",
+    "max": 3,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_WaterBottle",
+    "max": 3,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_EnergyBottle",
+    "max": 3,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_FilterMask",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_Binoculars",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_Flashlight",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_Level0Keycard",
+    "max": 2,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_CanOpener",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_Lockpick",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_BoltCutters",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_WireCutters",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_FiremansAxe",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_G18",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_PumpActionShotgun",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_KrissVector",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_HuntingRifle",
+    "max": 1,
+    "min": 1
+   }
+  ],
+  "Level1VehicleTrader": [
+   {
+    "chance": 100.0,
+    "item": "DA_GasCan",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_VehicleRepairKit",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_GasCan",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_VehicleRepairKit",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_GasCan",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_VehicleRepairKit",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_GasCan",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_VehicleRepairKit",
+    "max": 1,
+    "min": 1
+   }
+  ],
+  "Level1WeaponsEquipmentTrader": [
+   {
+    "chance": 100.0,
+    "item": "DA_12GaugeAmmo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_308Ammo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_9mmAmmo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_45ACPAmmo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_556Ammo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_762Ammo",
+    "max": 100,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_CivilianNVG",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_556Mag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_762Mag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_556Mag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_762Mag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_MilitarySuppressor",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_MuzzleBrake",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_HolographicSight",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_2xAimpointScope",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_DryBag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 65.0,
+    "item": "DA_DuffleBag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_SmallSurvivalBackpack",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_HikingBackpack",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_HikingBackpack2",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_HikingBackpack3",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_FishingRod",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_HuntersVest",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_WeaponsCase",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_Flashlight",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_BaseballBat",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_IceAxe",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_FiremansAxe",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_M9",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_Winchester45",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_KrissVector",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 60.0,
+    "item": "DA_HuntingRifle",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_FNFal",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_M4CQB",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_AK74",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 50.0,
+    "item": "DA_PumpActionShotgun",
+    "max": 1,
+    "min": 1
+   }
+  ],
+  "MilitaryTrader": [
+   {
+    "chance": 100.0,
+    "item": "DA_12GaugeAmmo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_308Ammo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_9mmAmmo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_45ACPAmmo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_556Ammo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_762Ammo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_40mmGrenade",
+    "max": 12,
+    "min": 6
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_556Mag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_556DrumMag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_9mmDrumMag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_CompactForegrip",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitarySuppressor",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ShotgunSuppressor",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Acog4x32Scope",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_TacticalLaserLightCombo",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_RangeFinder",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MRE",
+    "max": 5,
+    "min": 3
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitaryNVG",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitaryGradeBinoculars",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitaryRespirator",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_RadiationFilter",
+    "max": 5,
+    "min": 2
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryTacticalHelmet",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_CoyoteBackpack",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryBackpack",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryPlateCarrier",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryGloves",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryBoots",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryJacket",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryPants",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_M9",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_AR15",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_CR308",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_M249",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MP5",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_M2010",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitaryTacticalHelmet2",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitaryTacticalHelmet3",
+    "max": 1,
+    "min": 1
+   }
+  ],
+  "ShakesConesShop": [
+   {
+    "chance": 75.0,
+    "item": "DA_HeavyMilitaryBodyArmor",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_HeavyMilitaryBodyArmor2",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_SpecOpsPlateCarrier",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_LargeCoyoteBackpack",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_HordeBeacon",
+    "max": 2,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Level0Keycard",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Level1Keycard",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Level2Keycard",
+    "max": 5,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Deadeye",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ColonelsRevenge",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Exterminator",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Valkyrie",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Cerberus",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_GrenadeLauncher",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MarksmansLegacy",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_DarkMachete",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_BlackOpsHelmet",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_BlackOpsPlateCarrier",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ColonelsRevengeAcog",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ColonelsRevengeDrumMag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ColonelsRevengeHoloSight",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ColonelsRevengeMag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ColonelsRevengeMuzzleBrake",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ColonelsRevengeSuppressor",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ExterminatorSight",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ExterminatorSuppressor",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ValkyrieAcog",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ValkyrieDrumMag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ValkyrieMag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ValkyrieMuzzleBrake",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ValkyrieSight",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ValkyrieSuppressor",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_CerberusMag",
+    "max": 1,
+    "min": 1
+   }
+  ],
+  "WanderingTraderEquipment": [
+   {
+    "chance": 100.0,
+    "item": "DA_12GaugeAmmo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_308Ammo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_9mmAmmo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_45ACPAmmo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_556Ammo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_762Ammo",
+    "max": 500,
+    "min": 50
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_40mmGrenade",
+    "max": 12,
+    "min": 6
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_556Mag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_556DrumMag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_9mmDrumMag",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_CompactForegrip",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitarySuppressor",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_ShotgunSuppressor",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_Acog4x32Scope",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_TacticalLaserLightCombo",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_RangeFinder",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MRE",
+    "max": 5,
+    "min": 3
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitaryNVG",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitaryGradeBinoculars",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitaryRespirator",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_RadiationFilter",
+    "max": 5,
+    "min": 2
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryTacticalHelmet",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_CoyoteBackpack",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryBackpack",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryPlateCarrier",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryGloves",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryBoots",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryJacket",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_MilitaryPants",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_M9",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 100.0,
+    "item": "DA_AR15",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_CR308",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_M249",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MP5",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_M2010",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitaryTacticalHelmet2",
+    "max": 1,
+    "min": 1
+   },
+   {
+    "chance": 75.0,
+    "item": "DA_MilitaryTacticalHelmet3",
+    "max": 1,
+    "min": 1
+   }
+  ],
+  "WanderingTraderMedical&Food": [],
+  "WanderingTraderSupplies": []
+ }
+}

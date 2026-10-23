@@ -41,7 +41,14 @@ pub enum Value {
 #[derive(Resource, Serialize, Deserialize, Default)]
 pub struct SettingsStore {
     pub values: HashMap<String, Value>,
+    /// The file's format: 2 saves only values that differ from their row's default, so a
+    /// default read from the game later (SD_GameInstance's 30 % vehicle chance) reaches existing
+    /// files. Files without it held every row, defaults and guessed fallbacks included.
+    #[serde(default)]
+    pub version: u32,
 }
+
+const VERSION: u32 = 2;
 
 impl SettingsStore {
     fn load() -> Self {
@@ -56,15 +63,38 @@ impl SettingsStore {
     }
 
     /// Give every row without a stored value its default, so [`Self::find`] sees the game's
-    /// starting values (a 30 min day, not 1).
+    /// starting values (a 30 min day, not 1). An old file's value that is just the guessed
+    /// fallback of a row that now has the game's own default gives way to it.
     pub fn fill_defaults(&mut self, data: &super::MenuData) {
+        let old = self.version < VERSION;
         for (group, pages) in [("settings", &data.settings), ("difficulty", &data.difficulty)] {
             for page in pages {
                 for row in page.rows.iter().filter(|r| !r.label.is_empty()) {
-                    self.values.entry(row_key(group, &page.name, &row.label)).or_insert_with(|| default_value(row));
+                    let key = row_key(group, &page.name, &row.label);
+                    if old && row.default.is_some() && self.values.get(&key) == Some(&fallback_value(row)) {
+                        self.values.remove(&key);
+                    }
+                    self.values.entry(key).or_insert_with(|| default_value(row));
                 }
             }
         }
+        self.version = VERSION;
+    }
+
+    /// What's saved: only values that differ from their row's default.
+    pub fn changed(&self, data: &super::MenuData) -> SettingsStore {
+        let mut values = self.values.clone();
+        for (group, pages) in [("settings", &data.settings), ("difficulty", &data.difficulty)] {
+            for page in pages {
+                for row in page.rows.iter().filter(|r| !r.label.is_empty()) {
+                    let key = row_key(group, &page.name, &row.label);
+                    if values.get(&key) == Some(&default_value(row)) {
+                        values.remove(&key);
+                    }
+                }
+            }
+        }
+        SettingsStore { values, version: VERSION }
     }
 
     /// `GameFunctionLibrary.ChangeDifficulty` -> `SetDifficulty`: write a `DT_Difficulty` preset
@@ -88,14 +118,21 @@ impl SettingsStore {
     }
 }
 
-/// The blueprints don't carry defaults (those live in config/CVars), so pick sensible ones.
+/// A row's starting value: the game's (menus.json `default`), else [`fallback_value`].
 fn default_value(row: &Row) -> Value {
+    match (row.kind, row.default) {
+        (RowKind::Check, Some(d)) => Value::Bool(d > 0.5),
+        (RowKind::Slider, Some(d)) => Value::Num(d),
+        _ => fallback_value(row),
+    }
+}
+
+/// The blueprints don't carry every default (some live in config/CVars), so pick sensible ones.
+fn fallback_value(row: &Row) -> Value {
     match row.kind {
-        RowKind::Check => Value::Bool(row.default.map_or(row.label.contains("ENABLED?"), |d| d > 0.5)),
+        RowKind::Check => Value::Bool(row.label.contains("ENABLED?")),
         RowKind::Slider => {
-            let v = if let Some(d) = row.default {
-                d
-            } else if row.cvar.as_deref().is_some_and(|c| c.starts_with("GameAudio")) {
+            let v = if row.cvar.as_deref().is_some_and(|c| c.starts_with("GameAudio")) {
                 row.max
             } else if row.label.contains("FIELD OF VIEW") {
                 90.0
@@ -134,8 +171,14 @@ fn format_value(row: &Row, v: Value) -> String {
     }
 }
 
-fn save_settings(store: Res<SettingsStore>) {
-    if let Ok(json) = serde_json::to_string_pretty(&*store) {
+fn save_settings(store: Res<SettingsStore>, data: Res<super::MenuData>) {
+    write(&store, &data);
+}
+
+/// Write `saves/settings.json` (what differs from the defaults, plus values outside the menus
+/// such as the map picker's Compass Marker?).
+pub fn write(store: &SettingsStore, data: &super::MenuData) {
+    if let Ok(json) = serde_json::to_string_pretty(&store.changed(data)) {
         let _ = std::fs::create_dir_all("saves");
         let _ = std::fs::write(SETTINGS_FILE, json);
     }
@@ -536,6 +579,28 @@ mod tests {
 
     fn data() -> super::super::MenuData {
         serde_json::from_str(&std::fs::read_to_string("assets/data/menus.json").unwrap()).unwrap()
+    }
+
+    #[test]
+    fn old_files_take_the_games_defaults_and_saves_keep_only_changes() {
+        let data = data();
+        let key = row_key("difficulty", "Vehicles", "VEHICLE SPAWN CHANCE %");
+        let day = row_key("difficulty", "General", "DAY LENGTH");
+        // An old file: every row stored, the vehicle chance at the old 1.0 guess.
+        let mut store = SettingsStore { values: HashMap::from([(key.clone(), Value::Num(1.0)), (day.clone(), Value::Num(45.0))]), version: 0 };
+        store.fill_defaults(&data);
+        assert_eq!(store.find(&key), Some(Value::Num(30.0)));
+        // A real choice survives.
+        assert_eq!(store.find(&day), Some(Value::Num(45.0)));
+        assert_eq!(store.version, VERSION);
+        // A new file's 1 % is the player's own and stays.
+        let mut store = SettingsStore { values: HashMap::from([(key.clone(), Value::Num(1.0))]), version: VERSION };
+        store.fill_defaults(&data);
+        assert_eq!(store.find(&key), Some(Value::Num(1.0)));
+        // Saving drops what equals the default.
+        let saved = store.changed(&data);
+        assert_eq!(saved.values.len(), 1);
+        assert_eq!(saved.values.get(&key), Some(&Value::Num(1.0)));
     }
 
     #[test]

@@ -50,6 +50,14 @@ pub enum Locomotion {
     CrouchAimRight,
     /// Sitting on the ground (IA_SitDown: SittingPlayer_Anim_Montage, looping).
     Sit,
+    /// In a vehicle's seat (Interact_GetInVehicle's A_Car_IdleShortened_Montage).
+    Drive,
+    /// Swimming (BS1D_Swimming by speed: still, 300, 600 cm/s) and under water
+    /// (BS1D_SwimmingUnderWater: still, moving).
+    SwimIdle,
+    Swim,
+    SwimFast,
+    SwimUnder,
 }
 
 impl Locomotion {
@@ -86,14 +94,52 @@ pub enum ActionKind {
     Shoved,
     /// Throwing the Throwable slot's item (G): Throw_Montage.
     Throw,
+    /// Combat Roll (C): Roll_Montage, the whole body, its root motion moving the survivor.
+    Roll,
+    /// Vaulting (Jump at a wall, `gameplay::vault`): MQ_Climb_RM1_Montage up a tall wall,
+    Climb,
+    /// MQ_GettingUp_RM1_Montage onto a low, deep ledge,
+    GetUp,
+    /// MQ_Vault_RM1_Montage over a low, thin one,
+    VaultOver,
+    /// and MQ_JumpingDownFromWall_RM1_Montage off the far side of a tall, thin wall.
+    JumpDown,
+    /// Casting or reeling in the fishing rod: Crouch_MeleeAttack_Montage (animBatonAttack1).
+    Cast,
+    /// A zombie boss's swing: its AttackMontage on the UpperBody slot (`gameplay::bosses`).
+    Attack,
 }
 
 impl ActionKind {
-    /// Svr_Montage's play rate (the shoves run at 1.15).
+    /// Svr_Montage's play rate x the montage's RateScale (the shoves run at 1.15, Roll_Montage's
+    /// RateScale is 1.5).
     pub fn rate(self) -> f32 {
-        if self == ActionKind::Shove { 1.15 } else { 1.0 }
+        match self {
+            ActionKind::Shove => 1.15,
+            ActionKind::Roll => 1.5,
+            _ => 1.0,
+        }
+    }
+
+    /// Plays on the legs too (a montage on the full-body slot); the others are upper-body.
+    pub fn full_body(self) -> bool {
+        matches!(self, ActionKind::Roll | ActionKind::Climb | ActionKind::GetUp | ActionKind::VaultOver | ActionKind::JumpDown)
+    }
+
+    /// The vaulting montages' sequences (Content/Animations/).
+    pub fn parkour_clip(self) -> Option<&'static str> {
+        Some(match self {
+            ActionKind::Climb => "Anims/Parkour/MQ_Climb_RM1",
+            ActionKind::GetUp => "Anims/Parkour/MQ_GettingUp_RM1",
+            ActionKind::VaultOver => "Anims/Parkour/MQ_Vault_RM1",
+            ActionKind::JumpDown => "Anims/Parkour/MQ_JumpingDownFromWall_RM1",
+            _ => return None,
+        })
     }
 }
+
+/// The Roll sequence (Content/Animations/).
+pub const ROLL_CLIP: &str = "Anims/Parkour/Roll";
 
 /// Ask for an upper-body action: bump `serial` with a new `kind` to (re)start it.
 #[derive(Component, Default, Clone, Copy)]
@@ -132,6 +178,9 @@ pub enum AnimSet {
     Zombie(crate::gameplay::zombies::ZombieKind),
     /// `BP_Zombie_Dog` (`AnimBP_ZombieDog`, PolygonDog clips).
     Hound,
+    /// A trader: BP_TraderMaster's AnimBP_Trader, which only plays A_Idle (the children's
+    /// AnimToPlay is unused while the mesh has an anim class).
+    Trader,
 }
 
 /// Animations, keyed by stance; sets without stances use `Unarmed`.
@@ -156,6 +205,11 @@ impl AnimSet {
                 ((Unarmed, ClimbIdle), "Anims/Other/Anim_Regular_ladder_idle", true),
                 // SittingPlayer_Anim_Montage: its one section loops on itself (every stance).
                 ((Unarmed, Sit), "Player/Anims/Actions/SittingPlayer_Anim", true),
+                ((Unarmed, Drive), "Anims/No_Rifle/A_Car_IdleShortened", true),
+                ((Unarmed, SwimIdle), "Player/Anims/Swim/Anim_SwimIdle", true),
+                ((Unarmed, Swim), "Player/Anims/Swim/Anim_SlowSwim", true),
+                ((Unarmed, SwimFast), "Player/Anims/Swim/Anim_FastSwim", true),
+                ((Unarmed, SwimUnder), "Player/Anims/Swim/Anim_SwimUnderwater", true),
                 // BS_Crouch2D: the walk at every speed up to the crouch sprint's 420 cm/s.
                 ((Unarmed, CrouchIdle), "Anims/No_Rifle/A_Crouch_Idle", true),
                 ((Unarmed, CrouchWalk), "Anims/No_Rifle/A_Crouch_Walk", true),
@@ -215,17 +269,34 @@ impl AnimSet {
                 ((Melee, CrouchAimLeft), "Anims/MeleeCrouch/Crouch_Lt_Axe", true),
                 ((Melee, CrouchAimRight), "Anims/MeleeCrouch/Crouch_Rt_Axe", true),
             ],
+            AnimSet::Zombie(kind) if let Some(a) = kind.animal() => {
+                // AnimBP_<Animal>: its Locomotion1D by speed. AttackPlayer loops the AttackMontage;
+                // a corpse ragdolls (held in its last pose; the rabbit has a death montage).
+                let idle = zombie_clip(kind, 0.0);
+                let mut v = vec![
+                    ((Unarmed, Idle), idle, true),
+                    ((Unarmed, Walk), zombie_clip(kind, kind.roam_speed()), true),
+                    ((Unarmed, Run), zombie_clip(kind, kind.alert_speed()), true),
+                    ((Unarmed, Dead), a.death.as_deref().unwrap_or(idle), a.death.is_none()),
+                ];
+                if let Some(attack) = a.attacks.first() {
+                    v.push(((Unarmed, Attack), attack.as_str(), true));
+                }
+                v
+            }
             AnimSet::Zombie(kind) => vec![
                 ((Unarmed, Idle), zombie_clip(kind, 0.0), true),
                 ((Unarmed, Walk), zombie_clip(kind, kind.roam_speed()), true),
                 ((Unarmed, Run), zombie_clip(kind, kind.alert_speed()), true),
-                // BP_MasterZombie AttackMontage (every child, crawlers included).
-                ((Unarmed, Attack), "Zombie/Regular/Attacks/Anim_Zombie_attack1", true),
+                // BP_MasterZombie AttackMontage (every child, crawlers included); a boss swings
+                // on its upper body instead (ActionKind::Attack), this is for completeness.
+                ((Unarmed, Attack), kind.boss().and_then(|b| b.attack.as_deref()).unwrap_or("Zombie/Regular/Attacks/Anim_Zombie_attack1"), true),
                 // A two-frame held pose: repeated, or it ends inside the blend and the corpse
                 // drops back to the bind T-pose.
                 ((Unarmed, Dead), "Zombie/Regular/Other/Other/Zombie_DeathPosition", true),
             ],
             // ZombieDogAILocomotion (0 / 100 / 600 cm/s), AS_Dog_Attack_Bite_Montage, death.
+            AnimSet::Trader => vec![((Unarmed, Idle), "Anims/No_Rifle/A_Idle", true)],
             AnimSet::Hound => vec![
                 ((Unarmed, Idle), "../PolygonFiles/PolygonDog/Animation/Locomotion/AS_Dog_Locomotion_Standing", true),
                 ((Unarmed, Walk), "../PolygonFiles/PolygonDog/Animation/Locomotion/AS_Dog_Locomotion_Walking", true),
@@ -233,6 +304,16 @@ impl AnimSet {
                 ((Unarmed, Attack), "../PolygonFiles/PolygonDog/Animation/Attack/AS_Dog_Attack_Bite", true),
                 ((Unarmed, Dead), "../PolygonFiles/PolygonDog/Animation/Death/AS_Dog_Death_Standing", false),
             ],
+        }
+    }
+
+    /// Four-legged (the hound, the animals): their montages play on the whole body, as the
+    /// survivor's upper/lower split means nothing for them.
+    pub fn quadruped(self) -> bool {
+        match self {
+            AnimSet::Hound => true,
+            AnimSet::Zombie(kind) => kind.animal().is_some(),
+            AnimSet::Survivor | AnimSet::Trader => false,
         }
     }
 
@@ -271,10 +352,24 @@ impl AnimSet {
                 ((Melee, Throw), "Player/Anims/Actions/Throw"),
                 ((Rifle, Throw), "Player/Anims/Actions/Throw"),
                 ((Pistol, Throw), "Player/Anims/Actions/Throw"),
-            ],
+                // Crouch_MeleeAttack_Montage's sequence (the fishing rod's cast and reel).
+                ((Melee, Cast), "Anims/Melee/animBatonAttack1"),
+                ((Unarmed, Roll), ROLL_CLIP),
+                ((Melee, Roll), ROLL_CLIP),
+                ((Rifle, Roll), ROLL_CLIP),
+                ((Pistol, Roll), ROLL_CLIP),
+            ]
+            .into_iter()
+            .chain([Climb, GetUp, VaultOver, JumpDown].into_iter().flat_map(|k| [Unarmed, Melee, Rifle, Pistol].map(|st| ((st, k), k.parkour_clip().unwrap_or_default()))))
+            .collect(),
+            // The animals' HitAnimation (the first; wolves pick one of four).
+            AnimSet::Zombie(kind) if let Some(a) = kind.animal() => a.hits.first().map(|h| ((Unarmed, Hit), h.as_str())).into_iter().collect(),
+            // BP_ZombieBoss has no HitAnimation or ShovedAnimation, only its AttackMontage.
+            AnimSet::Zombie(kind) if let Some(b) = kind.boss() => b.attack.as_deref().map(|a| ((Unarmed, Attack), a)).into_iter().collect(),
             AnimSet::Zombie(_) => vec![((Unarmed, Hit), "Zombie/Regular/Other/Other/Anim_Zombie_hit"), ((Unarmed, Shoved), "Zombie/ZombieAnims/Zombie_HitReact_Head")],
             // HitAnimation: AS_Dog_Attack_Hit_Montage.
             AnimSet::Hound => vec![((Unarmed, Hit), "../PolygonFiles/PolygonDog/Animation/Attack/AS_Dog_Attack_Hit")],
+            AnimSet::Trader => Vec::new(),
         }
     }
 }
@@ -287,7 +382,7 @@ fn zombie_clip(kind: crate::gameplay::zombies::ZombieKind, speed: f32) -> &'stat
     samples
         .iter()
         .min_by(|a, b| (a.1 - speed).abs().total_cmp(&(b.1 - speed).abs()))
-        .and_then(|(clip, _)| clip.strip_prefix("Animations/"))
+        .map(|(clip, _)| clip.as_str())
         .unwrap_or(fallback)
 }
 
@@ -410,7 +505,53 @@ impl BonePose {
 
 /// A clip, its timing and the bones it keys.
 fn load_clip(path: &str) -> Option<(AnimationClip, ClipTiming, Vec<String>)> {
+    load_clip_with(path, false)
+}
+
+/// The Root bone's travel along its forward (+Z) axis through a root-motion clip: (fps, metres
+/// at each frame, from the first).
+pub fn root_forward(path: &str) -> Option<(f32, Vec<f32>)> {
     let file: AnimFile = serde_json::from_str(&std::fs::read_to_string(format!("{ANIM_DIR}/{path}.anim.json")).ok()?).ok()?;
+    let t = &file.bones.get("Root")?.t;
+    let z0 = t.first()?[2];
+    Some((file.fps, t.iter().map(|v| v[2] - z0).collect()))
+}
+
+/// The Root bone's travel through a root-motion clip in the model's space (+Z forward, +Y up):
+/// (fps, the clip's RateScale, the offset at each frame from the first).
+pub fn root_motion(path: &str) -> Option<(f32, f32, Vec<Vec3>)> {
+    let file: AnimFile = serde_json::from_str(&std::fs::read_to_string(format!("{ANIM_DIR}/{path}.anim.json")).ok()?).ok()?;
+    let t = &file.bones.get("Root")?.t;
+    let o = Vec3::from_array(*t.first()?);
+    Some((file.fps, file.rate, t.iter().map(|v| Vec3::from_array(*v) - o).collect()))
+}
+
+/// [`root_motion`]'s offset `secs` into the clip (clamped).
+pub fn sample_motion(fps: f32, track: &[Vec3], secs: f32) -> Vec3 {
+    let f = (secs * fps).max(0.0);
+    let (i, a) = (f.floor() as usize, f.fract());
+    match track.len() {
+        0 => Vec3::ZERO,
+        n => track[i.min(n - 1)].lerp(track[(i + 1).min(n - 1)], a),
+    }
+}
+
+/// Sample [`root_forward`]'s track `secs` into the clip (clamped).
+pub fn sample_track(fps: f32, track: &[f32], secs: f32) -> f32 {
+    let f = (secs * fps).max(0.0);
+    let (i, a) = (f.floor() as usize, f.fract());
+    match track.len() {
+        0 => 0.0,
+        n => track[i.min(n - 1)] + (track[(i + 1).min(n - 1)] - track[i.min(n - 1)]) * a,
+    }
+}
+
+/// [`load_clip`], with the Root bone's translation held at its first key when `lock_root`.
+fn load_clip_with(path: &str, lock_root: bool) -> Option<(AnimationClip, ClipTiming, Vec<String>)> {
+    let mut file: AnimFile = serde_json::from_str(&std::fs::read_to_string(format!("{ANIM_DIR}/{path}.anim.json")).ok()?).ok()?;
+    if lock_root && let Some(root) = file.bones.get_mut("Root") {
+        root.t.truncate(1);
+    }
     let mut clip = AnimationClip::default();
     let times = |n: usize| -> Vec<f32> { (0..n).map(|i| if n > 1 { i as f32 / file.fps } else { 0.0 }).collect() };
     for (bone, keys) in &file.bones {
@@ -459,7 +600,8 @@ struct LocoNodes {
 struct SetGraph {
     graph: Handle<AnimationGraph>,
     nodes: HashMap<Key, LocoNodes>,
-    actions: HashMap<(Stance, ActionKind), (AnimationNodeIndex, f32)>,
+    /// Each action's upper-body node, its lower-body node (full-body actions) and length.
+    actions: HashMap<(Stance, ActionKind), (AnimationNodeIndex, Option<AnimationNodeIndex>, f32)>,
 }
 
 impl SetGraph {
@@ -508,9 +650,16 @@ impl AnimLibrary {
                 let upper = layered.then(|| graph.add_clip_with_mask(clip, 1 << LOWER, 1.0, graph.root));
                 nodes.insert(key, LocoNodes { lower, upper, looped, timing });
             }
+            let mut locked: HashMap<&str, Handle<AnimationClip>> = HashMap::new();
             for (key, path) in set.actions() {
                 let Some((clip, timing)) = load(path, clips) else { continue };
-                actions.insert(key, (graph.add_clip_with_mask(clip, 1 << LOWER, 1.0, graph.root), timing.duration));
+                // Full-body: the legs play it too, with the root's travel left to the body (UE's
+                // root motion moves the capsule, not the mesh).
+                let lower = (key.1.full_body() || set.quadruped()).then(|| {
+                    let c = locked.entry(path).or_insert_with(|| clips.add(load_clip_with(path, true).map(|c| c.0).unwrap_or_default())).clone();
+                    graph.add_clip_with_mask(c, 1 << UPPER, 1.0, graph.root)
+                });
+                actions.insert(key, (graph.add_clip_with_mask(clip, 1 << LOWER, 1.0, graph.root), lower, timing.duration));
             }
             if layered {
                 for b in bones {
@@ -531,7 +680,7 @@ impl AnimLibrary {
 
     /// How long an action's clip runs (e.g. the reload), once the set has been built.
     pub fn action_secs(&self, set: AnimSet, stance: Stance, kind: ActionKind) -> Option<f32> {
-        self.sets.get(&set)?.actions.get(&(stance, kind)).map(|a| a.1 / kind.rate())
+        self.sets.get(&set)?.actions.get(&(stance, kind)).map(|a| a.2 / kind.rate())
     }
 }
 
@@ -552,6 +701,8 @@ pub struct PartPlayer {
 #[derive(Clone, Copy)]
 struct PlayingAction {
     node: AnimationNodeIndex,
+    /// A full-body action's lower-body node.
+    lower: Option<AnimationNodeIndex>,
     elapsed: f32,
     duration: f32,
 }
@@ -601,7 +752,9 @@ impl Snapshot {
             }
         }
         pp.action = self.action.map(|(a, t)| {
-            player.start(a.node).set_speed(rate).seek_to(t);
+            for node in std::iter::once(a.node).chain(a.lower) {
+                player.start(node).set_speed(rate).seek_to(t);
+            }
             a
         });
     }
@@ -733,26 +886,41 @@ pub fn drive_animation(
             {
                 pp.action_serial = req.serial;
                 if let Some(old) = pp.action.take() {
-                    player.stop(old.node);
+                    for node in std::iter::once(old.node).chain(old.lower) {
+                        player.stop(node);
+                    }
                 }
                 if let Some(kind) = req.kind
-                    && let Some(&(node, duration)) = g.actions.get(&(stance, kind))
+                    && let Some(&(node, lower, duration)) = g.actions.get(&(stance, kind))
                 {
                     let rate = req.rate();
-                    player.start(node).set_speed(rate);
-                    pp.action = Some(PlayingAction { node, elapsed: 0.0, duration: duration / rate });
+                    for node in std::iter::once(node).chain(lower) {
+                        player.start(node).set_speed(rate);
+                    }
+                    pp.action = Some(PlayingAction { node, lower, elapsed: 0.0, duration: duration / rate });
                 }
             }
             let mut over = 0.0;
+            // How much a full-body action holds the legs.
+            let mut legs = 0.0;
             if let Some(a) = pp.action.as_mut() {
                 a.elapsed += dt;
                 over = (a.elapsed / ACTION_IN).min(((a.duration - a.elapsed) / ACTION_OUT).max(0.0)).clamp(0.0, 1.0);
                 if a.elapsed >= a.duration {
-                    player.stop(a.node);
+                    for node in std::iter::once(a.node).chain(a.lower) {
+                        player.stop(node);
+                    }
                     pp.action = None;
                     over = 0.0;
-                } else if let Some(p) = player.animation_mut(a.node) {
-                    p.set_weight(over.max(1e-3));
+                } else {
+                    for node in std::iter::once(a.node).chain(a.lower) {
+                        if let Some(p) = player.animation_mut(node) {
+                            p.set_weight(over.max(1e-3));
+                        }
+                    }
+                    if a.lower.is_some() {
+                        legs = over;
+                    }
                 }
             }
             for (key, w) in pp.fading.iter_mut() {
@@ -760,7 +928,7 @@ pub fn drive_animation(
                 *w = if target > *w { (*w + dt / FADE).min(1.0) } else { (*w - dt / FADE).max(0.0) };
                 let n = &g.nodes[key];
                 if let Some(p) = player.animation_mut(n.lower) {
-                    p.set_weight(*w);
+                    p.set_weight(*w * (1.0 - legs));
                 }
                 if let Some(p) = n.upper.and_then(|u| player.animation_mut(u)) {
                     p.set_weight(*w * (1.0 - over));

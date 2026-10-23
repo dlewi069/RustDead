@@ -59,6 +59,11 @@ impl GameMaterials {
         Self { defs, built: HashMap::new() }
     }
 
+    /// The texture a material samples, if materials.json names one (particle sprites).
+    pub fn texture(&self, name: &str, assets: &AssetServer) -> Option<Handle<Image>> {
+        self.defs.get(name)?.texture.clone().map(|t| assets.load(t))
+    }
+
     /// Trunk material for tree materials (see [`MaterialDef::trunk_color`]).
     pub fn trunk(&mut self, name: &str, materials: &mut Assets<StandardMaterial>) -> Option<Handle<StandardMaterial>> {
         let key = format!("{name}#trunk");
@@ -126,6 +131,11 @@ pub struct GameModel;
 #[derive(Component, Clone)]
 pub struct MaterialOverride(pub String);
 
+/// Swap named materials for others (a component's OverrideMaterials on some slots only):
+/// (material in the file, material to draw instead).
+#[derive(Component, Clone)]
+pub struct MaterialRename(pub Vec<(String, String)>);
+
 /// Spawnable bundle for an exported mesh, `path` relative to `assets/` (e.g. "game/.../X.glb").
 pub fn model(assets: &AssetServer, path: impl Into<String>) -> impl Bundle {
     (WorldAssetRoot(assets.load(GltfAssetLabel::Scene(0).from_asset(path.into()))), GameModel)
@@ -133,7 +143,7 @@ pub fn model(assets: &AssetServer, path: impl Into<String>) -> impl Bundle {
 
 fn remap_materials(
     ev: On<WorldInstanceReady>,
-    roots: Query<Option<&MaterialOverride>, With<GameModel>>,
+    roots: Query<(Option<&MaterialOverride>, Option<&MaterialRename>), With<GameModel>>,
     children: Query<&Children>,
     mut meshes: Query<(&GltfMaterialName, &Mesh3d, &mut MeshMaterial3d<StandardMaterial>, &mut Visibility)>,
     mut mesh_assets: ResMut<Assets<Mesh>>,
@@ -141,7 +151,7 @@ fn remap_materials(
     assets: Res<AssetServer>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let Ok(override_mat) = roots.get(ev.entity) else { return };
+    let Ok((override_mat, rename)) = roots.get(ev.entity) else { return };
     for e in children.iter_descendants(ev.entity) {
         let Ok((name, mesh, mut mat, mut vis)) = meshes.get_mut(e) else { continue };
         // UE's materials here ignore vertex colour, but Bevy multiplies COLOR_0 into the base
@@ -155,7 +165,8 @@ fn remap_materials(
             *vis = Visibility::Hidden;
             continue;
         }
-        let want = override_mat.map_or(name.0.as_str(), |o| o.0.as_str());
+        let renamed = rename.and_then(|r| r.0.iter().find(|(from, _)| *from == name.0)).map(|(_, to)| to.as_str());
+        let want = override_mat.map(|o| o.0.as_str()).or(renamed).unwrap_or(name.0.as_str());
         if let Some(h) = lib.get(want, &assets, &mut materials) {
             mat.0 = h;
         }

@@ -58,6 +58,8 @@ pub const NIGHT_CREATURE: &str = "Skill_NightCreature";
 pub const DEATHBRINGER: &str = "Skill_Deathbringer";
 pub const DISTRACTION: &str = "Skill_Distraction";
 pub const COMBAT_ROLL: &str = "Skill_CombatRoll";
+pub const HUNTSMAN: &str = "Skill_Huntsman";
+pub const HARVEST_MASTER: &str = "Skill_HarvestMaster";
 
 impl TechTree {
     pub fn has(&self, id: &str) -> bool {

@@ -7,8 +7,9 @@
 //! - The survivor (`SetBurning(true, 3-5)`): Event_Fire applies that damage every 0.8 s
 //!   (through CalculatePlayerDamage, so armor helps) for 10-12 s.
 //!
-//! Ours: a flickering light stands in for the burning particles; the hit montage, camera shake and
-//! Toughness XP that each burn tick brings the survivor aren't ported.
+//! The BurningEffect is FX_Fire_AI (`particles.rs`) at the actor's root, the capsule's centre,
+//! with a flickering light for its glow. The hit montage, camera shake and Toughness XP that each
+//! burn tick brings the survivor aren't ported.
 
 use bevy::prelude::*;
 use rand::Rng;
@@ -75,9 +76,16 @@ impl Burn {
 #[derive(Component, Debug)]
 pub struct Burning(pub Burn);
 
-/// The burning stand-in light on a zombie.
+/// The burning effect and its light on a zombie.
 #[derive(Component)]
 struct Flames;
+
+/// The burning effect on the survivor.
+#[derive(Component)]
+struct PlayerFlames;
+
+/// The capsule's centre above the feet, where AddComponent puts the BurningEffect.
+const ROOT_HEIGHT: f32 = 0.9;
 
 /// The survivor's burn, if any.
 #[derive(Resource, Default)]
@@ -86,7 +94,7 @@ pub struct PlayerBurning(pub Option<Burn>);
 pub fn plugin(app: &mut App) {
     app.init_resource::<PlayerBurning>()
         .add_systems(OnEnter(AppState::InGame), |mut b: ResMut<PlayerBurning>| b.0 = None)
-        .add_systems(Update, (burn_zombies, burn_player, flicker).run_if(in_state(AppState::InGame)).run_if(in_state(MenuScreen::None)));
+        .add_systems(Update, (burn_zombies, burn_player, player_flames, flicker).run_if(in_state(AppState::InGame)).run_if(in_state(MenuScreen::None)));
 }
 
 /// The speed factor for a zombie that may be burning.
@@ -111,6 +119,7 @@ fn burn_zombies(
                 PointLight { color: Color::srgb(1.0, 0.5, 0.15), intensity: 150_000.0, range: 6.0, ..default() },
                 Flames,
             ));
+            commands.entity(e).with_child((Transform::from_xyz(0.0, ROOT_HEIGHT, 0.0), Visibility::default(), super::particles::Emitter::new("FX_Fire_AI"), Flames));
             info!("zombie caught fire");
         }
         if !going {
@@ -137,6 +146,24 @@ fn burn_player(time: Res<Time>, db: Res<ItemDb>, store: Res<SettingsStore>, mut 
     if !going || dead {
         burning.0 = None;
         info!("stopped burning");
+    }
+}
+
+/// The survivor's BurningEffect, while burning (K2_DestroyComponent in StopBurning).
+fn player_flames(
+    mut commands: Commands,
+    burning: Res<PlayerBurning>,
+    player: Query<Entity, (With<crate::models::CharacterModel>, With<crate::level::KinematicBody>)>,
+    flames: Query<Entity, With<PlayerFlames>>,
+) {
+    match (burning.0.is_some(), flames.iter().next()) {
+        (true, None) => {
+            if let Ok(p) = player.single() {
+                commands.entity(p).with_child((Transform::from_xyz(0.0, ROOT_HEIGHT, 0.0), Visibility::default(), super::particles::Emitter::new("FX_Fire_AI"), PlayerFlames));
+            }
+        }
+        (false, Some(f)) => commands.entity(f).despawn(),
+        _ => {}
     }
 }
 

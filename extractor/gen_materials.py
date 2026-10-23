@@ -53,14 +53,29 @@ def pick_albedo(candidates):
     return usable[0][1] if usable else None
 
 
+def stub_tint(pkg):
+    """The colour parameter default the mesh export wrote into a material's stub, if any."""
+    f = CONTENT / (pkg.removeprefix("SurrounDead/Content/") + ".json")
+    try:
+        colours = json.loads(f.read_text()).get("Parameters", {}).get("Colors", {})
+    except (OSError, ValueError):
+        return None
+    for n, c in colours.items():
+        n = n.lower()
+        if any(k in n for k in ("colo", "tint")) and not any(k in n for k in ("trunk", "emiss", "fresnel", "fog", "rim", "blood")):
+            return [c["R"], c["G"], c["B"], c.get("A", 1.0)]
+    return None
+
+
 def run_json(out, pkgs):
     for i in range(0, len(pkgs), 200):
         subprocess.run([SDX, "json", out, *pkgs[i:i + 200]], check=False, capture_output=True)
 
 
 # Materials swapped in at runtime (skin colour, hair colour) that no mesh references by default.
-# Materials only blueprints name (survivor skins/hair; zombie skins from BP_MasterZombie `Materials`).
-EXTRA_PREFIXES = ["PlayerModel/Materials/", "PlayerModel/Hair/Material/", "PolygonFiles/PolygonCityZombies/Materials/", "PolygonFiles/PolygonDog/Material/", "Terrain/Foliage/Materials/", "PolygonFiles/PolygonNature/Materials/", "Blueprints/Laboratory/Materials/Status/", "Meshes/Materials/"]
+# Materials only blueprints name (survivor skins/hair; zombie skins from BP_MasterZombie `Materials`;
+# the animals' SetMeshesAndMaterial picks).
+EXTRA_PREFIXES = ["PlayerModel/Materials/", "PlayerModel/Hair/Material/", "PolygonFiles/PolygonCityZombies/Materials/", "PolygonFiles/PolygonDog/Material/", "Terrain/Foliage/Materials/", "PolygonFiles/PolygonNature/Materials/", "Blueprints/Laboratory/Materials/Status/", "Meshes/Materials/", "AI/Animals/Deer/PolyArtDeer/Materials/", "AI/Animals/Rabbit/RabbitAnims/Materials/", "PolygonFiles/PolyArtWolf/Materials/", "PolygonFiles/PolyArtBear/Materials/"]
 
 
 def main():
@@ -76,6 +91,13 @@ def main():
         for f in listed:
             if f.endswith(".uasset"):
                 pkg = f[: -len(".uasset")]
+                stub.setdefault(pkg.rsplit("/", 1)[1], pkg)
+                used.add(pkg.rsplit("/", 1)[1])
+    # The vehicles' Colors (BP_VehicleMaster puts a random one on material slot 0).
+    vehicles = Path(__file__).resolve().parent.parent / "assets" / "data" / "vehicles.json"
+    if vehicles.exists():
+        for c in json.loads(vehicles.read_text())["classes"].values():
+            for pkg in c["colors"]:
                 stub.setdefault(pkg.rsplit("/", 1)[1], pkg)
                 used.add(pkg.rsplit("/", 1)[1])
     todo = sorted(stub[m] for m in used if m in stub)
@@ -124,6 +146,10 @@ def main():
             if tex is None and "Parent" in p and depth < 8:
                 ptex, ptint = resolve(pkg_of(p["Parent"]["ObjectPath"]), depth + 1)
                 tex, tint = ptex, tint or ptint
+            if tint is None and tex is None and "Parent" not in p:
+                # An untextured master material's own colour parameter default (M_CharacterHair's brown on
+                # the traders' hair, which has no instance): the mesh export's stub lists it.
+                tint = stub_tint(pkg)
             return tex, tint
         return None, None
 

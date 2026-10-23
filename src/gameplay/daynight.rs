@@ -172,9 +172,14 @@ fn light_the_world(
     mut fog: Query<&mut DistanceFog>,
     mut ambient: ResMut<GlobalAmbientLight>,
     mut clear: ResMut<ClearColor>,
+    blood_moon: Res<super::world_events::BloodMoon>,
 ) {
     let Some(state) = &game.state else { return };
-    let s = sky_at(state.environment.time_of_day_hours, difficulty(&store, "General", "NIGHT BRIGHTNESS"));
+    let mut s = sky_at(state.environment.time_of_day_hours, difficulty(&store, "General", "NIGHT BRIGHTNESS"));
+    // SetBloodMoon: UDS Moon Light Color turns red while the moon lights the world.
+    if blood_moon.on && sun_pitch(state.environment.time_of_day_hours).to_radians().sin() <= -0.05 {
+        s.light = super::world_events::BLOOD_MOON_LIGHT;
+    }
     for (mut light, mut t) in &mut sun {
         light.illuminance = s.illuminance;
         light.color = s.light;

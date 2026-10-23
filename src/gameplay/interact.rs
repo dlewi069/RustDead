@@ -41,6 +41,10 @@ pub enum GameOverlay {
     Note(usize),
     /// The journal (J), on its Skills page.
     Journal,
+    /// The map (M).
+    Map,
+    /// Talking to a trader (its container key; `traders.rs`).
+    Dialogue(usize),
 }
 
 impl GameOverlay {
@@ -77,6 +81,36 @@ pub struct Containers {
     /// Containers item spawners placed (`level::item_spawners`), by key: their instance name
     /// and the DT_UniqueLoot sets added to their loot.
     pub spawned: HashMap<usize, (Option<String>, Vec<String>)>,
+    /// Quest crates (BP_GuaranteedSpawner, `quests.rs`): searching one opens it instead of a
+    /// loot screen, and its key lands in `quest_opened`.
+    pub quest_crates: HashSet<usize>,
+    pub quest_opened: Vec<usize>,
+    /// Dead wandering traders already searched (their DoOnce "All of the trader's loot is destroyed...").
+    pub told: HashSet<usize>,
+}
+
+impl Containers {
+    /// A container something left in the world this session (the Huntsman's Animal Meat bag):
+    /// its key, from the corpse range; `name` overrides the class's.
+    pub fn add_dropped(&mut self, at: Vec3, class: &str, name: Option<String>) -> usize {
+        let key = CORPSE_KEYS + self.next_corpse;
+        self.next_corpse += 1;
+        self.list.push((key, at, class.to_string()));
+        self.spawned.insert(key, (name, Vec::new()));
+        key
+    }
+}
+
+impl Containers {
+    /// A container that came with a prefab (`level::prefabs::CONTAINER_KEYS` and up), with the
+    /// DT_UniqueLoot sets its child actor template adds.
+    pub fn add_at(&mut self, key: usize, at: Vec3, class: &str, unique: Vec<String>) {
+        if self.list.iter().any(|c| c.0 == key) {
+            return;
+        }
+        self.list.push((key, at, class.to_string()));
+        self.spawned.insert(key, (None, unique));
+    }
 }
 
 /// Container keys for corpses start above any level actor index.
@@ -89,7 +123,7 @@ pub fn container_def(db: &ItemDb, class: &str) -> Option<super::items::Container
         return Some(d.clone());
     }
     let c = super::zombies::ZombieKind::from_class(class)?.class();
-    Some(super::items::ContainerDef { name: c.container.clone().unwrap_or_else(|| "Dead Zombie".into()), table: c.loot_table.clone(), hold: 0.0, lockpick: false, noise: 0.0, mesh: None })
+    Some(super::items::ContainerDef { name: c.container.clone().unwrap_or_else(|| "Dead Zombie".into()), table: c.loot_table.clone(), hold: 0.0, lockpick: false, noise: 0.0, mesh: None, airdrop: None })
 }
 
 #[derive(Resource, Default)]
@@ -156,12 +190,23 @@ fn track_corpses(
     died: Query<(Entity, &Transform, &crate::level::LevelZombie), Added<super::combat::Dead>>,
     alive: Query<&Transform, With<super::combat::Dead>>,
     mut overlay: ResMut<GameOverlay>,
+    spawners: Option<Res<crate::level::spawners::Spawners>>,
 ) {
     for (e, t, z) in &died {
         let key = CORPSE_KEYS + containers.next_corpse;
         containers.next_corpse += 1;
         containers.list.push((key, t.translation, z.kind.class_name().to_string()));
         containers.corpses.insert(key, e);
+        // A boss's UserConstructionScript: AddUniqueLoot(Unqiue Items Set) joins its loot table.
+        if let Some(b) = z.kind.boss() {
+            containers.spawned.insert(key, (None, b.unique_sets.clone()));
+        }
+        // A spawning volume's UniqueLoot: AddUniqueLoot on what it spawned.
+        if let (Some(i), Some(s)) = (z.spawner, spawners.as_ref())
+            && !s.unique(i).is_empty()
+        {
+            containers.spawned.insert(key, (None, s.unique(i).to_vec()));
+        }
     }
     let Containers { list, corpses, .. } = &mut *containers;
     for (key, at, _) in list.iter_mut().filter(|c| c.0 >= CORPSE_KEYS) {
@@ -172,6 +217,7 @@ fn track_corpses(
     let gone: Vec<usize> = containers.corpses.iter().filter(|(_, e)| !alive.contains(**e)).map(|(k, _)| *k).collect();
     for k in gone {
         containers.corpses.remove(&k);
+        containers.spawned.remove(&k);
         containers.list.retain(|c| c.0 != k);
         containers.searched.remove(&k);
         if *overlay == GameOverlay::Loot(k) {
@@ -227,11 +273,15 @@ pub(crate) fn search_containers(
     mut bar: Query<&mut Node, With<PromptBar>>,
     mut game: ResMut<CurrentGame>,
     mut notify: MessageWriter<super::notify::Notify>,
-    (level, power, store, mut noise): (
+    (level, power, store, mut noise, tdb, traders, driving, mut tasks): (
         Option<Res<crate::level::Level>>,
         Option<Res<crate::level::power::Power>>,
         Res<crate::menus::settings::SettingsStore>,
         MessageWriter<super::zombies::Noise>,
+        Res<super::traders::TraderDb>,
+        Res<super::traders::Traders>,
+        Res<super::vehicles::Driving>,
+        MessageWriter<super::quests::DataTask>,
     ),
 ) {
     if let Some(actor) = containers.open_now.take()
@@ -242,7 +292,8 @@ pub(crate) fn search_containers(
         dirty.0 = true;
     }
     let (Ok(p), Ok(mut vis)) = (player.single(), prompt.single_mut()) else { return };
-    if *screen.get() != MenuScreen::None || overlay.is_open() {
+    // In a vehicle nothing around is in reach (`vehicles::interact` owns F).
+    if *screen.get() != MenuScreen::None || overlay.is_open() || driving.active() {
         *vis = Visibility::Hidden;
         return;
     }
@@ -260,6 +311,40 @@ pub(crate) fn search_containers(
         *search = Search::default();
         return;
     };
+    // A trader: F begins its dialogue (BP_TraderMaster.OnServerExecuteInteract).
+    if super::traders::is_trader(actor) {
+        let line = traders.get(&tdb, actor).map(|(_, c)| super::traders::prompt(c)).unwrap_or_default();
+        *vis = Visibility::Inherited;
+        if let Ok(mut t) = text.single_mut() {
+            t.0 = line;
+        }
+        if let Ok(mut n) = bar.single_mut() {
+            n.width = Val::Percent(0.0);
+        }
+        if keys.just_pressed(KeyCode::KeyF) {
+            *overlay = super::traders::talk(&tdb, &traders, actor);
+            dirty.0 = true;
+            // BP_QuestGiver: BeginDialogue, then CompleteNarrativeDataTask(InteractWithActor, InteractionArgument).
+            if let Some((_, c)) = traders.get(&tdb, actor).filter(|(_, c)| c.quest_giver) {
+                tasks.write(super::quests::DataTask { task: "InteractWithActor".into(), argument: c.argument.clone(), quantity: 1 });
+            }
+        }
+        return;
+    }
+    // A dead wandering trader: JigCanInteract is off; Interact tells once that its loot is gone.
+    if actor >= CORPSE_KEYS && super::zombies::ZombieKind::from_class(&class).and_then(|k| k.human()).is_some_and(|h| h.trader) {
+        *vis = Visibility::Inherited;
+        if let Ok(mut t) = text.single_mut() {
+            t.0 = "Press [F] to Interact".into();
+        }
+        if let Ok(mut n) = bar.single_mut() {
+            n.width = Val::Percent(0.0);
+        }
+        if keys.just_pressed(KeyCode::KeyF) && containers.told.insert(actor) {
+            notify.write(super::notify::Notify { text: super::traders::LOOT_DESTROYED.into(), secs: 6.0, color: Color::WHITE });
+        }
+        return;
+    }
     let Some(mut def) = container_def(&db, &class) else { return };
     if let Some((Some(name), _)) = containers.spawned.get(&actor) {
         def.name = name.clone();
@@ -321,6 +406,10 @@ pub(crate) fn search_containers(
     let verb = if def.lockpick && !searched { "pick the lock of" } else if searched { "open" } else { "search" };
     if let Ok(mut t) = text.single_mut() {
         t.0 = format!("Hold [F] to {verb} {}", def.name);
+        // A crafting station opens on the press (ours: ShowInteractWidget's options aren't read).
+        if class == super::inventory_ui::STATION {
+            t.0 = format!("Press [F] to use {}", def.name);
+        }
         // The widget's QuickSearch line, shown while the key is held.
         if holding && hold > 0.0 {
             t.0.push_str("\n[LeftShift] Quick Search");
@@ -336,10 +425,16 @@ pub(crate) fn search_containers(
         {
             st.passive.add_xp(Passive::Scavenging, rand::thread_rng().gen_range(4.0..=6.0));
         }
+        search.progress = 0.0;
+        // BP_GuaranteedSpawner.OpenContainer: Opened, so it can't be searched again.
+        if containers.quest_crates.remove(&actor) {
+            containers.list.retain(|c| c.0 != actor);
+            containers.quest_opened.push(actor);
+            return;
+        }
         open_loot(&db, &mut containers, actor, &class);
         *overlay = GameOverlay::Loot(actor);
         dirty.0 = true;
-        search.progress = 0.0;
     }
 }
 

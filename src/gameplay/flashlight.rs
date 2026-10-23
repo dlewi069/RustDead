@@ -116,7 +116,7 @@ pub fn plugin(app: &mut App) {
         .add_systems(
             Update,
             (
-                press_l.run_if(in_state(crate::menus::MenuScreen::None)).run_if(super::player_in_control),
+                press_l.run_if(in_state(crate::menus::MenuScreen::None)).run_if(super::on_foot),
                 use_battery,
                 aim_beam,
             )

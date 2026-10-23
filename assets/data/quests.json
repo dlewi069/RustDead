@@ -1,0 +1,2439 @@
+{
+ "crate": {
+  "class": "BP_GuaranteedSpawner_Classified_C",
+  "drop_at": [
+   -3.0419906000000004e-09,
+   0.55,
+   0.2
+  ],
+  "hold": 4.0,
+  "items": [
+   "DA_ColonelsRevenge",
+   "DA_BattleReadyGlock",
+   "DA_Deadeye",
+   "DA_Crusher",
+   "DA_Guardian",
+   "DA_Exterminator",
+   "DA_Valkyrie",
+   "DA_Lechie",
+   "DA_Survivor",
+   "DA_Deadeye",
+   "DA_DarkMachete",
+   "DA_BarrettM821",
+   "DA_HordeBeacon",
+   "DA_GrenadeLauncher"
+  ],
+  "lid": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/Military/SM_Prop_Crate_Plastic_Lid_01",
+  "lid_at": [
+   0.0,
+   0.44,
+   -0.39
+  ],
+  "lid_seconds": 1.5,
+  "mesh": "SurrounDead/Content/PolygonFiles/PolygonMilitary/Meshes/Props/Military/SM_Prop_Crate_Plastic_01",
+  "name": "Classified Military Crate",
+  "noise": 10.0
+ },
+ "quests": {
+  "Quest_Dungeon_LaboratoryBunker_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "LaboratoryBunker",
+       "description": "Power on the laboratories generator",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "PowerOnGenerator"
+      },
+      {
+       "argument": "",
+       "description": "Eliminate infected",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": true,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "LooseTask"
+      }
+     ],
+     "to": "Completed"
+    }
+   },
+   "description": "Is this where it all began?",
+   "name": "Below The Ground",
+   "start": "QuestStart",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 500.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_Dungeon_LaboratoryBunker_C"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "QuestStart": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_ClassifiedContainer001_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "ClassifiedContainer1",
+       "description": "Find and open the container in the vicinity",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "InteractWithActor"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        1547.1188,
+        14.620056,
+        2598.8914
+       ],
+       "description": "Go to the specified location",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 10.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a classified military cache. I think I could find some rare weapons there.",
+   "name": "Classified Container",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        1547.1188,
+        14.620056,
+        2598.8914
+       ],
+       "colour": [
+        1.0,
+        0.571186,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "ClassifiedContainer1",
+       "text": "Classified Container",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/chest.png",
+       "underground": false
+      },
+      {
+       "argument": "ClassifiedContainer1",
+       "at": [
+        1547.1188,
+        14.620056,
+        2598.8914
+       ],
+       "class": "BP_GuaranteedSpawner_Classified_C",
+       "kind": "SpawnActor",
+       "rotation": [
+        0.022204388,
+        -0.030186607,
+        0.020894928,
+        -0.99907917
+       ],
+       "tag": "ClassifiedContainer1"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_ClassifiedContainer001_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer1"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "ClassifiedContainer1"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer1"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_ClassifiedContainer002_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "ClassifiedContainer2",
+       "description": "Find and open the container in the vicinity",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "InteractWithActor"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        1029.75,
+        16.94,
+        2160.12
+       ],
+       "description": "Go to the specified location",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 10.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a classified military cache. I think I could find some rare weapons there.",
+   "name": "Classified Container",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        1029.75,
+        16.94,
+        2160.12
+       ],
+       "colour": [
+        1.0,
+        0.571186,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "ClassifiedContainer2",
+       "text": "Classified Container",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/chest.png",
+       "underground": false
+      },
+      {
+       "argument": "ClassifiedContainer2",
+       "at": [
+        1029.75,
+        16.94,
+        2160.12
+       ],
+       "class": "BP_GuaranteedSpawner_Classified_C",
+       "kind": "SpawnActor",
+       "rotation": [
+        1.1661661e-19,
+        -0.8433914,
+        -1.830514e-19,
+        -0.53729963
+       ],
+       "tag": "ClassifiedContainer2"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_ClassifiedContainer002_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer2"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "ClassifiedContainer2"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer2"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_ClassifiedContainer003_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "ClassifiedContainer3",
+       "description": "Find and open the container in the vicinity",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "InteractWithActor"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        -343.19199999999995,
+        10.960882999999999,
+        2309.861
+       ],
+       "description": "Go to the specified location",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 10.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a classified military cache. I think I could find some rare weapons there.",
+   "name": "Classified Container",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        -343.19199999999995,
+        10.960882999999999,
+        2309.861
+       ],
+       "colour": [
+        1.0,
+        0.571186,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "ClassifiedContainer3",
+       "text": "Classified Container",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/chest.png",
+       "underground": false
+      },
+      {
+       "argument": "ClassifiedContainer3",
+       "at": [
+        -343.19199999999995,
+        10.960882999999999,
+        2309.861
+       ],
+       "class": "BP_GuaranteedSpawner_Classified_C",
+       "kind": "SpawnActor",
+       "rotation": [
+        0.074966595,
+        -0.15307964,
+        0.02620778,
+        -0.98501766
+       ],
+       "tag": "ClassifiedContainer3"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_ClassifiedContainer003_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer3"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "ClassifiedContainer3"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer3"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_ClassifiedContainer004_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "ClassifiedContainer4",
+       "description": "Find and open the container in the vicinity",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "InteractWithActor"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        -1174.64,
+        29.8,
+        447.19
+       ],
+       "description": "Find the Classified Container ",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 10.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a classified military cache. I think I could find some rare weapons there.",
+   "name": "Classified Container",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        -1174.64,
+        29.8,
+        447.19
+       ],
+       "colour": [
+        1.0,
+        0.571186,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "ClassifiedContainer4",
+       "text": "Classified Container",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/chest.png",
+       "underground": false
+      },
+      {
+       "argument": "ClassifiedContainer4",
+       "at": [
+        -1174.64,
+        29.8,
+        447.19
+       ],
+       "class": "BP_GuaranteedSpawner_Classified_C",
+       "kind": "SpawnActor",
+       "rotation": [
+        0.0,
+        0.3007058,
+        -0.0,
+        -0.95371693
+       ],
+       "tag": "ClassifiedContainer4"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_ClassifiedContainer004_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer4"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "ClassifiedContainer4"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer4"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_ClassifiedContainer005_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "ClassifiedContainer5",
+       "description": "Find and open the container in the vicinity",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "InteractWithActor"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        -896.5228999999999,
+        16.85,
+        -501.3496
+       ],
+       "description": "Find the Classified Container ",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 10.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a classified military cache. I think I could find some rare weapons there.",
+   "name": "Classified Container",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        -896.5228999999999,
+        16.85,
+        -501.3496
+       ],
+       "colour": [
+        1.0,
+        0.571186,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "ClassifiedContainer5",
+       "text": "Classified Container",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/chest.png",
+       "underground": false
+      },
+      {
+       "argument": "ClassifiedContainer5",
+       "at": [
+        -896.5228999999999,
+        16.85,
+        -501.3496
+       ],
+       "class": "BP_GuaranteedSpawner_Classified_C",
+       "kind": "SpawnActor",
+       "rotation": [
+        0.0,
+        0.8660254,
+        -0.0,
+        -0.5
+       ],
+       "tag": "ClassifiedContainer5"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_ClassifiedContainer005_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer5"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "ClassifiedContainer5"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer5"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_ClassifiedContainer006_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "ClassifiedContainer6",
+       "description": "Find and open the container in the vicinity",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "InteractWithActor"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        -327.65,
+        17.29,
+        91.24
+       ],
+       "description": "Find the Classified Container ",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 10.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a classified military cache. I think I could find some rare weapons there.",
+   "name": "Classified Container",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        -327.65,
+        17.29,
+        91.24
+       ],
+       "colour": [
+        1.0,
+        0.571186,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "ClassifiedContainer6",
+       "text": "Classified Container",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/chest.png",
+       "underground": false
+      },
+      {
+       "argument": "ClassifiedContainer6",
+       "at": [
+        -327.65,
+        17.29,
+        91.24
+       ],
+       "class": "BP_GuaranteedSpawner_Classified_C",
+       "kind": "SpawnActor",
+       "rotation": [
+        0.0,
+        0.64278764,
+        -0.0,
+        -0.76604444
+       ],
+       "tag": "ClassifiedContainer6"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_ClassifiedContainer006_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer6"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "ClassifiedContainer6"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer6"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_ClassifiedContainer007_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "ClassifiedContainer7",
+       "description": "Find the container in the vicinity",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "InteractWithActor"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        -75.53,
+        17.47,
+        678.63
+       ],
+       "description": "Find the Classified Container ",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 10.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a classified military cache. I think I could find some rare weapons there.",
+   "name": "Classified Container",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        -75.53,
+        17.47,
+        678.63
+       ],
+       "colour": [
+        1.0,
+        0.571186,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "ClassifiedContainer7",
+       "text": "Classified Container",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/chest.png",
+       "underground": false
+      },
+      {
+       "argument": "ClassifiedContainer7",
+       "at": [
+        -75.53,
+        17.47,
+        678.63
+       ],
+       "class": "BP_GuaranteedSpawner_Classified_C",
+       "kind": "SpawnActor",
+       "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+       ],
+       "tag": "ClassifiedContainer7"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_ClassifiedContainer007_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer7"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "ClassifiedContainer7"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer7"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_ClassifiedContainer008_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "ClassifiedContainer8",
+       "description": "Find the container in the vicinity",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "InteractWithActor"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        -8.89,
+        -3.33,
+        909.12
+       ],
+       "description": "Find the Classified Container ",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 10.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a classified military cache. I think I could find some rare weapons there.",
+   "name": "Classified Container",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        -8.89,
+        -3.33,
+        909.12
+       ],
+       "colour": [
+        1.0,
+        0.571186,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "ClassifiedContainer8",
+       "text": "Classified Container",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/chest.png",
+       "underground": true
+      },
+      {
+       "argument": "ClassifiedContainer8",
+       "at": [
+        -8.89,
+        -3.33,
+        909.12
+       ],
+       "class": "BP_GuaranteedSpawner_Classified_C",
+       "kind": "SpawnActor",
+       "rotation": [
+        0.0,
+        -0.656059,
+        -0.0,
+        -0.7547096
+       ],
+       "tag": "ClassifiedContainer8"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_ClassifiedContainer008_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer8"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "ClassifiedContainer8"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer8"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_ClassifiedContainer009_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "ClassifiedContainer9",
+       "description": "Find and open the container in the vicinity",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "InteractWithActor"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        393.8443,
+        18.330278,
+        883.4209
+       ],
+       "description": "Find the Classified Container ",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 10.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a classified military cache. I think I could find some rare weapons there.",
+   "name": "Classified Container",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        393.8443,
+        18.330278,
+        883.4209
+       ],
+       "colour": [
+        1.0,
+        0.571186,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "ClassifiedContainer9",
+       "text": "Classified Container",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/chest.png",
+       "underground": false
+      },
+      {
+       "argument": "ClassifiedContainer9",
+       "at": [
+        393.8443,
+        18.330278,
+        883.4209
+       ],
+       "class": "BP_GuaranteedSpawner_Classified_C",
+       "kind": "SpawnActor",
+       "rotation": [
+        0.04548341,
+        0.87365687,
+        0.01590592,
+        -0.4841508
+       ],
+       "tag": "ClassifiedContainer9"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_ClassifiedContainer009_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer9"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "ClassifiedContainer9"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer9"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_ClassifiedContainer010_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "ClassifiedContainer10",
+       "description": "Find and open the container in the vicinity",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 1,
+       "retroactive": false,
+       "task": "InteractWithActor"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        1541.54,
+        19.57,
+        649.91
+       ],
+       "description": "Find the Classified Container ",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 10.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a classified military cache. I think I could find some rare weapons there.",
+   "name": "Classified Container",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        1541.54,
+        19.57,
+        649.91
+       ],
+       "colour": [
+        1.0,
+        0.571186,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "ClassifiedContainer10",
+       "text": "Classified Container",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/chest.png",
+       "underground": false
+      },
+      {
+       "argument": "ClassifiedContainer10",
+       "at": [
+        1541.54,
+        19.57,
+        649.91
+       ],
+       "class": "BP_GuaranteedSpawner_Classified_C",
+       "kind": "SpawnActor",
+       "rotation": [
+        0.0,
+        0.7372773,
+        -0.0,
+        -0.6755902
+       ],
+       "tag": "ClassifiedContainer10"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_ClassifiedContainer010_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer10"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "ClassifiedContainer10"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "ClassifiedContainer10"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_EliminateBandits001_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "BanditCamp1",
+       "description": "Find & eliminate the bandits",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 8,
+       "retroactive": false,
+       "task": "KillNPC"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        1745.08,
+        12.39,
+        717.88
+       ],
+       "description": "Go to the bandit's camp location",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 200.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a bandit camp. I better sort these out before they cause the settlements any trouble.",
+   "name": "Elimination",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      },
+      {
+       "kind": "RewardGiveItem",
+       "random": true,
+       "sets": [
+        [],
+        [],
+        []
+       ]
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        1745.08,
+        12.39,
+        717.88
+       ],
+       "colour": [
+        0.427083,
+        0.0,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "BanditCamp1",
+       "text": "Bandit Camp",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/gun2.png",
+       "underground": false
+      },
+      {
+       "at": [
+        1745.08,
+        12.39,
+        717.88
+       ],
+       "class": "Prefab_Quest_BanditCamp1_C",
+       "kind": "SpawnPrefab",
+       "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+       ],
+       "tag": "BanditCamp1"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_EliminateBandits001_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "BanditCamp1"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "BanditCamp1"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "BanditCamp1"
+      },
+      {
+       "argument": "BanditCamp1",
+       "at": [
+        1745.08,
+        12.39,
+        717.88
+       ],
+       "extent": [
+        12.5,
+        2.0,
+        12.5
+       ],
+       "kind": "SpawnAIHumanSpawner",
+       "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+       ],
+       "spawning": [
+        [
+         "BP_Bandit_Ranged_Boss_C",
+         2
+        ],
+        [
+         "BP_Bandit_Ranged_AssaultRifle_C",
+         6
+        ]
+       ],
+       "tag": "BanditCamp1"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_EliminateBandits002_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "BanditCamp2",
+       "description": "Find & eliminate the bandits",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 8,
+       "retroactive": false,
+       "task": "KillNPC"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        -288.85674,
+        13.45,
+        1664.3353
+       ],
+       "description": "Go to the bandit's camp location",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 200.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a bandit camp. I better sort these out before they cause the settlements any trouble.",
+   "name": "Elimination",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      },
+      {
+       "kind": "RewardGiveItem",
+       "random": true,
+       "sets": [
+        [],
+        [],
+        []
+       ]
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        -288.85674,
+        13.45,
+        1664.3353
+       ],
+       "colour": [
+        0.427083,
+        0.0,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "BanditCamp2",
+       "text": "Bandit Camp",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/gun2.png",
+       "underground": false
+      },
+      {
+       "at": [
+        -288.85674,
+        13.45,
+        1664.3353
+       ],
+       "class": "Prefab_Quest_BanditCamp2_C",
+       "kind": "SpawnPrefab",
+       "rotation": [
+        -0.0,
+        -0.26723838,
+        0.0,
+        -0.96363044
+       ],
+       "tag": "BanditCamp2"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_EliminateBandits002_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "BanditCamp2"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "BanditCamp2"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "BanditCamp2"
+      },
+      {
+       "argument": "BanditCamp2",
+       "at": [
+        -288.85674,
+        13.45,
+        1664.3353
+       ],
+       "extent": [
+        10.0,
+        2.0,
+        10.0
+       ],
+       "kind": "SpawnAIHumanSpawner",
+       "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+       ],
+       "spawning": [
+        [
+         "BP_Bandit_Ranged_Boss_C",
+         2
+        ],
+        [
+         "BP_Bandit_Ranged_AssaultRifle_C",
+         6
+        ]
+       ],
+       "tag": "BanditCamp2"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_EliminateBandits003_C": {
+   "branches": {
+    "QuestBranch_0": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "BanditCamp3",
+       "description": "Find & eliminate the bandits",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 8,
+       "retroactive": false,
+       "task": "KillNPC"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        2228.6,
+        32.73,
+        1232.9
+       ],
+       "description": "Go to the bandit's camp location",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 200.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a bandit camp. I better sort these out before they cause the settlements any trouble.",
+   "name": "Elimination",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      },
+      {
+       "kind": "RewardGiveItem",
+       "random": true,
+       "sets": [
+        [],
+        [],
+        []
+       ]
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        2228.6,
+        32.73,
+        1232.9
+       ],
+       "colour": [
+        0.427083,
+        0.0,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "BanditCamp3",
+       "text": "Bandit Camp",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/gun2.png",
+       "underground": false
+      },
+      {
+       "at": [
+        2228.6,
+        32.73,
+        1232.9
+       ],
+       "class": "Prefab_Quest_BanditCamp3_C",
+       "kind": "SpawnPrefab",
+       "rotation": [
+        -0.0,
+        -0.81915206,
+        0.0,
+        -0.57357645
+       ],
+       "tag": "BanditCamp3"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_EliminateBandits003_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "BanditCamp3"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "BanditCamp3"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_0"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "BanditCamp3"
+      },
+      {
+       "argument": "BanditCamp3",
+       "at": [
+        2228.6,
+        32.73,
+        1232.9
+       ],
+       "extent": [
+        10.0,
+        2.0,
+        10.0
+       ],
+       "kind": "SpawnAIHumanSpawner",
+       "rotation": [
+        -0.0,
+        -0.81915206,
+        0.0,
+        -0.57357645
+       ],
+       "spawning": [
+        [
+         "BP_Bandit_Ranged_Boss_C",
+         2
+        ],
+        [
+         "BP_Bandit_Ranged_AssaultRifle_C",
+         6
+        ]
+       ],
+       "tag": "BanditCamp3"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_EliminateMilitary001_C": {
+   "branches": {
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        597.53,
+        15.54,
+        1771.71
+       ],
+       "description": "Go to the Coyote's camp location",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 200.0
+      }
+     ],
+     "to": "QuestState_1"
+    },
+    "QuestBranch_7": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "MilitaryCamp1",
+       "description": "Find & eliminate the coyote soldiers",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 10,
+       "retroactive": false,
+       "task": "KillNPC"
+      }
+     ],
+     "to": "Completed"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a bandit camp. I better sort these out before they cause the settlements any trouble.",
+   "name": "Elimination",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      },
+      {
+       "kind": "RewardGiveItem",
+       "random": true,
+       "sets": [
+        [],
+        [],
+        []
+       ]
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        597.53,
+        15.54,
+        1771.71
+       ],
+       "colour": [
+        0.427083,
+        0.0,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "MilitaryCamp1",
+       "text": "Coyote Camp",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/gun2.png",
+       "underground": false
+      },
+      {
+       "at": [
+        597.53,
+        15.54,
+        1771.71
+       ],
+       "class": "Prefab_Quest_CoyotesLoc1_C",
+       "kind": "SpawnPrefab",
+       "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+       ],
+       "tag": "MilitaryCamp1"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_EliminateMilitary001_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "MilitaryCamp1"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "MilitaryCamp1"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_7"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "MilitaryCamp1"
+      },
+      {
+       "argument": "MilitaryCamp1",
+       "at": [
+        597.53,
+        15.54,
+        1771.71
+       ],
+       "extent": [
+        10.0,
+        2.0,
+        10.0
+       ],
+       "kind": "SpawnAIHumanSpawner",
+       "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+       ],
+       "spawning": [
+        [
+         "BP_Military_Boss_C",
+         1
+        ],
+        [
+         "BP_Military_Rifleman_C",
+         9
+        ]
+       ],
+       "tag": "MilitaryCamp1"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_EliminateMilitary002_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "MilitaryCamp2",
+       "description": "Find & eliminate the coyote soldiers",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 10,
+       "retroactive": false,
+       "task": "KillNPC"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        -776.01664,
+        19.36,
+        9.6452576
+       ],
+       "description": "Go to the Coyote's camp location",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 200.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a bandit camp. I better sort these out before they cause the settlements any trouble.",
+   "name": "Elimination",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      },
+      {
+       "kind": "RewardGiveItem",
+       "random": true,
+       "sets": [
+        [],
+        [],
+        []
+       ]
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        -776.01664,
+        19.36,
+        9.6452576
+       ],
+       "colour": [
+        0.427083,
+        0.0,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "MilitaryCamp2",
+       "text": "Coyote Camp",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/gun2.png",
+       "underground": false
+      },
+      {
+       "at": [
+        -776.01664,
+        19.36,
+        9.6452576
+       ],
+       "class": "Prefab_Quest_CoyotesLoc2_C",
+       "kind": "SpawnPrefab",
+       "rotation": [
+        0.0,
+        0.8433914,
+        -0.0,
+        -0.53729963
+       ],
+       "tag": "MilitaryCamp2"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_EliminateMilitary002_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "MilitaryCamp2"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "MilitaryCamp2"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "MilitaryCamp2"
+      },
+      {
+       "argument": "MilitaryCamp2",
+       "at": [
+        -776.01664,
+        19.36,
+        9.6452576
+       ],
+       "extent": [
+        10.0,
+        2.0,
+        10.0
+       ],
+       "kind": "SpawnAIHumanSpawner",
+       "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+       ],
+       "spawning": [
+        [
+         "BP_Military_Boss_C",
+         1
+        ],
+        [
+         "BP_Military_Rifleman_C",
+         9
+        ]
+       ],
+       "tag": "MilitaryCamp2"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_LaptopEvent_EliminateMilitary003_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "argument": "MilitaryCamp3",
+       "description": "Find & eliminate the coyote soldiers",
+       "hidden": false,
+       "kind": "DataTask",
+       "optional": false,
+       "quantity": 10,
+       "retroactive": false,
+       "task": "KillNPC"
+      }
+     ],
+     "to": "Completed"
+    },
+    "QuestBranch_15": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        683.2575999999999,
+        13.48,
+        426.88023
+       ],
+       "description": "Go to the Coyote's camp location",
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "Location Name",
+       "optional": false,
+       "tolerance": 200.0
+      }
+     ],
+     "to": "QuestState_1"
+    }
+   },
+   "description": "From the military laptop I scanned, I was able to discover the location of a bandit camp. I better sort these out before they cause the settlements any trouble.",
+   "name": "Elimination",
+   "start": "Container_Start",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 400.0,
+       "kind": "RewardPlayerXP"
+      },
+      {
+       "kind": "RewardGiveItem",
+       "random": true,
+       "sets": [
+        [],
+        [],
+        []
+       ]
+      }
+     ],
+     "kind": "Success"
+    },
+    "Container_Start": {
+     "branches": [
+      "QuestBranch_15"
+     ],
+     "events": [
+      {
+       "at": [
+        683.2575999999999,
+        13.48,
+        426.88023
+       ],
+       "colour": [
+        0.427083,
+        0.0,
+        0.0,
+        1.0
+       ],
+       "kind": "SpawnMarker",
+       "tag": "MilitaryCamp3",
+       "text": "Coyote Camp",
+       "texture": "game/SurrounDead/Content/UI/Textures/over_250_survival_flat_icons/gun2.png",
+       "underground": false
+      },
+      {
+       "at": [
+        683.2575999999999,
+        13.48,
+        426.88023
+       ],
+       "class": "Prefab_Quest_CoyotesLoc3_C",
+       "kind": "SpawnPrefab",
+       "rotation": [
+        -0.0,
+        -0.809017,
+        0.0,
+        -0.58778524
+       ],
+       "tag": "MilitaryCamp3"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_LaptopEvent_EliminateMilitary003_C"
+      },
+      {
+       "kind": "RemoveMarker",
+       "tag": "MilitaryCamp3"
+      },
+      {
+       "kind": "RemoveActor",
+       "tag": "MilitaryCamp3"
+      }
+     ],
+     "kind": "Failure"
+    },
+    "QuestState_1": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [
+      {
+       "kind": "RemoveMarker",
+       "tag": "MilitaryCamp3"
+      },
+      {
+       "argument": "MilitaryCamp3",
+       "at": [
+        683.2575999999999,
+        13.48,
+        426.88023
+       ],
+       "extent": [
+        10.0,
+        2.0,
+        10.0
+       ],
+       "kind": "SpawnAIHumanSpawner",
+       "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        -1.0
+       ],
+       "spawning": [
+        [
+         "BP_Military_Boss_C",
+         1
+        ],
+        [
+         "BP_Military_Rifleman_C",
+         9
+        ]
+       ],
+       "tag": "MilitaryCamp3"
+      }
+     ],
+     "kind": "Regular"
+    }
+   }
+  },
+  "Quest_TheSafeZone_C": {
+   "branches": {
+    "QuestBranch_1": {
+     "events": [],
+     "tasks": [
+      {
+       "at": [
+        1157.3392,
+        15.988154,
+        1317.6139
+       ],
+       "description": null,
+       "hidden": false,
+       "invert": false,
+       "kind": "GoToLocation",
+       "location": "The Valley Safe Zone",
+       "optional": false,
+       "tolerance": 20.0
+      }
+     ],
+     "to": "Completed"
+    }
+   },
+   "description": "I've heard of a main safe zone in the surrounding area. I really need to look at finding out where this place is and heading there. \r\nIt's already marked on my map and I should look at getting there.",
+   "name": "The Safe Zone",
+   "start": "QuestStart",
+   "states": {
+    "Completed": {
+     "branches": [],
+     "events": [
+      {
+       "amount": 300.0,
+       "kind": "RewardPlayerXP"
+      }
+     ],
+     "kind": "Success"
+    },
+    "Forget": {
+     "branches": [],
+     "events": [
+      {
+       "kind": "Forget",
+       "quest": "Quest_TheSafeZone_C"
+      }
+     ],
+     "kind": "Regular"
+    },
+    "QuestStart": {
+     "branches": [
+      "QuestBranch_1"
+     ],
+     "events": [],
+     "kind": "Regular"
+    }
+   }
+  }
+ }
+}

@@ -368,6 +368,13 @@ struct CheckTick(MapCheck);
 /// POIDiscoveredUI and its age.
 #[derive(Component)]
 pub struct Discovered(f32);
+
+impl Discovered {
+    /// Seconds into FadeStart.
+    pub fn age(&self) -> f32 {
+        self.0
+    }
+}
 #[derive(Component)]
 struct DiscoveredBack;
 #[derive(Component)]
@@ -862,13 +869,16 @@ fn discover(
     }
 }
 
-/// POIDiscoveredUI: bottom left, alignment (0, 4) of its own height (about 96 px: ours puts its
-/// bottom 3 heights up); fade-left tinted black behind "POI DISCOVERED" and the name and icon.
+/// POIDiscoveredUI: bottom left, auto-sized, alignment (0, 4) of its own height (its bottom 3
+/// heights up: `fade_banner` measures it); fade-left tinted black behind "POI DISCOVERED" and the
+/// name and icon. The TextBlocks have no outline and UMG's default (transparent) shadow.
 fn spawn_banner(commands: &mut Commands, font: &MenuFont, assets: &AssetServer, poi: &Poi) {
+    // Its laid-out height (title + the 60 px icon's row) before the first measure.
     const HEIGHT: f32 = 96.0;
     let grey = Color::linear_rgb(0.567708, 0.567708, 0.567708);
+    let plain = |s: String, size: f32, colour: Color| (Text::new(s), TextFont { font: font.0.clone().into(), font_size: crate::menus::widgets::pt(size), ..default() }, TextColor(colour));
     commands.spawn((
-        Node { position_type: PositionType::Absolute, left: Val::Px(0.0), bottom: Val::Px(3.0 * HEIGHT), padding: UiRect::new(Val::Px(50.0), Val::Px(100.0), Val::Px(0.0), Val::Px(0.0)), flex_direction: FlexDirection::Column, ..default() },
+        Node { position_type: PositionType::Absolute, left: Val::Px(BANNER_SLIDE[0].1), bottom: Val::Px(3.0 * HEIGHT), padding: UiRect::new(Val::Px(50.0), Val::Px(100.0), Val::Px(0.0), Val::Px(0.0)), flex_direction: FlexDirection::Column, ..default() },
         // A Border's brush fills it (Bevy's default image mode keeps the texture's aspect).
         ImageNode::new(assets.load("game/SurrounDead/Content/UI/Textures/fade-left.png")).with_color(Color::BLACK.with_alpha(0.0)).with_mode(bevy::ui::widget::NodeImageMode::Stretch),
         Discovered(0.0),
@@ -877,11 +887,11 @@ fn spawn_banner(commands: &mut Commands, font: &MenuFont, assets: &AssetServer, 
         Pickable::IGNORE,
         DespawnOnExit(AppState::InGame),
         children![
-            (label_colored(font, "POI DISCOVERED", 16.0, grey.with_alpha(0.0)), DiscoveredBack),
+            (plain("POI DISCOVERED".into(), 16.0, grey.with_alpha(0.0)), DiscoveredBack),
             (
                 Node { align_items: AlignItems::Center, ..default() },
                 children![
-                    (label_colored(font, poi.name.to_uppercase(), 32.0, Color::WHITE.with_alpha(0.0)), DiscoveredFront),
+                    (plain(poi.name.to_uppercase(), 32.0, Color::WHITE.with_alpha(0.0)), DiscoveredFront),
                     (
                         Node { width: Val::Px(60.0), height: Val::Px(60.0), margin: UiRect::new(Val::Px(10.0), Val::Px(5.0), Val::Px(5.0), Val::Px(5.0)), ..default() },
                         ImageNode::new(assets.load(format!("{POI_TEX}/{}.png", poi.image))).with_color(poi.colour.with_alpha(0.0)),
@@ -908,22 +918,31 @@ pub(crate) fn track(keys: &[(f32, f32)], t: f32) -> f32 {
 /// in from 1.25 to 2.25 s, out from 4.25 to 4.75 s. The widget goes when it ends (5.75 s).
 pub const BANNER_BACK: [(f32, f32); 4] = [(0.0, 0.0), (105899.0 / 60000.0, 1.0), (257183.0 / 60000.0, 1.0), (332825.0 / 60000.0, 0.0)];
 pub const BANNER_FRONT: [(f32, f32); 5] = [(0.0, 0.0), (1.25, 0.0), (2.25, 1.0), (4.25, 1.0), (4.75, 0.0)];
+/// FadeStart's ZoneArea 2D transform: Translation X from -525 px in by 1.51 s, back out from 4.29
+/// to 5.55 s (the same keys in ZoneAreaWidget).
+pub const BANNER_SLIDE: [(f32, f32); 4] = [(0.0, -525.0), (90771.0 / 60000.0, 0.0), (257183.0 / 60000.0, 0.0), (332825.0 / 60000.0, -525.0)];
 const BANNER_END: f32 = 344928.0 / 60000.0;
 
 #[allow(clippy::type_complexity)]
 fn fade_banner(
     mut commands: Commands,
     time: Res<Time>,
-    mut banners: Query<(Entity, &mut Discovered, &Children)>,
+    mut banners: Query<(Entity, &mut Discovered, &Children, &mut Node, &ComputedNode)>,
     children: Query<&Children>,
     mut images: Query<(&mut ImageNode, Has<DiscoveredFront>)>,
     mut texts: Query<(&mut TextColor, Has<DiscoveredFront>)>,
 ) {
-    for (e, mut age, kids) in &mut banners {
+    for (e, mut age, kids, mut node, computed) in &mut banners {
         age.0 += time.delta_secs();
         if age.0 >= BANNER_END {
             commands.entity(e).despawn();
             continue;
+        }
+        // The slide, and the alignment's 3 heights up once it's laid out.
+        node.left = Val::Px(track(&BANNER_SLIDE, age.0));
+        let height = computed.size().y * computed.inverse_scale_factor();
+        if height > 0.0 {
+            node.bottom = Val::Px(3.0 * height);
         }
         let (back, front) = (track(&BANNER_BACK, age.0), track(&BANNER_FRONT, age.0));
         let mut all = vec![e];

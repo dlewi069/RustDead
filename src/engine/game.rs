@@ -60,9 +60,29 @@ pub struct GameState {
     /// BP_SettlementManager's CampToSpawn (`None` = not picked yet: SettlementSpawned? off).
     #[serde(default)]
     pub settlement: Option<usize>,
+    /// The BP_AlternatePOIs whose AlternatePrefab? is set (EMS actor save), by actor name.
+    #[serde(default)]
+    pub alternate_pois: Vec<String>,
     /// Buildables the survivor placed (BuildingComponent.SpawnBuild; `gameplay::building`).
     #[serde(default)]
     pub buildables: Vec<crate::gameplay::building::PlacedBuildable>,
+    /// Save_Player's RespawnLocationSet? / RespawnLocation (a bed's Set Spawn Point; `respawn.rs`).
+    #[serde(default)]
+    pub respawn_point: Option<[f32; 3]>,
+    /// Save_Difficulties' Permadeath (the new game page's PERMADEATH?; `gameplay::respawn`).
+    #[serde(default)]
+    pub permadeath: bool,
+    /// Container_DeadPlayerLoot crates left where the survivor died (`gameplay::death_loot`).
+    #[serde(default)]
+    pub death_bags: Vec<crate::gameplay::death_loot::DeathBag>,
+    /// The infestations: destroyed nests, damaged ones' health, their piles' loot and the random
+    /// spawn points' roll (`gameplay::infestations`).
+    #[serde(default)]
+    pub infestations: crate::gameplay::infestations::InfestationSave,
+    /// The loot containers: what's searched (with its items), marked as storage, and the refill
+    /// timers' time left (`gameplay::loot_refill`).
+    #[serde(default)]
+    pub loot: crate::gameplay::loot_refill::LootSave,
     pub equipment: Equipment,
     pub active_weapon: Option<WeaponStats>,
     pub zombies: Vec<Zombie>,
@@ -240,7 +260,13 @@ impl GameState {
             quest_log: Default::default(),
             wells: Default::default(),
             settlement: None,
+            alternate_pois: Vec::new(),
             buildables: Vec::new(),
+            respawn_point: None,
+            permadeath: false,
+            death_bags: Vec::new(),
+            infestations: Default::default(),
+            loot: Default::default(),
             equipment,
             active_weapon: create_weapon_preset("m4a1"),
             zombies,

@@ -10,7 +10,12 @@ JigSInventory/Jigsaw/Data/DataAsset/JigsawItem_DataAsset (class defaults). Write
   items     buildable DA -> what BuildingComponent reads off it: BuildMesh (the ghost),
             BuildActorClass, SnapType (Enum_BuildingSnapTypes' name), BuildBoundsCheckMultiplier,
             BuildBoundsOverlapOffset (UE cm), BuildAllowBuildingInNoBuildZones
-  actors    Buildable_* class -> its InteractOptions labels, Tags and the static mesh parts of
+  actors    Buildable_* class -> its InteractOptions labels, Tags, snap points (tagged
+            ChildActorComponents: tags and transform, glb space), the storage grid (columns,
+            rows) of containers, the RespawnLocation (beds), lights (the on-intensity read off
+            the bytecode: the dump needs SD_SCRIPT=1), Requires Power?, the lamps' switch,
+            generators' MaxFuel and range, traps' trigger box and blast radius, and the static
+            mesh parts of
             its construction script (Buildable_MASTER's and its own, with the inherited
             components' overrides): mesh, override materials, collision, parent part and the
             transform relative to it (glb space)
@@ -20,10 +25,14 @@ JigSInventory/Jigsaw/Data/DataAsset/JigsawItem_DataAsset (class defaults). Write
 """
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import kismet  # noqa: E402
 
 ROOT = Path(sys.argv[1])
 OUT = Path(__file__).resolve().parent.parent / "assets" / "data" / "buildables.json"
@@ -182,8 +191,91 @@ def actor(path):
             "collides": body.get("CollisionEnabled", "ECollisionEnabled::QueryAndPhysics") != "ECollisionEnabled::NoCollision",
             **glb_transform(m),
         })
+    # BuildingComponent.CheckForSnap's snap points: ChildActorComponents whose ComponentTags name
+    # a snap type (GetSocketTransform on a component without sockets is its own transform).
+    sockets = []
+    for var, n in nodes.items():
+        tags = n["props"].get("ComponentTags")
+        if n["class"] == "ChildActorComponent" and tags:
+            g = glb_transform(world(var))
+            sockets.append({"name": var, "tags": tags, "t": g["t"], "r": g["r"]})
+    # BuildableMaster_Container's / _Tent's BP_JigMultiplayer: the storage grid
+    # (ContainersSettings[0]). Benches, the campfire and the trash bin have grids of their own use.
+    classes = {next(e["Name"] for e in exports if e["Type"] == "BlueprintGeneratedClass") for exports in chain}
+    storage = None
+    for n in nodes.values() if classes & {"BuildableMaster_Container_C", "BuildableMaster_Tent_C"} else []:
+        sets = n["props"].get("ContainersSettings") if n["class"] == "BP_JigMultiplayer_C" else None
+        if sets:
+            storage = [field(sets[0], "Columns"), field(sets[0], "Rows")]
+    # The other actors' BP_JigMultiplayer grids (the trash bin's, the disassembly workbench's input
+    # and "Disassembled" output, the battery charger's): [columns, rows, ContainerName].
+    grids = []
+    for n in nodes.values() if storage is None else []:
+        for st in (n["props"].get("ContainersSettings") or []) if n["class"] == "BP_JigMultiplayer_C" else []:
+            grids.append([field(st, "Columns"), field(st, "Rows"), field(st, "ContainerName")])
+    # Lights (the lamps' PointLight / the construction light's SpotLights): placed at 0 and set by
+    # the bytecode's SetIntensity calls, so the "on" value is the largest literal there.
+    code = "\n".join(kismet.e(st) for exports in chain for x in exports for st in x.get("ScriptBytecode") or [])
+    on = max([float(v) for v in re.findall(r"SetIntensity\(([\d.]+)\)", code)] or [0.0])
+    lights = []
+    for var, n in nodes.items():
+        if n["class"] not in ("PointLightComponent", "SpotLightComponent"):
+            continue
+        p = n["props"]
+        g = glb_transform(world(var))
+        colour = p.get("LightColor") or {}
+        lights.append({
+            "spot": n["class"] == "SpotLightComponent",
+            "t": g["t"],
+            "r": g["r"],
+            "intensity": on,
+            # UE defaults: AttenuationRadius 1000, OuterConeAngle 44, white.
+            "radius": p.get("AttenuationRadius", 1000.0) / 100,
+            "cone": p.get("OuterConeAngle", 44.0),
+            "color": [colour.get(k, 255) / 255 for k in "RGB"],
+            "inverse_square": p.get("bUseInverseSquaredFalloff", True),
+        })
+    # OnInteractBuildable's PlayMontage(Loot_TableTop_LeftHand_Montage) on its Actor (the
+    # benches, containers, tents, displays, the shower, the well); every buildable's pickup plays
+    # it on CurrentActor, which the game does for all of them anyway.
+    casts, interact_montage = {}, False
+    for line in code.split("\n"):
+        m = re.search(r"(\w+) = cast<\w+>\((\w+)\)", line)
+        if m:
+            casts[m[1]] = m[2]
+        m = re.search(r"(\w+)\.PlayMontage\(Loot_TableTop_LeftHand_Montage", line)
+        if m and casts.get(m[1]) == "K2Node_Event_Actor":
+            interact_montage = True
+    # Buildable_GeneratorMaster: MaxFuel and its Collision sphere's radius (m).
+    generator = None
+    if "MaxFuel" in cdo:
+        sphere = next((n["props"].get("SphereRadius", 32.0) for n in nodes.values() if n["class"] == "SphereComponent"), 0.0)
+        generator = {"max_fuel": cdo["MaxFuel"], "radius": sphere / 100}
+    # The traps ('PlayerTrap' tag): their Box_0 overlap box (centre, rotation, half extents in
+    # glb metres) and the landmine's ExplosionSphere radius (m).
+    trigger = None
+    if "PlayerTrap" in (cdo.get("Tags") or []) and "Box_0" in nodes:
+        g = glb_transform(world("Box_0"))
+        e = nodes["Box_0"]["props"].get("BoxExtent") or {}
+        ext = [e.get(k, 32.0) / 100 for k in "XZY"]
+        trigger = {"t": g["t"], "r": g["r"], "half": [round(ext[i] * g["s"][i], 6) for i in range(3)]}
+    blast = next((n["props"].get("SphereRadius", 32.0) / 100 for v, n in nodes.items() if v == "ExplosionSphere"), None)
+    # SetSpawnPoint's RespawnLocation scene component (beds, the sleeping bag), glb space.
+    respawn = glb_transform(world("RespawnLocation"))["t"] if "RespawnLocation" in nodes else None
     return {
         "options": [text(o["Value"]) for o in cdo.get("InteractOptions") or []],
+        "sockets": sockets,
+        "storage": storage,
+        "grids": grids,
+        "respawn": respawn,
+        "lights": lights,
+        # Requires Power? (lit by a generator in range) and whether Interact switches its light.
+        "requires_power": bool(cdo.get("RequiresPower?")),
+        "switch": bool(lights) and "LightOn" in code,
+        "interact_montage": interact_montage,
+        "generator": generator,
+        "trigger": trigger,
+        "blast_radius": blast,
         "tags": cdo.get("Tags") or [],
         "pickup": asset_path(cdo.get("PickupDataAsset")).rsplit("/", 1)[1] if cdo.get("PickupDataAsset") else None,
         "parts": parts,

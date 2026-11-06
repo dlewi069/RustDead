@@ -154,11 +154,12 @@ impl Sound {
     }
 }
 
-/// A playing positioned sound whose volume follows the listener (loops, and one-shots on movers).
+/// A playing positioned sound whose volume follows the listener (loops, and one-shots on movers),
+/// or a 2D loop (no attenuation) that follows its owner's `LoopGain` and stops with it.
 #[derive(Component)]
 pub struct Emitter {
     base: f32,
-    att: Attenuation,
+    att: Option<Attenuation>,
     at: Vec3,
     follow: Option<Entity>,
 }
@@ -177,6 +178,11 @@ pub struct AmbientLoop {
     pub volume: f32,
     pub active: bool,
 }
+
+/// An [`AmbientLoop`]'s AudioComponent AttenuationSettings, overriding the cue's (BP_Siren's
+/// GunshotsRifle, the flood lights' CampFire).
+#[derive(Component, Clone, Debug)]
+pub struct LoopAttenuation(pub String);
 
 /// How many times each cue has started (for the tour's checks).
 #[derive(Resource, Default, Debug)]
@@ -250,6 +256,7 @@ fn play(
     listener: Query<&GlobalTransform, With<Listener>>,
     fallback: Query<&GlobalTransform, With<Camera3d>>,
     mut played: ResMut<Played>,
+    gains: Query<&LoopGain>,
 ) {
     if msgs.is_empty() {
         return;
@@ -268,7 +275,7 @@ fn play(
         let gain = match (s.at, att, ear) {
             (Some(at), Some(a), Some(ear)) => attenuate(at.distance(ear), &a),
             _ => 1.0,
-        };
+        } * s.follow.and_then(|f| gains.get(f).ok()).map_or(1.0, |g| g.0);
         // Beyond the falloff a one-shot isn't worth starting.
         if gain <= 0.0 && !v.looping {
             continue;
@@ -280,8 +287,16 @@ fn play(
                 PlaybackSettings { mode: if v.looping { PlaybackMode::Loop } else { PlaybackMode::Despawn }, volume: Volume::Linear(base * gain), speed: pitch, ..default() },
                 Transform::from_translation(s.at.unwrap_or_default()),
             ));
-            if let (Some(at), Some(a)) = (s.at, att) {
-                e.insert(Emitter { base, att: a, at, follow: s.follow });
+            // A 2D loop on an owner (the Geiger) needs one too: without it nothing ever stopped
+            // the loop or applied its gain, and each restart stacked another full-volume copy.
+            match (s.at, att) {
+                (Some(at), Some(a)) => {
+                    e.insert(Emitter { base, att: Some(a), at, follow: s.follow });
+                }
+                (at, None) if s.follow.is_some() => {
+                    e.insert(Emitter { base, att: None, at: at.unwrap_or_default(), follow: s.follow });
+                }
+                _ => {}
             }
         }
         debug!("sound {} gain {gain:.2}", s.cue);
@@ -322,11 +337,11 @@ fn ambient_loops(
     mut commands: Commands,
     db: Res<SoundDb>,
     listener: Query<&GlobalTransform, With<Listener>>,
-    loops: Query<(Entity, &GlobalTransform, &AmbientLoop, Has<Voiced>)>,
+    loops: Query<(Entity, &GlobalTransform, &AmbientLoop, Has<Voiced>, Option<&LoopAttenuation>)>,
     mut sound: MessageWriter<Sound>,
 ) {
     let Some(ear) = listener.iter().next().map(|t| t.translation()) else { return };
-    for (e, t, l, voiced) in &loops {
+    for (e, t, l, voiced, over) in &loops {
         if !l.active {
             if voiced {
                 commands.entity(e).remove::<Voiced>();
@@ -336,10 +351,11 @@ fn ambient_loops(
         if voiced {
             continue;
         }
-        let reach = db.cues.get(&l.cue).and_then(|c| c.attenuation.as_ref()).and_then(|a| db.attenuation.get(a)).map_or(30.0, |a| a.inner + a.falloff);
+        let att = over.map(|o| &o.0).or(db.cues.get(&l.cue).and_then(|c| c.attenuation.as_ref()));
+        let reach = att.and_then(|a| db.attenuation.get(a)).map_or(30.0, |a| a.inner + a.falloff);
         if t.translation().distance(ear) < reach {
             commands.entity(e).insert(Voiced);
-            sound.write(Sound { cue: l.cue.clone(), at: Some(t.translation()), volume: l.volume, attenuation: None, follow: Some(e) });
+            sound.write(Sound { cue: l.cue.clone(), at: Some(t.translation()), volume: l.volume, attenuation: over.map(|o| o.0.clone()), follow: Some(e) });
         }
     }
 }
@@ -367,14 +383,15 @@ fn follow(
                 }
             }
             // Out of earshot: the loop stops (and starts again when the owner's system re-adds it).
-            if em.at.distance(ear) > em.att.inner + em.att.falloff + 5.0 {
+            if em.att.is_some_and(|a| em.at.distance(ear) > a.inner + a.falloff + 5.0) {
                 commands.entity(e).despawn();
                 commands.entity(f).try_remove::<Voiced>();
                 continue;
             }
         }
         if let Some(mut sink) = sink {
-            sink.set_volume(Volume::Linear(em.base * gain * attenuate(em.at.distance(ear), &em.att)));
+            let fall = em.att.as_ref().map_or(1.0, |a| attenuate(em.at.distance(ear), a));
+            sink.set_volume(Volume::Linear(em.base * gain * fall));
         }
     }
 }

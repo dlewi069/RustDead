@@ -19,8 +19,8 @@
 //!   back, says "The Blood Moon is Settling down..." and resets the zombies (BloodMoon false), as
 //!   the BP does.
 //!
-//! Ours: Attack Speed is taken as the swings' rate (their interval / 1.75); the eyes aren't drawn
-//! (the zombies' glowing eyes aren't ported).
+//! Ours: Attack Speed is taken as the swings' rate (their interval / 1.75). The eyes are
+//! `zombie_eyes`'. The zombie bosses (BP_ZombieBoss, not a BP_MasterZombie child) don't bind it.
 
 use bevy::prelude::*;
 use rand::Rng;
@@ -213,7 +213,7 @@ fn blood_moon(
             notify.write(super::notify::Notify { text: "The Blood Moon is upon us...".into(), secs: 4.0, color: Color::WHITE });
             let mut n = 0;
             for (e, z) in &zombies {
-                if z.kind.animal().is_none() && z.kind.human().is_none() {
+                if answers_blood_moon(z.kind) {
                     commands.entity(e).insert(BloodMoonBoost);
                     n += 1;
                 }
@@ -231,12 +231,18 @@ fn blood_moon(
     }
 }
 
+/// Binds Event_BloodMoon at BeginPlay: BP_MasterZombie's children (not the bosses, a Blueprint
+/// of their own, nor the animals or humans).
+pub fn answers_blood_moon(kind: crate::gameplay::zombies::ZombieKind) -> bool {
+    kind.animal().is_none() && kind.human().is_none() && kind.boss().is_none()
+}
+
 /// Start the blood moon now (the screenshot tour), as a sunset's roll coming up would.
 pub fn force_blood_moon(world: &mut World) {
     let zombies: Vec<Entity> = world
         .query_filtered::<(Entity, &LevelZombie), Without<super::combat::Dead>>()
         .iter(world)
-        .filter(|(_, z)| z.kind.animal().is_none() && z.kind.human().is_none())
+        .filter(|(_, z)| answers_blood_moon(z.kind))
         .map(|(e, _)| e)
         .collect();
     for e in &zombies {
@@ -252,6 +258,18 @@ pub fn force_blood_moon(world: &mut World) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_bp_master_zombies_children_answer_the_blood_moon() {
+        use crate::gameplay::zombies::ZombieKind;
+        let k = |c: &str| ZombieKind::from_class(c).unwrap_or_else(|| panic!("{c}"));
+        for c in ["BP_Zombie_Roamer_C", "BP_Zombie_Crawler_C", "BP_Zombie_Infected_C", "BP_Zombie_Radiated_C", "BP_Zombie_Dog_C"] {
+            assert!(answers_blood_moon(k(c)), "{c}");
+        }
+        for c in ["BP_ZombieBoss_Military_C", "BP_ZombieBossHorde_Military_C", "BP_AnimalWolf_C", "BP_Bandit_Melee_C"] {
+            assert!(!answers_blood_moon(k(c)), "{c}");
+        }
+    }
 
     #[test]
     fn jets_and_explosions_start_where_the_bp_puts_them() {

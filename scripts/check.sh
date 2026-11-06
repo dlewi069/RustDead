@@ -9,8 +9,8 @@
 #
 #   scripts/check.sh            everything
 #   scripts/check.sh --quick    skip the tour (~4 min)
-#   scripts/check.sh --hook     Stop-hook mode: skip if nothing changed since the last pass, exit 2
-#                               with the report on stderr when a step fails
+#   scripts/check.sh --hook     Stop-hook mode: skip if nothing changed since the last pass or the
+#                               last hook run, exit 2 with the report on stderr when a step fails
 #
 # New tests join automatically: #[test]s anywhere in src/, functions listed in CHECKS in
 # check_data.py / check_tour.py, and new tour steps in src/menus/autoshot.rs.
@@ -44,6 +44,12 @@ if [[ $HOOK -eq 1 ]]; then
     if [[ -f "$OUT/passed" && "$(cat "$OUT/passed")" == "$FP" ]]; then
         exit 0
     fi
+    # The hook fires on every prompt under /home/lev/Qwen, not just SurrounDead work (the user's
+    # rule, 2026-11-06: never run this on unrelated prompts). Pass or fail, one run per change.
+    if [[ -f "$OUT/hook_ran" && "$(cat "$OUT/hook_ran")" == "$FP" ]]; then
+        exit 0
+    fi
+    echo "$FP" >"$OUT/hook_ran"
 fi
 
 : >"$REPORT"
@@ -89,7 +95,14 @@ step data $code "$(tail -1 "$OUT/data.log")"
 # 5. screenshot tour
 if [[ $QUICK -eq 0 ]]; then
     rm -rf "$OUT/shots" && mkdir -p "$OUT/shots"
-    SD_START=3 SD_MENU_SHOTS="$PWD/$OUT/shots" timeout 900 cargo run -q >"$OUT/tour.log" 2>&1
+    # The music radio's songs (08zzx_radio): the game reads <game dir>/Radio/*.mp3, which it
+    # doesn't ship; two short MP3s made from game waves stand in (needs ffmpeg).
+    RADIO="$PWD/$OUT/radio"
+    rm -rf "$RADIO" && mkdir -p "$RADIO"
+    W=assets/game/SurrounDead/Content/Audio
+    ffmpeg -loglevel error -y -i "$W/ES_News_Broadcast_Radio_2_-_SFX_Producer.wav" -t 2 "$RADIO/Broadcast Song.mp3" || true
+    ffmpeg -loglevel error -y -i "$W/RadioMuffled.wav" -t 3 "$RADIO/Muffled Song.mp3" || true
+    SD_RADIO_DIR="$RADIO" SD_START=3 SD_MENU_SHOTS="$PWD/$OUT/shots" timeout 900 cargo run -q >"$OUT/tour.log" 2>&1
     code=$?
     python3 scripts/check_tour.py "$OUT/tour.log" "$OUT/shots" "$code" >"$OUT/tour_checks.log" 2>&1
     code=$?

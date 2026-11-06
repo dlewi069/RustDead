@@ -40,6 +40,49 @@ def recipes_reference_real_items(ctx):
         ctx.err("no 'Player' recipes (the CRAFTING tab would be empty)")
 
 
+def repair_kits_and_tool_containers(ctx):
+    """The repair kits and tablets carry their OverItemOptions (items.json `over_item`), the
+    tool-required containers name real tools, and the level export has the gun lockers' own tool
+    and the hidden cache spawners' points (SdExport levelactors: Level.cs Notes / Placed)."""
+    items = ctx.items["items"]
+    for kit, opts in (("DA_WeaponCleaningKit", {"WeaponRepair", "AttachmentRepair"}), ("DA_ArmorRepairKit", {"ArmorRepair"}),
+                      ("DA_WaterPurificationTablets", {"PurifyWater"}), ("DA_CharcoalTablets", {"RefillRadFilter"})):
+        if set(items.get(kit, {}).get("over_item") or []) != opts:
+            ctx.err(f"{kit}: over_item {items.get(kit, {}).get('over_item')} (want {sorted(opts)})")
+    tools = {k: c["tool"] for k, c in ctx.items["containers"].items() if c.get("tool")}
+    if len(tools) != 3:
+        ctx.err(f"tool-required container classes: {sorted(tools)}")
+    for k, t in tools.items():
+        if t.get("item") and t["item"] not in items:
+            ctx.err(f"{k}: tool {t['item']} isn't an item")
+    path = GAME / "levels" / "LongdownValley" / "actors.json"
+    if not path.exists():
+        return
+    actors = json.loads(path.read_text())
+    lockers2 = [a for a in actors if a["class"] == "BP_ToolRequired_GunLocker2_C"]
+    if not lockers2 or any((a.get("props") or {}).get("ToolNeeded") not in items for a in lockers2):
+        ctx.err("actors.json: BP_ToolRequired_GunLocker2 without its ToolNeeded (SdExport levelactors)")
+    caches = [a for a in actors if a["class"] == "BP_HiddenCache_Spawner_C"]
+    if len(caches) != 7 or any("Spawn1.RelativeLocation" not in (a.get("props") or {}) for a in caches):
+        ctx.err("actors.json: BP_HiddenCache_Spawner without its spawn points (SdExport levelactors)")
+
+
+def disassembly_parts_are_items(ctx):
+    """The disassembly workbench's parts (items.json `disassembly`) are real items with sane
+    count ranges, and the three utility benches have their grids (buildables.json `grids`)."""
+    items = ctx.items["items"]
+    for k, d in items.items():
+        for p in (d.get("disassembly") or {}).get("items", []):
+            if p["item"] not in items:
+                ctx.err(f"{k}: disassembles into unknown {p['item']}")
+            if not 0 < p["min"] <= p["max"]:
+                ctx.err(f"{k}: disassembly count {p['min']}-{p['max']}")
+    actors = json.load(open(ROOT / "assets/data/buildables.json"))["actors"]
+    for a, n in (("Buildable_TrashBin_C", 1), ("Buildable_DisassemblyWorkbench_C", 2), ("Buildable_BatteryCharger_C", 1)):
+        if len(actors.get(a, {}).get("grids") or []) != n:
+            ctx.err(f"{a}: want {n} grid(s) in buildables.json")
+
+
 def weapons_and_magazines_are_consistent(ctx):
     items = ctx.items["items"]
     for k, d in items.items():
@@ -53,8 +96,12 @@ def weapons_and_magazines_are_consistent(ctx):
                 ctx.err(f"{k}: accepts unknown ammo {ammo}")
         if d.get("type") in ("MainFirearm", "Sidearm"):
             stats = {s["stat"] for s in d.get("random_stats", [])}
-            if "FirearmDamage" not in stats:
+            proj = (d.get("firearm") or {}).get("projectile")
+            # The flare round's projectile deals no damage (BP_FlareRoundProjectile's hit is empty).
+            if "FirearmDamage" not in stats and not (proj and proj["class"] == "BP_FlareRoundProjectile_C"):
                 ctx.warn(f"{k}: firearm without FirearmDamage (falls back to 30)")
+            if proj and not (proj["speed"] > 0 and proj.get("mesh")):
+                ctx.err(f"{k}: projectile {proj['class']} without a speed or mesh")
 
 
 def equip_sockets_exist(ctx):
@@ -637,6 +684,95 @@ def bosses_resolve(ctx):
                 ctx.err(f"{name}: clip {clip} not exported (export_assets.sh --anims)")
 
 
+def placed_turrets_resolve(ctx):
+    """buildables.json's two turrets (turrets.rs): each has the Turret part the gun turns on
+    (its mesh exported), the 'ZombieCanAttack' tag, and only the big one Requires Power?; their
+    pickups are items."""
+    d = json.loads((DATA / "buildables.json").read_text())
+    for actor, item, power in [("Buildable_Turret_C", "DA_Turret", True), ("Buildable_SmallTurret_C", "DA_SmallTurret", False)]:
+        a = d["actors"].get(actor)
+        if not a:
+            ctx.err(f"buildables.json: no {actor}")
+            continue
+        gun = [p for p in a["parts"] if p["name"] == "Turret"]
+        if len(gun) != 1:
+            ctx.err(f"{actor}: {len(gun)} Turret parts (want 1)")
+        elif GAME.exists() and not (GAME / f"{gun[0]['mesh']}.glb").exists():
+            ctx.err(f"{actor}: gun mesh {gun[0]['mesh']} not exported")
+        if a["requires_power"] != power or "ZombieCanAttack" not in a["tags"] or a["pickup"] != item:
+            ctx.err(f"{actor}: requires_power {a['requires_power']} tags {a['tags']} pickup {a['pickup']}")
+        if d["items"].get(item, {}).get("actor") != actor or item not in ctx.items.get("items", {}):
+            ctx.err(f"{item}: doesn't build {actor} or isn't an item")
+
+
+def infestations_resolve(ctx):
+    """infestations.json (gen_infestations.py): every class's loot table and unique sets exist,
+    its waves name zombie classes, its meshes (and _D) are exported; the switches that turn them
+    on default on, as SD_GameInstance registers them (gen_menu_data.py once gave every check row
+    without a Save_Difficulties field 0)."""
+    d = json.loads((DATA / "infestations.json").read_text())
+    zombies = json.loads((DATA / "zombies.json").read_text())["classes"]
+    if set(d["classes"]) != {"BP_Infestation_C", "BP_Infestation_Floor_C", "BP_Infestation_Wall_C", "BP_Infestation_Ceiling_C", "BP_Infestation_Corner_C", "BP_PrimaryInfestation_C"}:
+        ctx.err(f"infestations.json classes {sorted(d['classes'])}")
+    for name, c in d["classes"].items():
+        if c["loot_table"] not in ctx.items.get("loot_tables", {}):
+            ctx.err(f"{name}: loot table {c['loot_table']} unknown")
+        for u in c["unique"]:
+            if u not in ctx.items.get("unique_loot", {}):
+                ctx.err(f"{name}: unique set {u} not in DT_UniqueLoot")
+        for w in c["waves"]:
+            for cls, n in w:
+                if cls not in zombies or n <= 0:
+                    ctx.err(f"{name}: wave AI {cls} x{n} not in zombies.json")
+        if GAME.exists():
+            for m in [c["mesh"], c["destroyed_mesh"], c["armor"]]:
+                if m and not (GAME / f"{m}.glb").exists():
+                    ctx.err(f"{name}: mesh {m} not exported (export_assets.sh --level)")
+    menus = json.loads((DATA / "menus.json").read_text())
+    rows = {r["label"]: r.get("default") for p in menus["difficulty"] for r in p["rows"]}
+    for label in ["PRIMARY INFESTATIONS ENABLED?", "RANDOM INFESTATIONS ENABLED?", "WEAPON DURABILITY ENABLED?"]:
+        if rows.get(label) != 1.0:
+            ctx.err(f"menus.json: {label} defaults to {rows.get(label)} (SD_GameInstance registers it true)")
+
+
+def attachments_hang_on_their_guns(ctx):
+    """Weapon attachments (attachments.rs show_attachments): each attachment's actor mesh is
+    exported, and each gun's socket bones are nodes of its glb (else nothing ever shows on it).
+    Sockets a gun lacks are allowed (UE attaches at the mesh's origin): only the Range Finder on
+    three guns, as in the game's data."""
+    items = json.loads((DATA / "items.json").read_text())["items"]
+    for k, v in items.items():
+        a = v.get("attachment") or {}
+        m = (a.get("actor") or {}).get("mesh")
+        if a and a.get("type") != "NVG" and not m:
+            ctx.err(f"{k}: attachment without an actor mesh")
+        if m and GAME.exists() and not (GAME / f"{m}.glb").exists():
+            ctx.err(f"{k}: attachment mesh {m} not exported (export_assets.sh --items)")
+    lacking = set()
+    for k, v in items.items():
+        if not v.get("slots"):
+            continue
+        if not v.get("mesh_sockets"):
+            ctx.err(f"{k}: a gun with no mesh_sockets")
+            continue
+        glb = GAME / f"{v['mesh']}.glb"
+        if glb.exists():
+            data = glb.read_bytes()
+            n = int.from_bytes(data[12:16], "little")
+            nodes = {nd.get("name") for nd in json.loads(data[20:20 + n]).get("nodes", [])}
+            for name, sk in v["mesh_sockets"].items():
+                if sk["bone"] not in nodes:
+                    ctx.err(f"{k}: socket {name}'s bone {sk['bone']} is not in {glb.name}")
+        for s in v["slots"]:
+            for it in s["items"]:
+                sock = ((items.get(it) or {}).get("attachment") or {}).get("socket")
+                if sock and sock not in v["mesh_sockets"]:
+                    lacking.add((k, it))
+    extra = {x for x in lacking if x[1] != "DA_RangeFinder"}
+    if extra:
+        ctx.err(f"attachments whose gun lacks their socket: {sorted(extra)}")
+
+
 def buildables_resolve(ctx):
     """buildables.json (gen_buildables.py): every buildable item exists in items.json with a Place
     option and its actor; the beacon's waves name zombie classes and its rewards real items; with
@@ -673,7 +809,61 @@ def buildables_resolve(ctx):
         ctx.err(f"{len(missing)} buildable meshes not exported (export_assets.sh --buildables): {missing[:3]}")
 
 
-CHECKS = [
+def storage_layouts_cover_their_grids(ctx):
+    """items.json `layout` (gen_items.py sc_layout): every item with grids has its SC_ widget's
+    layout, naming each grid once (the container windows and the INVENTORY column draw it)."""
+    def grids(n):
+        return [n["grid"]] if "grid" in n else [g for k in n.get("v", n.get("h", [])) for g in grids(k)]
+    n = 0
+    for key, it in ctx.items["items"].items():
+        if not it.get("grids"):
+            continue
+        n += 1
+        if not it.get("layout"):
+            ctx.err(f"items.json: {key} has grids but no layout (export_assets.sh --items: the SC_ widgets' SD_SCRIPT dump)")
+        elif sorted(grids(it["layout"])) != list(range(len(it["grids"]))):
+            ctx.err(f"items.json: {key}'s layout draws grids {sorted(grids(it['layout']))} of {len(it['grids'])}")
+    if n < 50:
+        ctx.err(f"items.json: only {n} items with grids")
+
+
+def outlines_resolve(ctx):
+    """outlines.json (gen_outlines.py): every level interactable our prompts outline by class has
+    its outlined components, and each sits as a static prop at the actor's origin (outline.rs
+    finds them within 1 m: ACTOR_REACH)."""
+    path = DATA / "outlines.json"
+    if not path.exists():
+        ctx.err("assets/data/outlines.json missing (extractor/gen_outlines.py target/bpdump)")
+        return
+    o = json.loads(path.read_text())
+    want = {"BP_WaterWell_C": ["Mesh_WaterWell"], "BP_Lever_C": ["LeverBase", "Lever"],
+            "BP_LaboratorySlidingDoor_C": ["LabSmallDoorframe"], "BP_Radio_Text_Military_C": ["SM_Prop_Radio_01"],
+            "BP_BanditTurret_AI_C": ["SM_Prop_Generator_Small_01", "SM_Prop_Computer_Camera_Tripod_01"]}
+    for cls, stems in want.items():
+        if o.get(cls) != stems:
+            ctx.err(f"outlines: {cls} {o.get(cls)} (want {stems})")
+    level = GAME / "levels" / "LongdownValley"
+    if not (level / "placements.json").exists():
+        return
+    actors = json.loads((level / "actors.json").read_text())
+    by_stem = {}
+    for k, v in json.loads((level / "placements.json").read_text()).items():
+        by_stem.setdefault(k.rsplit("/", 1)[-1], []).extend(m[9:12] for m in v)
+    classes = ["BP_WaterWell_C", "BP_KeypadNote_C", "BP_StandardNote_C", "BP_PowerGenerator_C", "BP_LaboratoryGenerator_C",
+               "BP_LaboratoryLightSwitch_C", "BP_Siren_C", "BP_Radio_C", "BP_Radio_Text_C", "BP_Radio_Text_Military_C",
+               "BP_HarvestableObject_ScrapMetal_C"]
+    for a in actors:
+        if a["class"] not in classes:
+            continue
+        at = a["transform"][9:12]
+        for stem in o.get(a["class"], []):
+            if not any(sum((x - y) ** 2 for x, y in zip(at, q)) <= 1.0 for q in by_stem.get(stem, [])):
+                ctx.err(f"outlines: {a['name']}: no {stem} within 1 m")
+
+
+CHECKS = [storage_layouts_cover_their_grids, outlines_resolve, repair_kits_and_tool_containers, disassembly_parts_are_items, 
+    placed_turrets_resolve,
+    infestations_resolve,
     buildables_resolve,
     settlements_resolve,
     random_volumes_resolve,
@@ -699,6 +889,7 @@ CHECKS = [
     zombie_spawners_carry_props,
     difficulty_presets_resolve,
     firearms_have_component_data,
+    attachments_hang_on_their_guns,
 ]
 
 

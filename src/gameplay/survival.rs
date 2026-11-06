@@ -1,7 +1,7 @@
 //! The survivor's vitals while playing: `SurvivalStats` (in the session's `GameState`) ticks
 //! hunger/thirst (HungerThirstComponent), stamina (StaminaComponent) and health regeneration
 //! (BP_PlayerCharacter.RegenHealth) as the Blueprints do, zombies in reach hurt, consumables
-//! restore, and death respawns the player at a PlayerStart.
+//! restore, and death brings up the respawn screen (`respawn.rs`).
 
 use bevy::prelude::*;
 
@@ -18,6 +18,9 @@ use rand::Rng;
 #[derive(Component, Default)]
 struct SwingTimer(f32, f32);
 
+/// Half the standing capsule (main.rs's 1.64 m).
+const CAPSULE_HALF_HEIGHT: f32 = 0.82;
+
 #[derive(Resource, Default)]
 pub struct PlayerVitals {
     /// Seconds since death, while dead.
@@ -25,9 +28,6 @@ pub struct PlayerVitals {
     /// Respawns so far this session (each is a new pawn: `stats.rs`).
     pub respawns: u32,
 }
-
-#[derive(Component)]
-struct DeathBanner;
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<PlayerVitals>()
@@ -185,6 +185,11 @@ fn tick_vitals(
     }
     let CurrentGame { state, inventory, .. } = &mut *game;
     let Some(state) = state.as_mut() else { return };
+    // At 0 the survivor is dead (AnyDamage's check): nothing regenerates before
+    // `death_and_respawn` sees it.
+    if state.survival.health <= 0.0 {
+        return;
+    }
     let wear = armor_wear(&store);
     let tough = toughness(Some(state));
     let mut hits = 0;
@@ -285,23 +290,27 @@ fn zombie_attacks(
     mut game: ResMut<CurrentGame>,
     vitals: Res<PlayerVitals>,
     player: Query<&Transform, (With<CharacterModel>, With<KinematicBody>)>,
-    mut zombies: Query<(Entity, &Transform, &LevelZombie, &Locomotion, Option<&mut SwingTimer>, Has<super::world_events::BloodMoonBoost>), Without<super::combat::Dead>>,
+    mut zombies: Query<(Entity, &Transform, &LevelZombie, &Locomotion, Option<&mut SwingTimer>, Has<super::world_events::BloodMoonBoost>, Option<&super::zombies::Zombie>), Without<super::combat::Dead>>,
     mut sound: MessageWriter<crate::audio::Sound>,
+    (targets, mut turret_hits): (Res<super::turrets::ZombieTargets>, MessageWriter<super::turrets::TurretHit>),
 ) {
     let Ok(p) = player.single() else { return };
     if vitals.is_dead() || game.state.is_none() {
         return;
     }
     let zombie_mult = difficulty(&store, "AI", "ZOMBIE DAMAGE MULTIPLIER");
-    for (e, t, z, loco, timer, roused) in &mut zombies {
+    for (e, t, z, loco, timer, roused, brain) in &mut zombies {
+        // Going for a placed turret: its swings land there (ApplyDamage on what the hand hit).
+        let turret = brain.and_then(|b| b.target).and_then(|i| targets.get(i));
         use super::world_events::BloodMoonBoost;
         // The animals' DamageToDo goes through ScalingDamageMultiplier only (a no-op unless
         // LEVEL SCALING ENABLED?, which isn't ported). The Blood Moon doubles a zombie's.
         let mult = if z.kind.animal().is_some() { 1.0 } else { zombie_mult } * if roused { BloodMoonBoost::DAMAGE } else { 1.0 };
         // Animals: MeleeAttackDistance between capsule centres (the player's 82 cm up).
-        let out_of_reach = match z.kind.animal() {
-            Some(a) => z.kind.centre(t).distance(p.translation + Vec3::Y * 0.82) > a.reach + super::animals::REACH_SLACK,
-            None => t.translation.distance(p.translation) > super::zombies::MELEE_RANGE + 0.3,
+        let out_of_reach = match (z.kind.animal(), turret) {
+            (Some(a), _) => z.kind.centre(t).distance(p.translation + Vec3::Y * 0.82) > a.reach + super::animals::REACH_SLACK,
+            (None, Some(a)) => t.translation.with_y(0.0).distance(a.at.with_y(0.0)) > super::zombies::MELEE_RANGE + 0.3,
+            (None, None) => t.translation.distance(p.translation) > super::zombies::MELEE_RANGE + 0.3,
         };
         if *loco != Locomotion::Attack || out_of_reach {
             continue;
@@ -326,6 +335,11 @@ fn zombie_attacks(
             if let Some(cue) = z.kind.attack_sound() {
                 sound.write(crate::audio::Sound::at(cue, t.translation + Vec3::Y));
             }
+            if let Some(a) = turret {
+                // DamageToDo x the multipliers (FTrunc'd by Deduct Health).
+                turret_hits.write(super::turrets::TurretHit { turret: a.turret, damage: c.damage * mult });
+                continue;
+            }
             zombie_hit(&mut game, &db, &store, c, mult);
         }
     }
@@ -338,6 +352,7 @@ fn zombie_attacks(
 /// same fields.)
 pub(crate) fn zombie_hit(game: &mut CurrentGame, db: &super::ItemDb, store: &SettingsStore, c: &super::zombies::ZombieClass, mult: f32) {
     let taken = take_hit(game, db, store, c.damage * mult);
+    info!("survivor hit by {} for {taken:.1}", c.name.as_deref().unwrap_or("?"));
     let Some(state) = game.state.as_mut() else { return };
     // (The old simulation's take_damage also rolled "infection", which the game hasn't got.)
     state.survival.health = (state.survival.health - taken).max(0.0);
@@ -355,13 +370,17 @@ pub(crate) fn zombie_hit(game: &mut CurrentGame, db: &super::ItemDb, store: &Set
     }
     state.survival.bleeding = state.effects.bleeding();
     if roll(c.rad_chance) {
-        state.survival.radiation = (state.survival.radiation + c.rad_damage).min(100.0);
+        // ApplyRadiationDamage: CanMaskProtect? for zombies, not for bosses.
+        let dose = super::radiation::hit_dose(game.inventory.as_ref(), db, c.rad_damage, c.boss.is_none());
+        let Some(state) = game.state.as_mut() else { return };
+        state.survival.radiation = (state.survival.radiation + dose).min(100.0);
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+/// Client_Died: Deathbringer first; else XPDeath and the RespawnScreen (`respawn.rs`), which
+/// sends [`Respawn`](super::respawn::Respawn).
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn death_and_respawn(
-    mut commands: Commands,
     time: Res<Time>,
     mut game: ResMut<CurrentGame>,
     mut vitals: ResMut<PlayerVitals>,
@@ -369,11 +388,11 @@ fn death_and_respawn(
     store: Res<SettingsStore>,
     level: Option<Res<Level>>,
     terrain: Option<Res<Terrain>>,
-    font: Res<crate::menus::widgets::MenuFont>,
-    mut player: Query<(&mut Transform, &mut Locomotion), (With<CharacterModel>, With<KinematicBody>)>,
-    banners: Query<Entity, With<DeathBanner>>,
+    mut requests: MessageReader<super::respawn::Respawn>,
+    mut died: MessageWriter<super::death_loot::Died>,
+    mut player: Query<(&mut Transform, &mut Locomotion, &mut KinematicBody), With<CharacterModel>>,
 ) {
-    let (Some(state), Ok((mut t, mut loco))) = (game.state.as_mut(), player.single_mut()) else { return };
+    let (Some(state), Ok((mut t, mut loco, mut body))) = (game.state.as_mut(), player.single_mut()) else { return };
     // Skill_Deathbringer: once each life, a killing blow leaves 25 health instead.
     // The game's death: MedicalComponent.Health <= 0 (AnyDamage).
     let alive = state.survival.health > 0.0;
@@ -382,50 +401,59 @@ fn death_and_respawn(
         info!("deathbringer: back to {} health", state.survival.health);
         return;
     }
-    match vitals.dead_for {
-        None if !alive => {
+    let Some(d) = vitals.dead_for else {
+        if !alive {
             vitals.dead_for = Some(0.0);
             *loco = Locomotion::Dead;
-            *overlay = GameOverlay::None;
-            // BP_PlayerController.Death_PlayerStats.
-            if super::stats::reset_on_death(&store) {
-                state.stats.reset_on_death();
-            }
-            commands.spawn((
-                Node { position_type: PositionType::Absolute, width: Val::Percent(100.0), top: Val::Percent(40.0), justify_content: JustifyContent::Center, ..default() },
-                DeathBanner,
-                DespawnOnExit(AppState::InGame),
-                children![crate::menus::widgets::label(&font, "YOU DIED", 48.0)],
-            ));
+            state.progression.xp_death();
+            // SpawnDeadPlayerLoot (`death_loot.rs`).
+            died.write(super::death_loot::Died { at: t.translation });
+            // Client_Died: ScreenPermadeath with Difficulty.Permadeath (and AllowSaving?), else
+            // RespawnScreen.
+            *overlay = if state.permadeath { GameOverlay::Permadeath } else { GameOverlay::Respawn };
+            info!("died: the {} screen", if state.permadeath { "permadeath" } else { "respawn" });
         }
-        Some(d) => {
-            let d = d + time.delta_secs();
-            vitals.dead_for = Some(d);
-            *loco = Locomotion::Dead;
-            if d < 4.0 {
-                return;
-            }
-            // Respawn at the PlayerStart furthest from where they fell, fresh vitals.
-            let starts = level.map(|l| l.player_starts()).unwrap_or_default();
-            let mut at = starts.iter().copied().max_by(|a, b| a.distance(t.translation).total_cmp(&b.distance(t.translation))).unwrap_or(t.translation);
-            at.y = terrain.as_ref().map_or(at.y, |tr| tr.height(at.x, at.z));
-            t.translation = at;
-            state.survival = SurvivalStats::default();
-            state.tech.deathbringer_used = false;
-            if store.find(&row_key("difficulty", "Player", "KEEP INVENTORY ON DEATH?")) != Some(Value::Bool(true)) {
-                if let Some(inv) = game.inventory.as_mut() {
-                    *inv = Default::default();
-                }
-            }
-            vitals.dead_for = None;
-            vitals.respawns += 1;
-            *loco = Locomotion::Idle;
-            for b in &banners {
-                commands.entity(b).despawn();
-            }
-        }
-        None => {}
+        return;
+    };
+    vitals.dead_for = Some(d + time.delta_secs());
+    *loco = Locomotion::Dead;
+    // (ScreenPermadeath offers no respawn; Quit's QuitWidgetRespawn leaves it open.)
+    if state.permadeath {
+        return;
     }
+    if *overlay != GameOverlay::Respawn {
+        *overlay = GameOverlay::Respawn;
+    }
+    let Some(req) = requests.read().last().copied() else { return };
+    // Survival_Respawn: a random PlayerStart, or RespawnLoc.
+    let at = match (req.random, state.respawn_point) {
+        // UE puts the new pawn's capsule centre there; ours stands on its feet.
+        (false, Some(p)) => Vec3::from_array(p) - Vec3::Y * CAPSULE_HALF_HEIGHT,
+        _ => {
+            let starts = level.map(|l| l.player_starts()).unwrap_or_default();
+            let mut at = if starts.is_empty() { t.translation } else { starts[rand::thread_rng().gen_range(0..starts.len())] };
+            at.y = terrain.as_ref().map_or(at.y, |tr| tr.height(at.x, at.z));
+            at
+        }
+    };
+    t.translation = at;
+    body.vertical_velocity = 0.0;
+    // Then Death_PlayerStats.
+    if super::stats::reset_on_death(&store) {
+        state.stats.reset_on_death();
+    }
+    state.survival = SurvivalStats::default();
+    state.tech.deathbringer_used = false;
+    if store.find(&row_key("difficulty", "Player", "KEEP INVENTORY ON DEATH?")) != Some(Value::Bool(true)) {
+        if let Some(inv) = game.inventory.as_mut() {
+            *inv = Default::default();
+        }
+    }
+    vitals.dead_for = None;
+    vitals.respawns += 1;
+    *loco = Locomotion::Idle;
+    *overlay = GameOverlay::None;
+    info!("respawned {} at {at:.1}", if req.random { "at random" } else { "at the spawn point" });
 }
 
 #[cfg(test)]

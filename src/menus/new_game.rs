@@ -31,6 +31,15 @@ const LEVELS: [(DifficultyLevel, &str); 5] = [
 #[derive(Component, Clone, Copy)]
 struct DifficultyChoice(DifficultyLevel);
 
+/// The tour's click on a difficulty button (06a_preset): Activate on the button named `name`.
+pub fn tour_pick(world: &mut World, name: &str) -> bool {
+    let Some((level, _)) = LEVELS.iter().find(|(_, n)| *n == name) else { return false };
+    let mut q = world.query::<(Entity, &DifficultyChoice)>();
+    let Some(e) = q.iter(world).find(|(_, c)| c.0 == *level).map(|(e, _)| e) else { return false };
+    world.trigger(Activate { entity: e });
+    true
+}
+
 #[derive(Component)]
 struct StartButton;
 

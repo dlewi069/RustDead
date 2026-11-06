@@ -12,7 +12,8 @@
 //!   level x 400 XP and are unlocked from then on; `Warning` ones open for 5 s; the rest toggle.
 //!   `CanOpenDoorFromBehind?` ones open for 5 s from behind. (`Unlocked` is lab power, not ported.)
 //! - `BP_LaboratoryEntranceDoors` (wings roll 75°), `BP_WarehouseDoors` (halves slide 250 cm
-//!   apart), `BP_ContainerDoors` (wings swing 90°): free.
+//!   apart), `BP_ContainerDoors` (wings swing 90°): free. These three and the secure doors play
+//!   Loot_MidShelf_GrabItem_Montage on every F (`grabs`).
 //! - `BP_KeypadDoor`: a code (rolled 1111-9999 each session and written on its `BP_KeypadNote`)
 //!   entered on KeypadUI (`gameplay::keypad`) opens it, gives level x 200 XP once and leaves it
 //!   unlocked for the session (`OpenedInThisInstance?`); F then toggles it. A wrong code is a noise
@@ -42,6 +43,7 @@ use super::collision::CollisionCache;
 use super::{ActorInfo, Level, affine};
 use crate::gameplay::interact::{Containers, GameOverlay, Prompt, PromptBar, PromptText, player_inv};
 use crate::gameplay::notify::Notify;
+use crate::gameplay::outline::Highlit;
 use crate::menus::{AppState, CurrentGame, MenuScreen};
 
 const REACH: f32 = 2.6;
@@ -398,6 +400,11 @@ pub struct Doors {
 }
 
 impl Doors {
+    /// Door `i`'s moving parts (their roots), once spawned.
+    pub fn part_entities(&self, i: usize) -> &[Entity] {
+        self.parts.get(i).map(Vec::as_slice).unwrap_or_default()
+    }
+
     /// How far door `i` is open (0 closed .. 1 open).
     pub fn open_fraction(&self, i: usize) -> f32 {
         self.states.get(i).map_or(0.0, |s| s.open)
@@ -552,6 +559,13 @@ pub(super) fn move_doors(
     }
 }
 
+/// Whether working a door class plays Loot_MidShelf_GrabItem_Montage: Event_Door (or MC_OpenDoor)
+/// on the container, warehouse and lab doors plays it on every interact, a secure door's
+/// with no keycard too; the rest play none.
+pub fn grabs(class: &str) -> bool {
+    matches!(class, "BP_ContainerDoors_C" | "BP_WarehouseDoors_C" | "BP_LaboratoryEntranceDoors_C" | "BP_LaboratorySecureDoors_C")
+}
+
 /// What a door class plays starting to open or close (the door BPs' PlaySoundAtLocation).
 /// Wooden doors and the lever play nothing.
 pub fn door_sounds(class: &str, opening: bool) -> &'static [&'static str] {
@@ -599,16 +613,59 @@ fn note_near(doors: &[DoorDef], p: Vec3) -> Option<usize> {
     doors.iter().position(|d| matches!(d.kind, Kind::Keypad { note: Some(n) } if (n.y - p.y).abs() < 3.0 && n.xz().distance(p.xz()) < REACH))
 }
 
+/// `BP_StandardNote` (Blueprints/Other/Objects, decompiled): a paper pile (SM_Prop_Paper_Pile_01,
+/// drawn with the level's props) whose interact name is "Note"; OnExecuteInteract creates LetterUI,
+/// sets its text to the instance's `Description` (default "This is gibberish") and disables the
+/// pawn's input until Stop Reading. The level places 10.
+/// Not ported: the AIOSubject's hiding beyond its last optimisation layer (50 m). (The outline
+/// while its prompt is up: `gameplay::outline`.)
+#[derive(Clone, Debug, PartialEq)]
+pub struct StandardNote {
+    pub pos: Vec3,
+    pub text: String,
+}
+
+/// The level's readable notes.
+pub fn standard_notes(actors: &[ActorInfo]) -> Vec<StandardNote> {
+    actors
+        .iter()
+        .filter(|a| a.class == "BP_StandardNote_C")
+        .map(|a| {
+            let text = a.props.as_ref().and_then(|p| p.get("Description")).and_then(|j| ftext(j)).unwrap_or_else(|| "This is gibberish".into());
+            StandardNote { pos: a.position(), text }
+        })
+        .collect()
+}
+
+/// An exported FText's display string (LocalizedString, else CultureInvariantString /
+/// SourceString), with UE's CRLF line breaks as \n.
+pub fn ftext(json: &str) -> Option<String> {
+    let v: serde_json::Value = serde_json::from_str(json).ok()?;
+    let s = ["LocalizedString", "CultureInvariantString", "SourceString"].iter().find_map(|k| v.get(*k)?.as_str())?;
+    Some(s.replace("\r\n", "\n"))
+}
+
+/// A standard note within reach of `p`: its index and distance.
+fn standard_note_near(notes: &[StandardNote], p: Vec3) -> Option<(usize, f32)> {
+    notes
+        .iter()
+        .enumerate()
+        .filter(|(_, n)| (n.pos.y - p.y).abs() < 3.0 && n.pos.xz().distance(p.xz()) < REACH)
+        .map(|(i, n)| (i, n.pos.distance(p)))
+        .min_by(|a, b| a.1.total_cmp(&b.1))
+}
+
 /// How far the nearest door, note, lab generator or light switch within reach is, so a farther
 /// container leaves F to it.
-pub fn reach_distance(doors: &[DoorDef], power: Option<&super::power::Power>, p: Vec3) -> Option<f32> {
+pub fn reach_distance(doors: &[DoorDef], notes: &[StandardNote], power: Option<&super::power::Power>, p: Vec3) -> Option<f32> {
     let note = note_near(doors, p).and_then(|i| match doors[i].kind {
         Kind::Keypad { note: Some(n) } => Some(n.distance(p)),
         _ => None,
     });
     let door = nearest(doors, p).map(|i| doors[i].pos.distance(p));
     let power = power.and_then(|w| w.target(p)).map(|t| t.1);
-    note.into_iter().chain(door).chain(power).reduce(f32::min)
+    let letter = standard_note_near(notes, p).map(|n| n.1);
+    note.into_iter().chain(letter).chain(door).chain(power).reduce(f32::min)
 }
 
 /// The nearest door within reach of `p`.
@@ -640,13 +697,15 @@ pub(crate) fn interact_doors(
     mut notify: MessageWriter<Notify>,
     mut noise: MessageWriter<crate::gameplay::zombies::Noise>,
     // (Bevy systems take at most 16 parameters.)
-    (mut codes, mut power, mut garages, mut sound, driving, mut quest_tasks): (
+    (mut codes, mut power, mut garages, mut sound, driving, mut quest_tasks, mut montage, mut highlight): (
         MessageReader<crate::gameplay::keypad::KeypadCode>,
         Option<ResMut<super::power::Power>>,
         ResMut<super::garage::Garages>,
         MessageWriter<crate::audio::Sound>,
         Res<crate::gameplay::vehicles::Driving>,
         MessageWriter<crate::gameplay::quests::DataTask>,
+        MessageWriter<crate::gameplay::interact::PlayerMontage>,
+        ResMut<crate::gameplay::outline::Highlight>,
     ),
 ) {
     let Some(level) = level else { return };
@@ -682,6 +741,9 @@ pub(crate) fn interact_doors(
     // A keypad door's note (BP_KeypadNote: "Keypad Note", read with F).
     if let Some(i) = note_near(&level.doors, p) {
         *vis = Visibility::Inherited;
+        if let Kind::Keypad { note: Some(at) } = level.doors[i].kind {
+            highlight.claim(Highlit::Actor { class: "BP_KeypadNote_C".into(), at });
+        }
         if let Ok(mut n) = bar.single_mut() {
             n.width = Val::Percent(0.0);
         }
@@ -694,6 +756,22 @@ pub(crate) fn interact_doors(
         }
         return;
     }
+    // A BP_StandardNote ("Note"; its option isn't in the dump either, "Read" is ours).
+    if let Some((i, _)) = standard_note_near(&level.notes, p) {
+        *vis = Visibility::Inherited;
+        highlight.claim(Highlit::Actor { class: "BP_StandardNote_C".into(), at: level.notes[i].pos });
+        if let Ok(mut n) = bar.single_mut() {
+            n.width = Val::Percent(0.0);
+        }
+        if let Ok(mut t) = text.single_mut() {
+            t.0 = "Note: [F] Read".into();
+        }
+        if keys.just_pressed(KeyCode::KeyF) {
+            info!("note: reading {i}");
+            *overlay = GameOverlay::Letter(i);
+        }
+        return;
+    }
     // A lab generator or light switch nearer than any door.
     let target = power.as_ref().and_then(|w| w.target(p));
     let door = nearest(&level.doors, p);
@@ -702,6 +780,15 @@ pub(crate) fn interact_doors(
     {
         use super::power::{SwitchState, Target};
         *vis = Visibility::Inherited;
+        let (class, at) = match t {
+            Target::Generator(g) => ("BP_LaboratoryGenerator_C", power.generators[g].pos),
+            Target::Switch(k) => ("BP_LaboratoryLightSwitch_C", power.switches[k].pos),
+            Target::PowerGenerator(g) => ("BP_PowerGenerator_C", power.power_generators[g].pos),
+            // (No SetRenderCustomDepth in its Blueprint: nothing to outline.)
+            Target::Stairwell(k) => ("BP_LaboratoryStairwellLightSwitch_C", power.stairwells[k].pos),
+            Target::Siren(k) => ("BP_Siren_C", power.sirens[k].pos),
+        };
+        highlight.claim(Highlit::Actor { class: class.into(), at });
         if let Ok(mut n) = bar.single_mut() {
             n.width = Val::Percent(0.0);
         }
@@ -716,11 +803,18 @@ pub(crate) fn interact_doors(
             // Its single option isn't in the dump (GetInteractOptions builds it); "Use" is ours.
             Target::Switch(k) if power.switches[k].state == SwitchState::Warning => "Light Switch: no power".to_string(),
             Target::Switch(_) => "Light Switch: [F] Use".to_string(),
+            Target::Stairwell(_) => "Light Switch: [F] Interact".to_string(),
+            Target::Siren(_) => "Siren: [F] Interact".to_string(),
         };
         if let Ok(mut t) = text.single_mut() {
             t.0 = label;
         }
         if keys.just_pressed(KeyCode::KeyF) {
+            // Each plays Loot_MidShelf_GrabItem_Montage on interact (PlayAnimMontage / PlayMontage),
+            // bar a light switch in its Warning state (no power: it does nothing).
+            if !matches!(t, Target::Switch(k) if power.switches[k].state == SwitchState::Warning) {
+                montage.write(crate::gameplay::interact::PlayerMontage::new(crate::models::ActionKind::Grab));
+            }
             match t {
                 Target::Generator(g) => {
                     if let Some(f) = power.toggle_generator(g) {
@@ -739,6 +833,17 @@ pub(crate) fn interact_doors(
                 }
                 Target::Switch(k) => {
                     power.press_switch(k);
+                }
+                Target::Stairwell(k) => {
+                    power.press_stairwell(k, super::power::stairwell_delay(&mut rand::thread_rng()));
+                    info!("stairwell switch {k}: lit {}", power.stair_lit_count());
+                }
+                Target::Siren(k) => {
+                    let t = power.sirens[k].interact(super::sirens::random_time(&mut rand::thread_rng()));
+                    info!("siren {k} pressed: playing {}", power.sirens[k].playing);
+                    if t.started {
+                        info!("siren {k} activated");
+                    }
                 }
                 Target::PowerGenerator(g) if doors.option.min(1) == 1 => {
                     let has_can = player_inv(&mut game).count("DA_GasCan") > 0;
@@ -780,6 +885,7 @@ pub(crate) fn interact_doors(
     }
     let pick = opts[doors.option.min(opts.len() - 1)];
     *vis = Visibility::Inherited;
+    highlight.claim(Highlit::Door(i));
     if let Ok(mut n) = bar.single_mut() {
         n.width = Val::Percent(0.0);
     }
@@ -794,6 +900,9 @@ pub(crate) fn interact_doors(
     }
     if !keys.just_pressed(KeyCode::KeyF) {
         return;
+    }
+    if grabs(&level.actors[d.actor].class) {
+        montage.write(crate::gameplay::interact::PlayerMontage::new(crate::models::ActionKind::Grab));
     }
     let action = {
         let inv = player_inv(&mut game);
@@ -874,6 +983,16 @@ pub(crate) fn interact_doors(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_the_container_warehouse_and_lab_doors_grab() {
+        for c in ["BP_ContainerDoors_C", "BP_WarehouseDoors_C", "BP_LaboratoryEntranceDoors_C", "BP_LaboratorySecureDoors_C"] {
+            assert!(grabs(c), "{c}");
+        }
+        for c in ["BP_LockedDoor_C", "BP_KeycardDoor_C", "BP_KeypadDoor_C", "BP_HangarDoor_C", "BP_LaboratorySlidingDoor_C", "BP_SubwayTravelDoor_C", "BP_Lever_C"] {
+            assert!(!grabs(c), "{c}");
+        }
+    }
 
     #[test]
     fn doors_sound_like_their_blueprints() {
@@ -985,10 +1104,10 @@ mod tests {
         let mut d = door(Kind::Keypad { note: Some(Vec3::new(10.0, 0.0, 0.0)) });
         d.pos = Vec3::new(0.0, 0.0, 2.0);
         let doors = [d];
-        assert_eq!(reach_distance(&doors, None, Vec3::ZERO), Some(2.0));
-        assert_eq!(reach_distance(&doors, None, Vec3::new(9.0, 0.0, 0.0)), Some(1.0));
+        assert_eq!(reach_distance(&doors, &[], None, Vec3::ZERO), Some(2.0));
+        assert_eq!(reach_distance(&doors, &[], None, Vec3::new(9.0, 0.0, 0.0)), Some(1.0));
         assert_eq!(note_near(&doors, Vec3::new(9.0, 0.0, 0.0)), Some(0));
-        assert_eq!(reach_distance(&doors, None, Vec3::new(5.0, 0.0, 0.0)), None);
+        assert_eq!(reach_distance(&doors, &[], None, Vec3::new(5.0, 0.0, 0.0)), None);
     }
 
     #[test]
@@ -1021,6 +1140,23 @@ mod tests {
         assert_eq!(press(&d, &s, "Interact", false, |_| true), Press::NoPower);
         s.locked = false;
         assert_eq!(press(&d, &s, "Interact", true, |_| false), Press::Lever);
+    }
+
+    #[test]
+    fn notes_read_their_text() {
+        let note = |props: Option<&str>| ActorInfo { class: "BP_StandardNote_C".into(), name: "n".into(), transform: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 5.0, 0.0, 0.0], props: props.map(|d| [("Description".to_string(), d.to_string())].into()) };
+        let notes = standard_notes(&[note(Some(r#"{"Namespace":"","Key":"k","SourceString":"a\r\nb","LocalizedString":"A\r\nB"}"#)), note(Some(r#"{"CultureInvariantString":"plain"}"#)), note(None)]);
+        let texts: Vec<_> = notes.iter().map(|n| n.text.as_str()).collect();
+        assert_eq!(texts, ["A\nB", "plain", "This is gibberish"]);
+        assert_eq!(standard_note_near(&notes, Vec3::new(4.0, 0.5, 0.0)).map(|n| n.0), Some(0));
+        assert_eq!(standard_note_near(&notes, Vec3::new(1.0, 0.0, 0.0)), None);
+        // The level's ten, all with their own text.
+        let Ok(a) = std::fs::read_to_string(format!("{}/actors.json", crate::level::LEVEL_DIR)) else { return };
+        let actors: Vec<ActorInfo> = serde_json::from_str(&a).unwrap();
+        let level = standard_notes(&actors);
+        assert_eq!(level.len(), 10);
+        assert!(level.iter().all(|n| n.text != "This is gibberish" && !n.text.contains('\r')));
+        assert!(level.iter().any(|n| n.text.starts_with("SUBJECT: KEYCARD CHANGE FOB BRAVO\n\nSir,")));
     }
 
     #[test]

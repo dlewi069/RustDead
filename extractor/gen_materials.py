@@ -100,6 +100,29 @@ def main():
             for pkg in c["colors"]:
                 stub.setdefault(pkg.rsplit("/", 1)[1], pkg)
                 used.add(pkg.rsplit("/", 1)[1])
+    # Particle sprites' materials (particles.rs draws a sprite's whole texture, so only those no
+    # flipbook emitter uses; the package paths come from SdExport list).
+    particles = Path(__file__).resolve().parent.parent / "assets" / "data" / "particles.json"
+    if particles.exists():
+        flip, plain = set(), set()
+        for sys_ in json.loads(particles.read_text())["systems"].values():
+            for e in sys_["emitters"]:
+                if e.get("sprite") and e.get("material"):
+                    (plain if e.get("subuv", [1, 1]) == [1, 1] else flip).add(e["material"])
+        for name in sorted(plain - flip - set(stub)):
+            listed = subprocess.run([SDX, "list", f"/{name}.uasset"], capture_output=True, text=True).stdout.split()
+            pkg = next((f[: -len(".uasset")] for f in listed if f.endswith(f"/{name}.uasset")), None)
+            if pkg:
+                stub[name] = pkg
+                used.add(name)
+    # The head gear's OverrideMaterials (items.json "worn": the pickup actor on the survivor).
+    items = Path(__file__).resolve().parent.parent / "assets" / "data" / "items.json"
+    if items.exists():
+        for item in json.loads(items.read_text())["items"].values():
+            for pkg in (item.get("worn") or {}).get("materials") or []:
+                if pkg:
+                    stub.setdefault(pkg.rsplit("/", 1)[1], pkg)
+                    used.add(pkg.rsplit("/", 1)[1])
     todo = sorted(stub[m] for m in used if m in stub)
     missing = sorted(m for m in used if m not in stub)
 

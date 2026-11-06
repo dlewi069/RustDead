@@ -20,6 +20,7 @@ use bevy::picking::Pickable;
 use bevy::picking::events::{PointerClick, PointerDragDrop, PointerDragEnd, PointerDragStart};
 use bevy::picking::hover::Hovered;
 use bevy::picking::pointer::PointerButton;
+use bevy::ecs::system::RunSystemOnce;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
@@ -31,6 +32,10 @@ use super::traders::{self, TraderClass};
 use crate::menus::widgets::{MenuFont, label_colored};
 use crate::menus::{AppState, CurrentGame};
 use crate::models::{CharacterModel, model};
+
+mod windows;
+pub use windows::ItemWindows;
+use windows::WindowClose;
 
 const CELL: f32 = 50.0;
 const PANEL: Color = Color::linear_rgba(0.01, 0.01, 0.01, 0.75);
@@ -57,6 +62,8 @@ enum Loc {
     Craft,
     /// REQUIRED ITEMS of the selected recipe (display only).
     Required,
+    /// A container window's grid (`windows.rs`): the window's id, the item's grid index.
+    Window(u32, u8),
 }
 
 impl Loc {
@@ -115,6 +122,10 @@ struct MenuOption(Action, ItemRef);
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Action {
+    /// `Jig.Context.Inspect`: the item inspector (`inspect.rs`).
+    Inspect,
+    /// `Jig.Context.Open`: as a double click (its container window, `windows.rs`).
+    Open,
     Equip,
     Unequip,
     Use,
@@ -128,6 +139,20 @@ enum Action {
     /// `Jig.Context.Place` (ContextPlaceItem): build mode with the item (`building.rs`), which
     /// uses it up when it's placed.
     Place,
+    /// `Jig.Context.ShowAttachments`: one attachment (its index) off the weapon, into the
+    /// inventory (ours: the game shows the SC_<gun> slots and the attachment is dragged out).
+    Detach(usize),
+    /// `Jig.Context.WeaponRepair` / `AttachmentRepair` / `ArmorRepair` (`repair.rs`): a kit
+    /// from the item's own inventory.
+    Repair(super::repair::RepairKind),
+}
+
+/// What an item-over-item drop leaves besides the two stacks: items made that need a place
+/// (PurifyWater's clean water when the dirty stack had more), and a message.
+#[derive(Default)]
+struct OverOut {
+    spill: Vec<Stack>,
+    notice: Option<&'static str>,
 }
 
 #[derive(Component)]
@@ -161,15 +186,55 @@ struct SplitFill;
 #[derive(Component)]
 struct SplitCount;
 
-/// A pending Shift+drop split.
+/// What an amount dialog is for: JigSplitWidget (Shift+drop), DropItemAmountSelector (a stack
+/// dropped outside the panels, DropItemBackGwidget.OnDrop) or its vendor form ("Buy", a stack
+/// dragged out of a trader's grid: BP_JigMultiplayer's Show Vendor Amount Selected).
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum AmountKind {
+    Split,
+    Drop,
+    Buy,
+}
+
+/// A pending amount dialog.
 #[derive(Clone, Copy)]
 struct SplitDialog {
+    kind: AmountKind,
     src: ItemRef,
+    /// Where a split or a purchase goes (unused for a drop).
     cell: CellRef,
     rotated: bool,
-    /// Stack size; the slider picks 1..max-1.
+    /// Stack size (DropItemAmountSelector: min(count, MaxStack)).
     max: u32,
     value: u32,
+}
+
+impl SplitDialog {
+    /// The slider's range: a split leaves one behind (1..max-1); the selectors take 1..max.
+    fn range(&self) -> (u32, u32) {
+        match self.kind {
+            AmountKind::Split => (1, self.max.saturating_sub(1).max(1)),
+            _ => (1, self.max.max(1)),
+        }
+    }
+
+    /// The amount at slider position `f` (0..1): the split's rounded step, the selectors'
+    /// FTrunc(MaxCount x value) (0 becomes 1).
+    fn at(&self, f: f32) -> u32 {
+        let (lo, hi) = self.range();
+        match self.kind {
+            AmountKind::Split => lo + (f * (hi - lo) as f32).round() as u32,
+            _ => ((self.max as f32 * f).trunc() as u32).max(1),
+        }
+    }
+
+    fn fraction(&self) -> f32 {
+        let (lo, hi) = self.range();
+        match self.kind {
+            AmountKind::Split => if hi > lo { (self.value - lo) as f32 / (hi - lo) as f32 } else { 1.0 },
+            _ => self.value as f32 / self.max.max(1) as f32,
+        }
+    }
 }
 
 /// The crafting grids as last built (the CRAFTING tab or a crafting station), for tooltips and
@@ -196,6 +261,28 @@ pub struct Station {
     /// Its toast: "{done}, XP Given: {LVL}".
     pub done: &'static str,
 }
+
+/// A placed bench's crafting UI open (`building.rs`: Buildable_CraftingWorkbench,
+/// _WeaponsEquipmentWorkbench, _ConstructionBench, _Campfire): the overlay's Loot key, the
+/// title (its pickup's name), the DT_CraftingTableTypes row, and whether it has the construction
+/// bench's STANDARD / MODULAR tabs.
+#[derive(Resource, Default, Clone, Debug)]
+pub struct PlacedStation(pub Option<OpenStation>);
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct OpenStation {
+    pub key: usize,
+    pub name: String,
+    pub table: String,
+    pub tabs: bool,
+}
+
+/// W_ConstructionWorkbenchUI's StandardTitle (table 5) / ModularTitle (table 8).
+pub const CONSTRUCTION_TABS: [(&str, &str); 2] = [("STANDARD", "Lvl1ConstructionWorkbench"), ("MODULAR", "Lvl1ConstructionModularWorkbench")];
+
+/// A construction bench tab (its table).
+#[derive(Component, Clone, Copy)]
+struct ConstructionTab(&'static str);
 
 /// BP_CraftingStation (the level's 5 workbenches, W_CraftingWorkbenchUI, SetItemsToCraft(0) =
 /// CraftingWorkbench) and BP_CookingStation (5 in the level, W_CampfireUI, SetItemsToCraft(1) =
@@ -272,10 +359,22 @@ pub(crate) fn tour_craft(world: &mut World, item: &str) {
     state.apply(world);
 }
 
+/// What clicking a construction bench tab does (the tour can't click), for `table`.
+pub(crate) fn tour_station_tab(world: &mut World, table: &'static str) {
+    let mut state = bevy::ecs::system::SystemState::<(InvData, ResMut<UiState>)>::new(world);
+    let Ok((mut data, mut ui)) = state.get_mut(world) else { return };
+    if let Some(s) = data.placed_station.0.as_mut() {
+        s.table = table.to_string();
+        ui.recipe = None;
+    }
+    data.dirty.0 = true;
+    state.apply(world);
+}
+
 /// Registers the crafting stations as container classes (`interact::collect_containers`).
 fn register_station(mut db: ResMut<ItemDb>) {
     for s in &STATIONS {
-        db.containers.insert(s.class.into(), super::items::ContainerDef { name: s.name.into(), table: None, hold: 0.0, lockpick: false, noise: 0.0, mesh: None, airdrop: None });
+        db.containers.insert(s.class.into(), super::items::ContainerDef { name: s.name.into(), table: None, hold: 0.0, lockpick: false, noise: 0.0, mesh: None, airdrop: None, tool: None, refills: false, magnifier: [0.0; 3] });
     }
 }
 
@@ -315,6 +414,8 @@ struct UiState {
     recipe: Option<usize>,
     craft_times: u32,
     split: Option<SplitDialog>,
+    /// The item's name for the selectors' "Drop {name}" / "Buy {name}".
+    split_name: String,
 }
 
 pub fn plugin(app: &mut App) {
@@ -323,12 +424,15 @@ pub fn plugin(app: &mut App) {
         .init_resource::<VicinityView>()
         .init_resource::<UiState>()
         .init_resource::<CraftView>()
+        .init_resource::<PlacedStation>()
+        .init_resource::<ItemWindows>()
         .add_systems(Startup, register_station)
         .add_systems(OnEnter(AppState::InGame), |mut g: ResMut<Ground>, mut s: ResMut<UiState>| {
             g.items.clear();
             *s = UiState::default();
         })
-        .add_systems(Update, (rebuild, hover_and_tooltip, rotate_ghost, follow_cursor, split_slider, sync_ground_models).chain().run_if(in_state(AppState::InGame)))
+        .add_systems(OnEnter(AppState::InGame), |mut w: ResMut<ItemWindows>| w.clear())
+        .add_systems(Update, (rebuild, windows::place_windows, hover_and_tooltip, rotate_ghost, follow_cursor, split_slider, sync_ground_models).chain().run_if(in_state(AppState::InGame)))
         .add_observer(on_drag_start)
         .add_observer(on_drag_end)
         .add_observer(on_drop)
@@ -340,7 +444,36 @@ pub(crate) enum TourPage {
     Crafting,
     /// Split dialog over the first pocket stack.
     Split,
+    /// DropItemAmountSelector over the first pocket stack.
+    Drop,
+    /// The item inspector on the first pocket stack.
+    Inspect,
+    /// Double clicks (the second pocket stack, the first again, an M4 with attachments), then
+    /// the M4's Inspect: three windows.
+    InspectMore,
+    /// Container windows: a Lunch Box with a Wallet in it put in the inventory, both opened by
+    /// double clicks, then the Wallet's beans dropped from its window into the Lunch Box's.
+    BagWindow,
+    /// Repairs on the equipped Primary (`tour_repair`).
+    Repair,
     Equipment,
+}
+
+impl TourPage {
+    /// `SD_VIEW_PAGE`'s names.
+    pub(crate) fn named(name: &str) -> Option<Self> {
+        Some(match name {
+            "crafting" => Self::Crafting,
+            "split" => Self::Split,
+            "drop" => Self::Drop,
+            "inspect" => Self::Inspect,
+            "inspect_more" => Self::InspectMore,
+            "bag_window" => Self::BagWindow,
+            "repair" => Self::Repair,
+            "equipment" => Self::Equipment,
+            _ => return None,
+        })
+    }
 }
 
 pub(crate) fn tour_page(world: &mut World, page: TourPage) {
@@ -356,10 +489,156 @@ pub(crate) fn tour_page(world: &mut World, page: TourPage) {
         TourPage::Split => {
             let count = world.resource_mut::<CurrentGame>().inventory.as_ref().and_then(|i| i.pockets.items.first()).map_or(0, |p| p.stack.count);
             let src = ItemRef { loc: Loc::Player(GridRef::Pockets), index: 0 };
-            world.resource_mut::<UiState>().split = Some(SplitDialog { src, cell: CellRef { loc: Loc::Player(GridRef::Pockets), x: 3, y: 1 }, rotated: false, max: count, value: count / 2 });
+            world.resource_mut::<UiState>().split = Some(SplitDialog { kind: AmountKind::Split, src, cell: CellRef { loc: Loc::Player(GridRef::Pockets), x: 3, y: 1 }, rotated: false, max: count, value: count / 2 });
+        }
+        TourPage::Inspect => {
+            let first = world.resource::<CurrentGame>().inventory.as_ref().and_then(|i| i.pockets.items.first()).map(|p| p.stack.clone());
+            if let Some(stack) = first
+                && world.resource::<super::inspect::Inspector>().windows.is_empty()
+                && world.resource::<Messages<super::inspect::InspectItem>>().is_empty()
+            {
+                world.write_message(super::inspect::InspectItem(stack));
+            }
+        }
+        TourPage::InspectMore => {
+            // The page is asked for on a few frames: once.
+            if world.resource::<super::inspect::Inspector>().windows.len() > 1 || !world.resource::<Messages<super::inspect::InspectItem>>().is_empty() {
+                return;
+            }
+            let pockets: Vec<Stack> = world.resource::<CurrentGame>().inventory.as_ref().map(|i| i.pockets.items.iter().map(|p| p.stack.clone()).collect()).unwrap_or_default();
+            let db = world.resource::<ItemDb>();
+            let mut m4 = db.stack("DA_M4CQB", 1);
+            m4.attachments.clear();
+            m4.attachments.push(db.stack("DA_556Mag", 1));
+            for a in ["DA_MilitarySuppressor", "DA_VerticalForegrip", "DA_Acog4x32Scope"] {
+                let _ = super::attachments::attach(db, &mut m4, db.stack(a, 1));
+            }
+            // JSI_Slot.On_MouseDoubleClick's choice, as `on_click` makes it.
+            let clicks: Vec<(Stack, super::inspect::DoubleClick)> =
+                pockets.iter().skip(1).take(1).chain(pockets.first()).chain([&m4]).filter_map(|s| Some((s.clone(), super::inspect::double_click(db.items.get(&s.item)?)))).collect();
+            for (stack, what) in clicks {
+                info!("autoshot double click {}: {what:?}", stack.item);
+                if what == super::inspect::DoubleClick::Inspect {
+                    world.write_message(super::inspect::InspectItem(stack));
+                }
+            }
+            // The M4's context menu Inspect.
+            world.write_message(super::inspect::InspectItem(m4));
+        }
+        TourPage::BagWindow => {
+            super::inspect::close(world);
+            if world.resource::<ItemWindows>().is_empty() {
+                let view = world.query_filtered::<&Window, With<PrimaryWindow>>().single(world).map(|w| w.size()).unwrap_or(Vec2::new(1920.0, 1080.0)) / world.resource::<UiScale>().0;
+                if let Err(e) = world.run_system_once(move |data: InvData| tour_bag_window(data, view)) {
+                    warn!("autoshot bag window: {e}");
+                }
+            }
+        }
+        TourPage::Repair => {
+            ui.crafting = false;
+            super::inspect::close(world);
+            world.resource_mut::<ItemWindows>().clear();
+            tour_unpack_bag(world);
+            tour_repair(world);
+        }
+        TourPage::Drop => {
+            let first = world.resource_mut::<CurrentGame>().inventory.as_ref().and_then(|i| i.pockets.items.first()).map(|p| p.stack.clone());
+            let Some(stack) = first else { return };
+            let (name, max_stack) = world.resource::<ItemDb>().items.get(&stack.item).map_or((stack.item.clone(), stack.count), |d| (d.name.clone(), d.max_stack.max(1)));
+            let max = stack.count.min(max_stack);
+            let src = ItemRef { loc: Loc::Player(GridRef::Pockets), index: 0 };
+            let mut ui = world.resource_mut::<UiState>();
+            ui.split_name = name.clone();
+            ui.split = Some(SplitDialog { kind: AmountKind::Drop, src, cell: CellRef { loc: Loc::Vicinity, x: 0, y: 0 }, rotated: false, max, value: max });
+            info!("autoshot drop selector over {name} x{max}");
         }
     }
     world.resource_mut::<Dirty>().0 = true;
+}
+
+/// Screenshot tour (08fcc_bag_window): see [`TourPage::BagWindow`]. Logs the windows and what
+/// the Lunch Box holds.
+fn tour_bag_window(mut data: InvData, view: Vec2) {
+    let mut wallet = data.db.stack("DA_Wallet", 1);
+    let _ = wallet.contents[0].insert(&data.db, data.db.stack("DA_CannedBakedBeans", 1));
+    let mut lunch = data.db.stack("DA_LunchBox", 1);
+    let _ = lunch.contents[0].place_at(&data.db, wallet, 0, 0);
+    let InvData { db, game, .. } = &mut data;
+    if let Some(rest) = player_inv(game).insert(db, lunch) {
+        warn!("autoshot bag window: no room for {}", rest.item);
+        return;
+    }
+    let found = player_inv(&mut data.game).grids().into_iter().find_map(|(g, grid)| Some((g, grid.items.iter().position(|p| p.stack.item == "DA_LunchBox")?)));
+    let Some((g, index)) = found else { return };
+    data.double_click(ItemRef { loc: Loc::Player(g), index }, view * Vec2::new(0.35, 0.5));
+    let Some(id) = data.item_windows.windows.last().map(|w| w.id) else { return };
+    data.double_click(ItemRef { loc: Loc::Window(id, 0), index: 0 }, view * Vec2::new(0.62, 0.3));
+    let Some(wallet) = data.item_windows.windows.last().map(|w| w.id).filter(|&w| w != id) else { return };
+    // The survivor's own items stay put: 08zj_trade sells the first pocket stack, and
+    // 08zzk_respawn needs the room.
+    let moved = data.ctx(Vec3::ZERO).0.peek(ItemRef { loc: Loc::Window(wallet, 0), index: 0 }).map(|p| p.0.item);
+    data.act(Vec3::ZERO, |ctx| ctx.drop_onto_cell(ItemRef { loc: Loc::Window(wallet, 0), index: 0 }, CellRef { loc: Loc::Window(id, 0), x: 3, y: 1 }, false));
+    data.dirty.0 = true;
+    let holds: Vec<String> = data.game.inventory.as_ref().and_then(|i| i.grids().into_iter().find_map(|(_, grid)| grid.items.iter().find(|p| p.stack.item == "DA_LunchBox").map(|p| p.stack.contents[0].items.iter().map(|q| q.stack.item.clone()).collect()))).unwrap_or_default();
+    info!("autoshot bag window: windows {:?}, the lunch box holds {holds:?} (moved {moved:?})", data.item_windows.items());
+}
+
+/// After 08fcc_bag_window: the Lunch Box out of the inventory, so the later steps find it as it
+/// was (08zzk_respawn's beans need the room).
+fn tour_unpack_bag(world: &mut World) {
+    let mut game = world.resource_mut::<CurrentGame>();
+    let inv = player_inv(&mut game);
+    let found = inv.grids().into_iter().find_map(|(g, grid)| Some((g, grid.items.iter().position(|p| p.stack.item == "DA_LunchBox")?)));
+    if let Some((g, i)) = found
+        && let Some(grid) = inv.grid_mut(g)
+    {
+        grid.items.remove(i);
+        info!("autoshot bag window: the lunch box taken back out");
+    }
+}
+
+/// Screenshot tour (08fd_repair): the equipped Primary worn to 40 and repaired from the context
+/// menu with a Weapon Cleaning Kit put in the inventory, worn to 50 and the kit dropped onto it,
+/// then without the kit (the notice). Logs durabilities before and after; the rifle ends full.
+fn tour_repair(world: &mut World) {
+    use super::repair::RepairKind;
+    let mut state = bevy::ecs::system::SystemState::<InvData>::new(world);
+    let Ok(mut data) = state.get_mut(world) else { return };
+    let rifle = ItemRef { loc: Loc::Equip(Slot::Primary), index: 0 };
+    let kit_dur = |ctx: &mut Ctx| ctx.find_kit(Loc::Player(GridRef::Pockets), RepairKind::Weapon).and_then(|k| ctx.peek(k)).map(|s| super::repair::durability(ctx.db, &s.0).0);
+    let rifle_dur = |ctx: &mut Ctx| ctx.peek(rifle).map_or(-1.0, |s| super::repair::durability(ctx.db, &s.0).0);
+    let mut line = String::new();
+    data.act(Vec3::ZERO, |ctx| {
+        let Some(s) = ctx.stack_mut(rifle) else { return };
+        s.durability = Some(40.0);
+        let kit = ctx.db.stack("DA_WeaponCleaningKit", 1);
+        ctx.to_player(kit);
+        let (r0, k0) = (rifle_dur(ctx), kit_dur(ctx));
+        ctx.act(Action::Repair(RepairKind::Weapon), rifle);
+        line += &format!("context rifle {r0} -> {} kit {k0:?} -> {:?}", rifle_dur(ctx), kit_dur(ctx));
+        if let Some(s) = ctx.stack_mut(rifle) {
+            s.durability = Some(50.0);
+        }
+        let (r0, k0) = (rifle_dur(ctx), kit_dur(ctx));
+        if let Some(k) = ctx.find_kit(Loc::Player(GridRef::Pockets), RepairKind::Weapon) {
+            ctx.drop_onto_item(k, rifle, None, false);
+        }
+        line += &format!("; drop rifle {r0} -> {} kit {k0:?} -> {:?}", rifle_dur(ctx), kit_dur(ctx));
+        if let Some(k) = ctx.find_kit(Loc::Player(GridRef::Pockets), RepairKind::Weapon) {
+            ctx.take(k);
+        }
+        if let Some(s) = ctx.stack_mut(rifle) {
+            s.durability = Some(40.0);
+        }
+        ctx.act(Action::Repair(RepairKind::Weapon), rifle);
+        line += &format!("; none rifle {} notice {:?}", rifle_dur(ctx), ctx.notice);
+        if let Some(s) = ctx.stack_mut(rifle) {
+            s.durability = None;
+        }
+    });
+    info!("autoshot repair {line}");
+    data.dirty.0 = true;
+    state.apply(world);
 }
 
 /// Screenshot tour (08zj_trade): Ctrl+click's quick move on the open trader's first item (a
@@ -401,6 +680,8 @@ struct Ctx<'a> {
     xp_mult: f32,
     /// A message the last action left for the screen ("Reading this book had no effect...").
     notice: Option<&'static str>,
+    /// The open container windows, whose grids are their items' `contents`.
+    windows: &'a [windows::ItemWindow],
 }
 
 impl Ctx<'_> {
@@ -412,6 +693,7 @@ impl Ctx<'_> {
         match loc {
             Loc::Player(r) => self.inv().grid_mut(r),
             Loc::Loot(a) => self.containers.searched.get_mut(&a),
+            Loc::Window(id, i) => self.window_stack(id)?.contents.get_mut(i as usize),
             _ => None,
         }
     }
@@ -457,7 +739,7 @@ impl Ctx<'_> {
             (Loc::Equip(slot), _) => {
                 self.inv().equip(slot, stack);
             }
-            (loc @ (Loc::Player(_) | Loc::Loot(_)), Some(mut p)) => {
+            (loc @ (Loc::Player(_) | Loc::Loot(_) | Loc::Window(..)), Some(mut p)) => {
                 p.stack = stack;
                 if let Some(g) = self.grid(loc) {
                     let at = r.index.min(g.items.len());
@@ -495,14 +777,30 @@ impl Ctx<'_> {
             Loc::Player(_) => match loot_open {
                 Some(a) => {
                     let db = self.db;
-                    if let Some(g) = self.containers.searched.get_mut(&a) {
-                        insert_growing(db, g, stack);
+                    match self.containers.searched.get_mut(&a) {
+                        // OnlySupportTheseItems: refused, it stays where it was.
+                        Some(g) if !g.accepts(&stack.item) => self.restore(r, stack, placed),
+                        Some(g) => insert_growing(db, g, stack),
+                        None => {}
                     }
                 }
                 None => self.restore(r, stack, placed),
             },
             _ => self.to_player(stack),
         }
+    }
+
+    /// DropItemAmountSelector's confirm: `n` off the stack onto the ground, the rest stays.
+    fn drop_part(&mut self, r: ItemRef, n: u32) {
+        let Some((mut stack, placed)) = self.take(r) else { return };
+        if n >= stack.count {
+            self.drop_on_ground(stack);
+            return;
+        }
+        let part = Stack { item: stack.item.clone(), count: n, ..default() };
+        stack.count -= n;
+        self.restore(r, stack, placed);
+        self.drop_on_ground(part);
     }
 
     fn drop_onto_cell(&mut self, r: ItemRef, cell: CellRef, rotated: bool) {
@@ -591,8 +889,37 @@ impl Ctx<'_> {
 
     /// JigSInventory item-over-item: rounds onto a magazine load it, a magazine onto its
     /// firearm attaches it. Gives back what's left (or everything when neither applies).
-    fn item_over_item(db: &ItemDb, stack: Stack, target: &mut Stack) -> Result<Option<Stack>, Stack> {
+    fn item_over_item(db: &ItemDb, mut stack: Stack, target: &mut Stack, out: &mut OverOut) -> Result<Option<Stack>, Stack> {
         let Some(tdef) = db.items.get(&target.item) else { return Err(stack) };
+        // JigItemOverItemComp's options (`repair.rs`): the dropped item goes back to its slot
+        // unless it was used up.
+        use super::repair::{OverItem, fix, over_item, purified, tablets_needed};
+        match over_item(db, &stack, target) {
+            Some(OverItem::Repair(kind)) => {
+                let used_up = fix(db, kind, target, &mut stack) == Some(true);
+                return Ok(used_up_one(stack, used_up));
+            }
+            Some(OverItem::RefillRadFilter) => {
+                target.durability = None;
+                return Ok(used_up_one(stack, true));
+            }
+            Some(OverItem::PurifyWater) => {
+                let Some((clean, n)) = purified(&target.item) else { return Err(stack) };
+                if stack.count < n {
+                    out.notice = Some(tablets_needed(n));
+                    return Err(stack);
+                }
+                if target.count > 1 {
+                    target.count -= 1;
+                    out.spill.push(db.stack(clean, 1));
+                } else {
+                    *target = db.stack(clean, 1);
+                }
+                stack.count -= n;
+                return Ok((stack.count > 0).then_some(stack));
+            }
+            None => {}
+        }
         if tdef.capacity > 0 && tdef.ammo.contains(&stack.item) {
             let n = tdef.capacity.saturating_sub(target.rounds).min(stack.count);
             if n == 0 {
@@ -607,12 +934,78 @@ impl Ctx<'_> {
             target.attachments.push(stack);
             return Ok(None);
         }
-        // A battery into an empty flashlight (its SC_Battery container).
-        if tdef.kind == "Flashlight" && super::flashlight::battery(target, db).is_none() && tdef.attachments.iter().any(|a| a.item == stack.item) && stack.count == 1 {
+        // A battery into an empty flashlight or tactical light (its SC_Battery container).
+        // A filter into an empty respirator (its filter container, `radiation.rs`).
+        let fitted = tdef.kind == "Flashlight" || !tdef.holds.is_empty() || super::radiation::is_respirator(db, &target.item);
+        let takes = tdef.attachments.iter().any(|a| a.item == stack.item) || tdef.holds.contains(&stack.item);
+        if fitted && super::flashlight::battery(target, db).is_none() && takes && stack.count == 1 {
             target.attachments.push(stack);
             return Ok(None);
         }
-        Err(stack)
+        // A weapon attachment into its free slot (SC_<gun>'s OnlySupportTheseItems).
+        super::attachments::attach(db, target, stack).map(|()| None)
+    }
+
+    /// JigTryAddItemSomewhere in the receiver's inventory (the open container's grid, else the
+    /// survivor's), and the drop's message.
+    fn settle_over(&mut self, loc: Loc, out: OverOut) {
+        let db = self.db;
+        for s in out.spill {
+            let rest = match self.grid(loc) {
+                Some(g) if matches!(loc, Loc::Loot(_)) => g.insert(db, s),
+                _ => Some(s),
+            };
+            if let Some(rest) = rest {
+                self.to_player(rest);
+            }
+        }
+        if out.notice.is_some() {
+            self.notice = out.notice;
+        }
+    }
+
+    /// The first repair kit for `kind` in the inventory that holds `loc` (FindJigItemByDA on the
+    /// item's ContainerMother: the survivor's grids, or the open container's).
+    fn find_kit(&mut self, loc: Loc, kind: super::repair::RepairKind) -> Option<ItemRef> {
+        for kit in kind.kits() {
+            let found = match loc {
+                Loc::Player(_) | Loc::Equip(_) => {
+                    self.inv().grids().into_iter().find_map(|(g, grid)| grid.items.iter().position(|p| p.stack.item == kit).map(|index| ItemRef { loc: Loc::Player(g), index }))
+                }
+                Loc::Loot(a) => self.grid(Loc::Loot(a)).and_then(|g| g.items.iter().position(|p| p.stack.item == kit)).map(|index| ItemRef { loc, index }),
+                _ => None,
+            };
+            if found.is_some() {
+                return found;
+            }
+        }
+        None
+    }
+
+    /// ContextRepairWeapon / Attachment / Armor.
+    fn repair(&mut self, r: ItemRef, kind: super::repair::RepairKind) {
+        let db = self.db;
+        let Some((item, _)) = self.peek(r) else { return };
+        let (now, max) = super::repair::durability(db, &item);
+        if now == max {
+            return;
+        }
+        let Some(kit_ref) = self.find_kit(r.loc, kind) else {
+            self.notice = Some(kind.no_kit());
+            return;
+        };
+        let Some((mut kit, _)) = self.peek(kit_ref) else { return };
+        let Some(target) = self.stack_mut(r) else { return };
+        let used_up = super::repair::fix(db, kind, target, &mut kit) == Some(true);
+        if used_up {
+            if let Some((taken, placed)) = self.take(kit_ref)
+                && taken.count > 1
+            {
+                self.restore(kit_ref, Stack { count: taken.count - 1, ..taken }, placed);
+            }
+        } else if let Some(k) = self.stack_mut(kit_ref) {
+            k.durability = kit.durability;
+        }
     }
 
     fn drop_onto_slot(&mut self, r: ItemRef, slot: Slot) {
@@ -620,7 +1013,10 @@ impl Ctx<'_> {
         // A magazine or rounds onto the equipped firearm.
         let db = self.db;
         if let Some(target) = self.inv().equipped.get_mut(&slot) {
-            match Self::item_over_item(db, stack, target) {
+            let mut out = OverOut::default();
+            let res = Self::item_over_item(db, stack, target, &mut out);
+            self.settle_over(Loc::Equip(slot), out);
+            match res {
                 Ok(None) => return,
                 Ok(Some(rest)) => return self.restore(r, rest, placed),
                 Err(s) if !PlayerInventory::can_equip(db, slot, &s.item) => return self.restore(r, s, placed),
@@ -654,7 +1050,10 @@ impl Ctx<'_> {
             ti -= 1;
         }
         let db = self.db;
-        let rest = match self.stack_mut(ItemRef { loc: target.loc, index: ti }).map(|t| Self::item_over_item(db, stack.clone(), t)) {
+        let mut out = OverOut::default();
+        let res = self.stack_mut(ItemRef { loc: target.loc, index: ti }).map(|t| Self::item_over_item(db, stack.clone(), t, &mut out));
+        self.settle_over(target.loc, out);
+        let rest = match res {
             Some(Ok(rest)) => rest,
             _ => match self.grid(target.loc) {
                 Some(g) => g.merge_into(db, ti, stack),
@@ -669,7 +1068,15 @@ impl Ctx<'_> {
     fn act(&mut self, action: Action, r: ItemRef) {
         match action {
             // Handled by the menu click (it leaves the item where it is).
-            Action::Place => {}
+            Action::Place | Action::Inspect | Action::Open => {}
+            Action::Repair(kind) => self.repair(r, kind),
+            Action::Detach(i) => {
+                let Some(stack) = self.stack_mut(r) else { return };
+                if i < stack.attachments.len() {
+                    let out = stack.attachments.remove(i);
+                    self.to_player(out);
+                }
+            }
             Action::Unload => {
                 let db = self.db;
                 let Some(stack) = self.stack_mut(r) else { return };
@@ -754,6 +1161,14 @@ impl Ctx<'_> {
 /// JigContextMenuComp.ContextReadBook: "<Skill>Book" gives the skill 250 XP; "<Skill>Magazine"
 /// starts its XP boost (XPMultiplier_<Skill>), unless one is already running. Whether it was used
 /// up (None: not a skill book).
+/// A dropped stack after one of it was used up (`used`), or as it was.
+fn used_up_one(stack: Stack, used: bool) -> Option<Stack> {
+    if !used {
+        return Some(stack);
+    }
+    (stack.count > 1).then(|| Stack { count: stack.count - 1, ..stack })
+}
+
 fn read_book(passive: &mut crate::progression::passive::PassiveSkills, id: &str) -> Option<bool> {
     use crate::progression::passive::Passive;
     let (skill, book) = Passive::ALL.iter().find_map(|&p| {
@@ -968,21 +1383,27 @@ fn rebuild(
     mut images: ResMut<Assets<Image>>,
     assets: Res<AssetServer>,
     player: Query<&Transform, (With<CharacterModel>, With<crate::level::KinematicBody>)>,
+    extras: Res<super::utility_benches::LootExtras>,
 ) {
-    let InvData { db, game, containers, ground, view, dirty, craft, traders: trader_list, tdb, store, .. } = &mut data;
-    let db: &ItemDb = db;
     if !overlay.is_open() {
         ui.split = None;
     }
     if overlay.is_changed() {
-        dirty.0 = true;
+        data.dirty.0 = true;
         if let GameOverlay::Loot(_) = *overlay {
             ui.vicinity = false;
         }
     }
-    if !dirty.0 {
+    if !data.dirty.0 {
         return;
     }
+    // The container windows go with the inventory, and with their items.
+    if !overlay.shows_inventory() {
+        data.item_windows.clear();
+    }
+    let shown = data.window_stacks();
+    let InvData { db, game, containers, ground, view, dirty, craft, traders: trader_list, tdb, store, placed_station, .. } = &mut data;
+    let db: &ItemDb = db;
     dirty.0 = false;
     for e in &roots {
         commands.entity(e).despawn();
@@ -1041,14 +1462,35 @@ fn rebuild(
         let grid = b.grid(c, &g, Loc::Vicinity);
         c.entity(loot).add_children(&[t, grid]);
     } else if let Some(a) = loot_actor
-        && let Some(st) = containers.list.iter().find(|c| c.0 == a).and_then(|c| station(&c.2))
+        && let Some((name, table, tabs)) = containers
+            .list
+            .iter()
+            .find(|c| c.0 == a)
+            .and_then(|c| station(&c.2))
+            .map(|st| (st.name.to_string(), st.table.to_string(), false))
+            .or_else(|| placed_station.0.as_ref().filter(|s| s.key == a).map(|s| (s.name.clone(), s.table.clone(), s.tabs)))
     {
         // The station's widget in the content area, under its ContainerName.
-        let t = c.spawn(title(&font, &st.name.to_uppercase(), 15.0, ())).id();
+        let t = c.spawn(title(&font, &name.to_uppercase(), 15.0, ())).id();
+        c.entity(loot).add_child(t);
+        if tabs {
+            // StandardTitle / ModularTitle: the chosen one's text orange (1, 0.553, 0).
+            let row = c.spawn(Node { width: Val::Percent(100.0), margin: UiRect::top(Val::Px(5.0)), ..default() }).id();
+            for (label, t) in CONSTRUCTION_TABS {
+                let colour = if t == table { Color::linear_rgb(1.0, 0.552721, 0.0) } else { Color::WHITE };
+                // (title_in has its own Node and BackgroundColor: replaced, not bundled twice.)
+                let e = c
+                    .spawn(title_in(&font, label, 20.0, colour, ConstructionTab(t)))
+                    .insert((Node { flex_grow: 1.0, flex_basis: Val::Px(0.0), margin: UiRect::horizontal(Val::Px(5.0)), padding: UiRect::all(Val::Px(5.0)), ..default() }, BackgroundColor(Color::linear_rgba(0.0, 0.0, 0.0, 0.75))))
+                    .id();
+                c.entity(row).add_child(e);
+            }
+            c.entity(loot).add_child(row);
+        }
         let body = c.spawn(Node { flex_direction: FlexDirection::Column, align_items: AlignItems::Center, ..default() }).id();
-        c.entity(loot).add_children(&[t, body]);
+        c.entity(loot).add_child(body);
         let inv = player_inv(game).clone();
-        build_crafting(c, &mut b, &inv, &mut ui, craft, body, st.table);
+        build_crafting(c, &mut b, &inv, &mut ui, craft, body, &table);
     } else if let Some(a) = loot_actor
         && let Some(g) = containers.searched.get(&a)
     {
@@ -1064,6 +1506,22 @@ fn rebuild(
         }
         let grid = b.grid(c, g, Loc::Loot(a));
         c.entity(loot).add_child(grid);
+        // The utility benches' widgets: a 15 px spacer, their button, then the second grid.
+        if let Some(extra) = extras.0.get(&a) {
+            if let Some(text) = extra.button {
+                let node = Node { margin: UiRect::top(Val::Px(15.0)), padding: UiRect::axes(Val::Px(12.0), Val::Px(4.0)), justify_content: JustifyContent::Center, ..default() };
+                let e = c.spawn((crate::menus::widgets::button(node, crate::menus::widgets::ButtonPalette::MENU, super::utility_benches::LootButton(a)), children![(label_colored(&font, text, 22.0, Color::WHITE), Pickable::IGNORE)])).id();
+                c.entity(loot).add_child(e);
+            }
+            if let Some(k) = extra.second
+                && let Some(g2) = containers.searched.get(&k)
+            {
+                let gap = c.spawn(Node { height: Val::Px(15.0), ..default() }).id();
+                let t = c.spawn(title(&font, &g2.name.to_uppercase(), 15.0, ())).id();
+                let grid = b.grid(c, g2, Loc::Loot(k));
+                c.entity(loot).add_children(&[gap, t, grid]);
+            }
+        }
     }
     let tabs = c.spawn(Node { width: Val::Percent(100.0), ..default() }).id();
     let vt = c.spawn(title(&font, "VICINITY", 16.0, LootTab::Vicinity)).id();
@@ -1086,7 +1544,7 @@ fn rebuild(
     });
     let inv = player_inv(game).clone();
     // One crafting view at a time: a station's takes the place of the CRAFTING tab.
-    let station_open = loot_actor.is_some_and(|a| containers.list.iter().any(|c| c.0 == a && station(&c.2).is_some()));
+    let station_open = loot_actor.is_some_and(|a| containers.list.iter().any(|c| c.0 == a && station(&c.2).is_some()) || placed_station.0.as_ref().is_some_and(|s| s.key == a));
     if station_open {
         ui.crafting = false;
     }
@@ -1147,11 +1605,18 @@ fn rebuild(
         let name = db.items.get(&stack.item).map_or(stack.item.clone(), |d| d.name.to_uppercase());
         let t = c.spawn(title(&font, &name, 15.0, ())).id();
         c.entity(t).insert(Node { width: Val::Percent(100.0), flex_shrink: 0.0, padding: UiRect::all(Val::Px(5.0)), ..default() });
-        let wrap = c.spawn(Node { flex_wrap: FlexWrap::Wrap, justify_content: JustifyContent::Center, column_gap: Val::Px(10.0), row_gap: Val::Px(10.0), ..default() }).id();
-        for (i, g) in stack.contents.iter().enumerate() {
-            let e = b.grid(c, g, Loc::Player(GridRef::Worn(slot, i)));
-            c.entity(wrap).add_child(e);
-        }
+        // Its SC_ widget, as the game puts it here.
+        let wrap = match db.items.get(&stack.item).and_then(|d| d.layout.as_ref()) {
+            Some(layout) => b.layout(c, layout, &stack.contents, &|i| Loc::Player(GridRef::Worn(slot, i))),
+            None => {
+                let wrap = c.spawn(Node { flex_wrap: FlexWrap::Wrap, justify_content: JustifyContent::Center, column_gap: Val::Px(10.0), row_gap: Val::Px(10.0), ..default() }).id();
+                for (i, g) in stack.contents.iter().enumerate() {
+                    let e = b.grid(c, g, Loc::Player(GridRef::Worn(slot, i)));
+                    c.entity(wrap).add_child(e);
+                }
+                wrap
+            }
+        };
         c.entity(invc).add_children(&[t, wrap]);
     }
     c.entity(inv_col).add_children(&[head, invc]);
@@ -1177,15 +1642,27 @@ fn rebuild(
             },
             BackgroundColor(Color::linear_rgba(0.0025, 0.0025, 0.0025, 0.9)),
             Visibility::Hidden,
-            GlobalZIndex(20),
+            // Over the container windows (24 / 25).
+            GlobalZIndex(35),
             Pickable::IGNORE,
             Tooltip,
         ))
         .id();
     c.entity(root).add_children(&[hint, tip]);
+    for (rank, (id, stack, pos)) in shown.iter().enumerate() {
+        if let Some(w) = b.window(c, *id, stack, *pos, rank + 1 == shown.len()) {
+            c.entity(root).add_child(w);
+        }
+    }
     if let Some(d) = ui.split {
-        let name = b.font;
-        let dialog = split_dialog(c, name, &d);
+        // "{Action} {name}" for the selectors.
+        let name = ui.split_name.clone();
+        let title = match d.kind {
+            AmountKind::Split => "Split Item".to_string(),
+            AmountKind::Drop => format!("Drop {name}"),
+            AmountKind::Buy => format!("Buy {name}"),
+        };
+        let dialog = split_dialog(c, b.font, &d, &title);
         c.entity(root).add_child(dialog);
     }
 }
@@ -1256,8 +1733,9 @@ fn build_crafting(c: &mut Commands, b: &mut Build, inv: &PlayerInventory, ui: &m
     c.entity(parent).add_children(&[top, bottom, buttons]);
 }
 
-/// `JigSplitWidget`: "Split Item", the amount, a slider, Cancel / Confirm, over a dimmed screen.
-fn split_dialog(c: &mut Commands, font: &MenuFont, d: &SplitDialog) -> Entity {
+/// `JigSplitWidget`: "Split Item", the amount, a slider, Cancel / Confirm, over a dimmed screen;
+/// DropItemAmountSelector is the same widget titled "Drop {name}" / "Buy {name}".
+fn split_dialog(c: &mut Commands, font: &MenuFont, d: &SplitDialog, title: &str) -> Entity {
     fn btn(font: &MenuFont, text: &'static str, which: SplitButton, grow: f32) -> impl Bundle {
         (
             Node { padding: UiRect::axes(Val::Px(14.0), Val::Px(4.0)), flex_grow: grow, justify_content: JustifyContent::Center, border_radius: BorderRadius::all(Val::Px(4.0)), ..default() },
@@ -1267,7 +1745,7 @@ fn split_dialog(c: &mut Commands, font: &MenuFont, d: &SplitDialog) -> Entity {
             children![(label_colored(font, text, 16.0, Color::WHITE), Pickable::IGNORE)],
         )
     }
-    let frac = if d.max > 2 { (d.value - 1) as f32 / (d.max - 2) as f32 } else { 1.0 };
+    let frac = d.fraction();
     c.spawn((
         Node { position_type: PositionType::Absolute, width: Val::Percent(100.0), height: Val::Percent(100.0), justify_content: JustifyContent::Center, align_items: AlignItems::Center, ..default() },
         BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.45)),
@@ -1276,7 +1754,7 @@ fn split_dialog(c: &mut Commands, font: &MenuFont, d: &SplitDialog) -> Entity {
             Node { flex_direction: FlexDirection::Column, align_items: AlignItems::Stretch, padding: UiRect::all(Val::Px(10.0)), row_gap: Val::Px(5.0), min_width: Val::Px(240.0), ..default() },
             BackgroundColor(Color::linear_rgba(0.01, 0.01, 0.01, 0.95)),
             children![
-                (label_colored(font, "Split Item", 22.0, Color::WHITE), Node { align_self: AlignSelf::Center, ..default() }),
+                (label_colored(font, title, 22.0, Color::WHITE), Node { align_self: AlignSelf::Center, ..default() }),
                 (label_colored(font, d.value.to_string(), 16.0, Color::WHITE), Node { align_self: AlignSelf::End, margin: UiRect::horizontal(Val::Px(5.0)), ..default() }, SplitCount),
                 (
                     Node { width: Val::Px(200.0), height: Val::Px(15.0), margin: UiRect::vertical(Val::Px(5.0)), align_self: AlignSelf::Center, ..default() },
@@ -1299,6 +1777,48 @@ fn split_dialog(c: &mut Commands, font: &MenuFont, d: &SplitDialog) -> Entity {
 
 fn cursor(windows: &Query<&Window, With<PrimaryWindow>>, scale: &UiScale) -> Option<Vec2> {
     windows.single().ok()?.cursor_position().map(|p| p / scale.0)
+}
+
+/// The tooltip's stat lines (also the inspector's): the instance's rolled stats, rounds,
+/// magazine, fire modes, caliber, then the item's fixed stats.
+pub(crate) fn stat_lines(db: &ItemDb, stack: &Stack) -> Vec<String> {
+    let Some(def) = db.items.get(&stack.item) else { return Vec::new() };
+    let spaced = |s: &str| s.chars().fold(String::new(), |mut o, ch| {
+        if ch.is_uppercase() && !o.is_empty() {
+            o.push(' ');
+        }
+        o.push(ch);
+        o
+    });
+    let mut lines = Vec::new();
+    // Rolled weapon/armour stats of this instance, then magazine contents.
+    let unit = |k: &str| match k {
+        "CriticalHitChance" | "CriticalHitMultiplier" => "%",
+        "DamageFallOff" => "m",
+        _ => "",
+    };
+    for (k, v) in &stack.stats {
+        lines.push(format!("{}: {v:.0}{}", spaced(k), unit(k)));
+    }
+    if def.capacity > 0 {
+        lines.push(format!("Rounds: {} / {}", stack.rounds, def.capacity));
+    }
+    if let Some(mag) = stack.mag(db) {
+        let cap = db.items.get(&mag.item).map_or(0, |d| d.capacity);
+        lines.push(format!("Magazine: {} / {}", mag.rounds, cap));
+    }
+    if let Some(modes) = def.text_stats.get("Firemodes") {
+        lines.push(format!("Firemodes: {modes}"));
+    }
+    if let Some(cal) = def.text_stats.get("Caliber") {
+        lines.push(format!("Caliber: {cal}"));
+    }
+    let mut stats: Vec<_> = def.stats.iter().collect();
+    stats.sort_by(|a, b| a.0.cmp(b.0));
+    for (k, [lo, hi]) in stats {
+        lines.push(if lo == hi { format!("{}: {:+.0}", spaced(k), lo) } else { format!("{}: {:+.0} - {:+.0}", spaced(k), lo, hi) });
+    }
+    lines
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1363,33 +1883,7 @@ fn hover_and_tooltip(
     if !def.grids.is_empty() {
         lines.push(format!("Storage: {}", def.grids.iter().map(|[w, h]| format!("{w}x{h}")).collect::<Vec<_>>().join(" + ")));
     }
-    // Rolled weapon/armour stats of this instance, then magazine contents.
-    let unit = |k: &str| match k {
-        "CriticalHitChance" | "CriticalHitMultiplier" => "%",
-        "DamageFallOff" => "m",
-        _ => "",
-    };
-    for (k, v) in &stack.stats {
-        lines.push(format!("{}: {v:.0}{}", spaced(k), unit(k)));
-    }
-    if def.capacity > 0 {
-        lines.push(format!("Rounds: {} / {}", stack.rounds, def.capacity));
-    }
-    if let Some(mag) = stack.mag(db) {
-        let cap = db.items.get(&mag.item).map_or(0, |d| d.capacity);
-        lines.push(format!("Magazine: {} / {}", mag.rounds, cap));
-    }
-    if let Some(modes) = def.text_stats.get("Firemodes") {
-        lines.push(format!("Firemodes: {modes}"));
-    }
-    if let Some(cal) = def.text_stats.get("Caliber") {
-        lines.push(format!("Caliber: {cal}"));
-    }
-    let mut stats: Vec<_> = def.stats.iter().collect();
-    stats.sort_by(|a, b| a.0.cmp(b.0));
-    for (k, [lo, hi]) in stats {
-        lines.push(if lo == hi { format!("{}: {:+.0}", spaced(k), lo) } else { format!("{}: {:+.0} - {:+.0}", spaced(k), lo, hi) });
-    }
+    lines.extend(stat_lines(db, &stack));
     let texts: Vec<Entity> = lines.into_iter().map(|l| commands.spawn(label_colored(&font, l, 10.0, TEXT)).id()).collect();
     commands.entity(tip).add_children(&[header, name, div]).add_children(&texts);
 }
@@ -1447,7 +1941,7 @@ fn split_slider(
         return;
     };
     let Ok((hovered, node, at)) = tracks.single() else { return };
-    let hi = d.max.saturating_sub(1).max(1);
+    let (lo, hi) = d.range();
     if mouse.just_pressed(MouseButton::Left) && hovered.get() {
         *grabbing = true;
     }
@@ -1457,15 +1951,15 @@ fn split_slider(
     if *grabbing && let Some(p) = windows.single().ok().and_then(|w| w.physical_cursor_position()) {
         let size = node.size();
         let f = ((p.x - (at.translation.x - size.x / 2.0)) / size.x.max(1.0)).clamp(0.0, 1.0);
-        d.value = 1 + (f * (hi - 1) as f32).round() as u32;
+        d.value = d.at(f);
     }
     if keys.just_pressed(KeyCode::ArrowLeft) {
-        d.value = d.value.saturating_sub(1).max(1);
+        d.value = d.value.saturating_sub(1).max(lo);
     }
     if keys.just_pressed(KeyCode::ArrowRight) {
         d.value = (d.value + 1).min(hi);
     }
-    let frac = if hi > 1 { (d.value - 1) as f32 / (hi - 1) as f32 } else { 1.0 };
+    let frac = d.fraction();
     for mut n in &mut fills {
         n.width = Val::Percent(frac * 100.0);
     }
@@ -1510,6 +2004,9 @@ struct InvData<'w> {
     tdb: Res<'w, traders::TraderDb>,
     scans: MessageWriter<'w, super::quests::ScanLaptop>,
     builds: MessageWriter<'w, super::building::LaunchBuild>,
+    inspects: MessageWriter<'w, super::inspect::InspectItem>,
+    placed_station: ResMut<'w, PlacedStation>,
+    item_windows: ResMut<'w, ItemWindows>,
 }
 
 impl InvData<'_> {
@@ -1525,6 +2022,7 @@ impl InvData<'_> {
                 player,
                 xp_mult: super::survival::difficulty(&self.store, "General", "XP MULTIPLIER"),
                 notice: None,
+                windows: &self.item_windows.windows,
             },
             &mut self.dirty,
         )
@@ -1658,7 +2156,35 @@ fn on_drop(
         && stack.count > 1
         && !matches!(src.loc, Loc::Equip(_))
     {
-        ui.split = Some(SplitDialog { src, cell, rotated, max: stack.count, value: stack.count / 2 });
+        ui.split = Some(SplitDialog { kind: AmountKind::Split, src, cell, rotated, max: stack.count, value: stack.count / 2 });
+        dirty.0 = true;
+        return;
+    }
+    // A stackable stack of 2+ out of a trader's grid into another: "Buy {name}" for how many.
+    if let Some(cell) = cell
+        && let Loc::Loot(k) = src.loc
+        && traders::is_trader(k)
+        && cell.loc != src.loc
+        && let Some((stack, _)) = ctx.peek(src)
+        && stack.count > 1
+        && ctx.db.items.get(&stack.item).is_some_and(|d| d.is_stackable())
+    {
+        let max = stack.count.min(ctx.db.items.get(&stack.item).map_or(stack.count, |d| d.max_stack.max(1)));
+        ui.split_name = ctx.db.items.get(&stack.item).map_or(stack.item.clone(), |d| d.name.clone());
+        ui.split = Some(SplitDialog { kind: AmountKind::Buy, src, cell, rotated, max, value: max });
+        dirty.0 = true;
+        return;
+    }
+    // DropItemBackGwidget.OnDrop: a stack of 2+ outside every panel asks how many to drop.
+    if zones.contains(target)
+        && !matches!(src.loc, Loc::Equip(_) | Loc::Vicinity)
+        && let Some((stack, _)) = ctx.peek(src)
+        && stack.count > 1
+    {
+        let max = stack.count.min(ctx.db.items.get(&stack.item).map_or(stack.count, |d| d.max_stack.max(1)));
+        let cell = CellRef { loc: Loc::Vicinity, x: 0, y: 0 };
+        ui.split_name = ctx.db.items.get(&stack.item).map_or(stack.item.clone(), |d| d.name.clone());
+        ui.split = Some(SplitDialog { kind: AmountKind::Drop, src, cell, rotated, max, value: max });
         dirty.0 = true;
         return;
     }
@@ -1692,6 +2218,8 @@ struct Clickables<'w, 's> {
     buttons: Query<'w, 's, &'static CraftButton>,
     equip_tabs: Query<'w, 's, &'static EquipTab>,
     split_buttons: Query<'w, 's, &'static SplitButton>,
+    construction_tabs: Query<'w, 's, &'static ConstructionTab>,
+    window_closes: Query<'w, 's, &'static WindowClose>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1708,7 +2236,7 @@ fn on_click(
     scale: Res<UiScale>,
     player: Query<&Transform, (With<CharacterModel>, With<crate::level::KinematicBody>)>,
 ) {
-    let Clickables { items, tabs, options, menus, roots, buttons, equip_tabs, split_buttons } = clickables;
+    let Clickables { items, tabs, options, menus, roots, buttons, equip_tabs, split_buttons, construction_tabs, window_closes } = clickables;
     let target = ev.event_target();
     let relevant = items.contains(target)
         || tabs.contains(target)
@@ -1716,15 +2244,25 @@ fn on_click(
         || roots.contains(target)
         || buttons.contains(target)
         || equip_tabs.contains(target)
-        || split_buttons.contains(target);
+        || split_buttons.contains(target)
+        || construction_tabs.contains(target)
+        || window_closes.contains(target);
     if !relevant {
         return;
     }
     ev.propagate(false);
+    if let Ok(WindowClose(id)) = window_closes.get(target) {
+        data.close_window(*id);
+        return;
+    }
     if let Ok(b) = split_buttons.get(target) {
         if let (SplitButton::Confirm, Some(d)) = (b, ui.split) {
             let here = player.single().map(|t| t.translation).unwrap_or_default();
-            if let Some(n) = data.act(here, |ctx| ctx.split(d.src, d.cell, d.value, d.rotated)) {
+            let notice = match d.kind {
+                AmountKind::Drop => data.act(here, |ctx| ctx.drop_part(d.src, d.value)),
+                _ => data.act(here, |ctx| ctx.split(d.src, d.cell, d.value, d.rotated)),
+            };
+            if let Some(n) = notice {
                 data.notify.write(super::notify::Notify::new(n));
             }
         }
@@ -1751,6 +2289,17 @@ fn on_click(
         data.dirty.0 = true;
         return;
     }
+    if let Ok(ConstructionTab(table)) = construction_tabs.get(target) {
+        // OnStandard/ModularMouseButtonDown: StationOwner.CurrentCraftingTable, SetItemsToCraft.
+        if let Some(s) = data.placed_station.0.as_mut()
+            && s.table != *table
+        {
+            s.table = table.to_string();
+            ui.recipe = None;
+        }
+        data.dirty.0 = true;
+        return;
+    }
     if let Ok(EquipTab(crafting)) = equip_tabs.get(target) {
         ui.crafting = *crafting;
         data.dirty.0 = true;
@@ -1773,6 +2322,17 @@ fn on_click(
         return;
     }
     if let Ok(&MenuOption(action, r)) = options.get(target) {
+        if action == Action::Open {
+            data.double_click(r, cursor(&windows, &scale).unwrap_or_default());
+            return;
+        }
+        if action == Action::Inspect {
+            let stack = data.ctx(here).0.peek(r).map(|p| p.0);
+            if let Some(stack) = stack {
+                data.inspects.write(super::inspect::InspectItem(stack));
+            }
+            return;
+        }
         if action == Action::Place {
             // ContextPlaceItem: Event_LaunchBuildMode(the item's data asset), then ToggleInventory.
             let item = data.ctx(here).0.peek(r).map(|p| p.0.item.clone());
@@ -1803,6 +2363,7 @@ fn on_click(
         }
         return;
     }
+    let no_bag_in_bag = windows::no_bag_in_bag(&data.store);
     let (mut ctx, dirty) = data.ctx(here);
     let db = ctx.db;
     let Ok(r) = items.get(target).copied() else { return };
@@ -1818,12 +2379,20 @@ fn on_click(
         return;
     }
     match ev.button {
+        // JSI_Slot.On_MouseDoubleClick (bevy_picking counts the clicks: 500 ms apart).
+        PointerButton::Primary if ev.count == 2 => data.double_click(r, cursor(&windows, &scale).unwrap_or_default()),
         PointerButton::Secondary if !menu_open => {
             // JigContextMenuW: the options this item supports.
             let item = ctx.peek(r).map(|p| p.0.item);
             let Some(key) = item else { return };
             let Some(def) = db.items.get(&key) else { return };
             let mut opts = Vec::new();
+            if windows::offers_open(def, r.loc, no_bag_in_bag) {
+                opts.push(("Open", Action::Open));
+            }
+            if def.context.iter().any(|c| c == "Inspect") {
+                opts.push(("Inspect", Action::Inspect));
+            }
             if matches!(r.loc, Loc::Equip(_)) {
                 opts.push(("Unequip", Action::Unequip));
             } else {
@@ -1840,6 +2409,12 @@ fn on_click(
                     opts.push(("Scan Laptop", Action::ScanLaptop));
                 }
             }
+            // Ours: not on the ground (no inventory to find a kit in).
+            if r.loc != Loc::Vicinity {
+                for kind in super::repair::context_kinds(db, &key) {
+                    opts.push((kind.label(), Action::Repair(kind)));
+                }
+            }
             if let Some((stack, _)) = ctx.peek(r)
                 && r.loc != Loc::Vicinity
                 && (stack.mag(db).is_some() || (def.capacity > 0 && stack.rounds > 0))
@@ -1850,8 +2425,20 @@ fn on_click(
                 && r.loc != Loc::Vicinity
                 && super::flashlight::battery(&stack, db).is_some()
             {
-                // Not the game's: it drags the battery out of the SC_Battery slot.
-                opts.push(("Remove Battery", Action::Unload));
+                // Not the game's: it drags the battery out of the SC_Battery slot (the filter out
+                // of the respirator's).
+                opts.push((if super::radiation::is_respirator(db, &stack.item) { "Remove Filter" } else { "Remove Battery" }, Action::Unload));
+            }
+            // Show Attachments: each attachment on the weapon, to take off.
+            let mut detach: Vec<(String, Action)> = Vec::new();
+            if let Some((stack, _)) = ctx.peek(r)
+                && r.loc != Loc::Vicinity
+                && def.context.iter().any(|c| c == "ShowAttachments")
+            {
+                for i in super::attachments::removable(db, &stack) {
+                    let name = db.items.get(&stack.attachments[i].item).map_or("attachment", |d| d.name.as_str());
+                    detach.push((format!("Remove {name}"), Action::Detach(i)));
+                }
             }
             if r.loc != Loc::Vicinity {
                 opts.push(("Drop", Action::Drop));
@@ -1870,7 +2457,7 @@ fn on_click(
                     DespawnOnExit(AppState::InGame),
                 ))
                 .id();
-            for (text, action) in opts {
+            for (text, action) in opts.into_iter().map(|(t, a)| (t.to_string(), a)).chain(detach) {
                 let o = commands
                     .spawn((
                         Node { padding: UiRect::axes(Val::Px(10.0), Val::Px(5.0)), ..default() },
@@ -1907,7 +2494,7 @@ mod tests {
         let craft = CraftView { table: table.into(), ..default() };
         let (mut game, mut containers, mut ground, view) = (CurrentGame::default(), Containers::default(), Ground::default(), VicinityView::default());
         {
-            let mut ctx = Ctx { db, game: &mut game, containers: &mut containers, ground: &mut ground, view: &view, craft: &craft, player: Vec3::ZERO, xp_mult: 1.0, notice: None };
+            let mut ctx = Ctx { db, game: &mut game, containers: &mut containers, ground: &mut ground, view: &view, craft: &craft, player: Vec3::ZERO, xp_mult: 1.0, notice: None, windows: &[] };
             f(&mut ctx);
         }
         (game, containers, ground)
@@ -1945,6 +2532,82 @@ mod tests {
     }
 
     #[test]
+    fn attachments_go_on_and_come_off() {
+        let Some(db) = db() else { return };
+        let mut rifle = db.stack("DA_M4CQB", 1);
+        rifle.attachments.clear();
+        assert!(matches!(Ctx::item_over_item(&db, db.stack("DA_VerticalForegrip", 1), &mut rifle, &mut OverOut::default()), Ok(None)));
+        assert!(Ctx::item_over_item(&db, db.stack("DA_CompactForegrip", 1), &mut rifle, &mut OverOut::default()).is_err(), "the grip slot is taken");
+        let (game, _, ground) = with_ctx(&db, |ctx| {
+            ctx.inv().pockets.place_at(&db, rifle.clone(), 0, 0).unwrap();
+            ctx.act(Action::Detach(0), ItemRef { loc: Loc::Player(GridRef::Pockets), index: 0 });
+        });
+        let inv = game.inventory.unwrap();
+        // The rifle fills the pockets: the grip lands at the survivor's feet.
+        assert!(ground.items.iter().any(|g| g.1.item == "DA_VerticalForegrip"));
+        assert!(inv.pockets.items.iter().find(|p| p.stack.item == "DA_M4CQB").unwrap().stack.attachments.is_empty());
+    }
+
+    #[test]
+    fn repairs_use_a_kit_from_the_same_inventory() {
+        let Some(db) = db() else { return };
+        use super::super::repair::RepairKind;
+        let rifle = ItemRef { loc: Loc::Equip(Slot::Primary), index: 0 };
+        let mut notice = None;
+        let (game, ..) = with_ctx(&db, |ctx| {
+            let mut m4 = db.stack("DA_M4CQB", 1);
+            m4.durability = Some(40.0);
+            ctx.inv().equip(Slot::Primary, m4);
+            ctx.act(Action::Repair(RepairKind::Weapon), rifle);
+            notice = ctx.notice.take();
+            ctx.inv().insert(&db, db.stack("DA_MakeshiftWeaponCleaningKit", 1));
+            ctx.act(Action::Repair(RepairKind::Weapon), rifle);
+        });
+        assert_eq!(notice, Some("No Weapon Cleaning Kits found in this inventory"));
+        let mut game = game;
+        let inv = player_inv(&mut game);
+        assert_eq!(inv.equipped[&Slot::Primary].durability, Some(100.0));
+        assert_eq!(inv.pockets.items[0].stack.durability, Some(40.0), "60 fixed at 1 per point");
+        // Dropping the kit onto armor: the armor kit fits, the weapon kit doesn't; a kit run down
+        // to 1 is used up.
+        let (game, ..) = with_ctx(&db, |ctx| {
+            let mut vest = db.stack("DA_BodyArmor", 1);
+            vest.durability = Some(0.0);
+            ctx.inv().pockets.place_at(&db, vest, 0, 0).unwrap();
+            let mut kit = db.stack("DA_MakeshiftArmorRepairKit", 1);
+            kit.durability = Some(30.0);
+            ctx.inv().pockets.place_at(&db, kit, 2, 0).unwrap();
+            ctx.drop_onto_item(ItemRef { loc: Loc::Player(GridRef::Pockets), index: 1 }, ItemRef { loc: Loc::Player(GridRef::Pockets), index: 0 }, None, false);
+        });
+        let mut game = game;
+        let inv = player_inv(&mut game);
+        assert_eq!(inv.pockets.items.len(), 1, "the kit is used up");
+        assert_eq!(inv.pockets.items[0].stack.durability, Some(30.0));
+    }
+
+    #[test]
+    fn tablets_purify_water_and_refill_filters() {
+        let Some(db) = db() else { return };
+        let tablets = db.stack("DA_WaterPurificationTablets", 4);
+        let mut jug = db.stack("DA_DirtyWaterJug", 1);
+        let mut out = OverOut::default();
+        assert!(Ctx::item_over_item(&db, tablets.clone(), &mut jug, &mut out).is_err());
+        assert_eq!(out.notice, Some("5 water purification tablets required"));
+        let mut bottles = db.stack("DA_DirtyWaterBottle", 2);
+        let mut out = OverOut::default();
+        let left = Ctx::item_over_item(&db, tablets, &mut bottles, &mut out).unwrap().unwrap();
+        assert_eq!((left.count, bottles.count), (3, 1));
+        assert_eq!(out.spill, vec![db.stack("DA_WaterBottle", 1)]);
+        let left = Ctx::item_over_item(&db, left, &mut bottles, &mut out).unwrap().unwrap();
+        assert_eq!((left.count, bottles.item.as_str()), (2, "DA_WaterBottle"));
+        let mut filter = db.stack("DA_RadiationFilter", 1);
+        filter.durability = Some(5.0);
+        let charcoal = db.stack("DA_CharcoalTablets", 1);
+        assert!(matches!(Ctx::item_over_item(&db, charcoal, &mut filter, &mut out), Ok(None)));
+        assert_eq!(filter.durability, None);
+    }
+
+    #[test]
     fn batteries_go_into_empty_flashlights_only() {
         let Some(db) = db() else { return };
         let mut light = db.stack("DA_Flashlight", 1);
@@ -1952,10 +2615,16 @@ mod tests {
         let battery = db.stack("DA_Battery", 1);
         // Not into a rifle, nor a second one into a full flashlight.
         let mut rifle = db.stack("DA_M4CQB", 1);
-        assert!(Ctx::item_over_item(&db, battery.clone(), &mut rifle).is_err());
-        assert!(matches!(Ctx::item_over_item(&db, battery.clone(), &mut light), Ok(None)));
+        assert!(Ctx::item_over_item(&db, battery.clone(), &mut rifle, &mut OverOut::default()).is_err());
+        assert!(matches!(Ctx::item_over_item(&db, battery.clone(), &mut light, &mut OverOut::default()), Ok(None)));
         assert!(super::super::flashlight::battery(&light, &db).is_some());
-        assert!(Ctx::item_over_item(&db, battery, &mut light).is_err());
+        assert!(Ctx::item_over_item(&db, battery, &mut light, &mut OverOut::default()).is_err());
+        // A radiation filter goes into a respirator the same way.
+        let mut mask = db.stack("DA_HazmatRespirator", 1);
+        mask.attachments.clear();
+        let filter = db.stack("DA_RadiationFilter", 1);
+        assert!(matches!(Ctx::item_over_item(&db, filter.clone(), &mut mask, &mut OverOut::default()), Ok(None)));
+        assert!(Ctx::item_over_item(&db, filter, &mut mask, &mut OverOut::default()).is_err());
     }
 
     #[test]
@@ -2027,6 +2696,33 @@ mod tests {
         let mut counts: Vec<u32> = inv.pockets.items.iter().map(|p| p.stack.count).collect();
         counts.sort();
         assert_eq!(counts, vec![25, 35]);
+    }
+
+    #[test]
+    fn drop_selector_drops_part_and_keeps_the_rest() {
+        let Some(db) = db() else { return };
+        let (mut game, _, ground) = with_ctx(&db, |ctx| {
+            ctx.inv().pockets.place_at(&db, db.stack("DA_556Ammo", 60), 0, 0).unwrap();
+            let src = ItemRef { loc: Loc::Player(GridRef::Pockets), index: 0 };
+            ctx.drop_part(src, 25);
+        });
+        let inv = player_inv(&mut game);
+        assert_eq!(inv.pockets.items.iter().map(|p| p.stack.count).collect::<Vec<_>>(), vec![35]);
+        assert_eq!(ground.items.iter().map(|g| g.1.count).collect::<Vec<_>>(), vec![25]);
+    }
+
+    #[test]
+    fn amount_sliders_follow_their_widgets() {
+        let src = ItemRef { loc: Loc::Player(GridRef::Pockets), index: 0 };
+        let cell = CellRef { loc: Loc::Vicinity, x: 0, y: 0 };
+        let split = SplitDialog { kind: AmountKind::Split, src, cell, rotated: false, max: 10, value: 5 };
+        assert_eq!(split.range(), (1, 9));
+        assert_eq!((split.at(0.0), split.at(1.0)), (1, 9));
+        // DropItemAmountSelector: FTrunc(MaxCount x value), 0 -> 1, the whole stack at the end.
+        let drop = SplitDialog { kind: AmountKind::Drop, max: 10, value: 10, ..split };
+        assert_eq!(drop.range(), (1, 10));
+        assert_eq!((drop.at(0.0), drop.at(0.55), drop.at(1.0)), (1, 5, 10));
+        assert_eq!(drop.fraction(), 1.0);
     }
 
     #[test]

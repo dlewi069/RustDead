@@ -56,6 +56,8 @@ fn show(mut commands: Commands, mut msgs: MessageReader<Notify>, font: Res<MenuF
     let mut new: Vec<Notify> = Vec::new();
     for n in msgs.read() {
         if !new.iter().any(|m| m.text == n.text) {
+            // Logged for the screenshot tour's checks.
+            info!("toast: {}", n.text);
             new.push(n.clone());
         }
     }

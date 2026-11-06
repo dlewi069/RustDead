@@ -37,7 +37,8 @@
 //!   and its loot is gone (ClearContainer; JigCanInteract is off): searching the body says "All
 //!   of the trader's loot is destroyed...".
 //!
-//! Not ported: the vehicle trader's W_VehicleTraderUI, the outline (Video.Outline), the 3 m
+//! The outline on the trader's SkeletalMesh is `outline.rs`'s. Not ported: the vehicle trader's
+//! W_VehicleTraderUI, the 3 m
 //! CheckDistanceFromActor (gameplay input is paused while trading), collision with the traders'
 //! bodies, saving their stock, the wandering trader's map marker (AddMarker).
 

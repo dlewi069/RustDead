@@ -82,6 +82,38 @@ impl SplineMesh {
         (pos, x, y, dir, scale)
     }
 
+    /// Component-to-world as an affine (from `transform`'s columns).
+    pub fn affine(&self) -> bevy::math::Affine3A {
+        let t = &self.transform;
+        bevy::math::Affine3A::from_cols(Vec3::new(t[0], t[1], t[2]).into(), Vec3::new(t[3], t[4], t[5]).into(), Vec3::new(t[6], t[7], t[8]).into(), Vec3::new(t[9], t[10], t[11]).into())
+    }
+
+    /// Whether world point `p` lies in the deformed copy of a source mesh whose bounds (Bevy
+    /// space) are `lo..hi`, as the mesh sweeps along the spline: the nearest of `SAMPLES`
+    /// slices, then the point across it within the scaled cross-section.
+    pub fn contains(&self, p: Vec3, lo: Vec3, hi: Vec3) -> bool {
+        const SAMPLES: usize = 64;
+        let local = to_ue(self.affine().inverse().transform_point3(p));
+        let (ulo, uhi) = (to_ue(lo), to_ue(hi));
+        let (ulo, uhi) = (ulo.min(uhi), ulo.max(uhi));
+        let (min, max) = if (self.boundary[1] - self.boundary[0]).abs() > f32::EPSILON { (self.boundary[0], self.boundary[1]) } else { (axis_value(ulo, self.axis), axis_value(uhi, self.axis)) };
+        let across = |v: Vec3| match self.axis {
+            0 => Vec2::new(v.y, v.z),
+            1 => Vec2::new(v.z, v.x),
+            _ => Vec2::new(v.x, v.y),
+        };
+        let (alo, ahi) = (across(ulo), across(uhi));
+        let nearest = (0..=SAMPLES)
+            .map(|i| self.slice(min + (max - min) * i as f32 / SAMPLES as f32, min, max))
+            .min_by(|a, b| (local - a.0).length_squared().total_cmp(&(local - b.0).length_squared()));
+        let Some((origin, sx, sy, fwd, scale)) = nearest else { return false };
+        let d = local - origin;
+        // Between slices (or past an end by more than that): a slice's spacing along the chord.
+        let spacing = (self.eval_pos(1.0) - self.eval_pos(0.0)).length() / SAMPLES as f32;
+        let (x, y) = (d.dot(sx) / scale.x.abs().max(1e-6), d.dot(sy) / scale.y.abs().max(1e-6));
+        d.dot(fwd).abs() <= spacing && (alo.x..=ahi.x).contains(&x) && (alo.y..=ahi.y).contains(&y)
+    }
+
     /// Deformed copy of `src` (a static mesh in Bevy space), still in component space.
     pub fn deform(&self, src: &Mesh) -> Option<Mesh> {
         let Some(VertexAttributeValues::Float32x3(positions)) = src.attribute(Mesh::ATTRIBUTE_POSITION) else { return None };
@@ -134,6 +166,23 @@ mod tests {
     fn straight(axis: u8) -> SplineMesh {
         let end = |x: f32| SplineEnd { pos: [x, 0.0, 0.0], tangent: [200.0, 0.0, 0.0], scale: [1.0, 1.0], roll: 0.0, offset: [0.0, 0.0] };
         SplineMesh { mesh: String::new(), transform: [0.0; 12], axis, up: [0.0, 0.0, 1.0], boundary: [0.0, 0.0], smooth: false, start: end(0.0), end: end(200.0) }
+    }
+
+    #[test]
+    fn a_point_is_inside_the_swept_box() {
+        // A 4 m cube (Bevy -2..2) swept 2 m along UE X, its cross-section scaled (20, 2):
+        // 80 m across (UE Y), 8 m up (UE Z); the component at the origin.
+        let mut s = straight(0);
+        s.transform = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0];
+        s.start.scale = [20.0, 2.0];
+        s.end.scale = [20.0, 2.0];
+        let (lo, hi) = (Vec3::splat(-2.0), Vec3::splat(2.0));
+        // Bevy x = UE X (along), z = UE Y (across), y = UE Z (up).
+        assert!(s.contains(Vec3::new(1.0, 0.0, 30.0), lo, hi));
+        assert!(s.contains(Vec3::new(1.0, -3.9, -39.0), lo, hi));
+        assert!(!s.contains(Vec3::new(1.0, 0.0, 41.0), lo, hi), "beyond the width");
+        assert!(!s.contains(Vec3::new(1.0, 4.5, 0.0), lo, hi), "above the top");
+        assert!(!s.contains(Vec3::new(3.0, 0.0, 0.0), lo, hi), "past the end");
     }
 
     #[test]

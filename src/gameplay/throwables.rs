@@ -140,11 +140,13 @@ pub struct Fire {
     pub age: f32,
     pub next_tick: f32,
     pub damage: (f32, f32),
+    /// Damage_Object on the objects in it each tick (the DemolitionExpert multiplier).
+    pub objects: f32,
 }
 
 /// A blast's flash (fades out).
 #[derive(Component)]
-struct Flash(f32);
+pub(crate) struct Flash(pub f32);
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<Throwing>()
@@ -272,7 +274,7 @@ fn fly(time: Res<Time>, terrain: Option<Res<Terrain>>, mut props: crate::level::
 
 /// Damage the survivor (through armor) and every zombie whose capsule the sphere reaches.
 #[allow(clippy::type_complexity, clippy::too_many_arguments)]
-fn hurt_around(
+pub(crate) fn hurt_around(
     at: Vec3,
     radius: f32,
     (lo, hi): (f32, f32),
@@ -281,7 +283,7 @@ fn hurt_around(
     game: &mut CurrentGame,
     db: &ItemDb,
     store: &SettingsStore,
-) -> Vec<f32> {
+) -> Vec<(f32, Vec3)> {
     let hit = hurt_zombies(at, radius, (lo, hi), zombies);
     if let Ok((t, body)) = player.single()
         && reaches(at, radius, t.translation, body)
@@ -295,16 +297,17 @@ fn hurt_around(
     hit
 }
 
-/// Damage every zombie whose capsule the sphere reaches; the damage each took.
+/// Damage every zombie whose capsule the sphere reaches; the damage each took and where its
+/// number goes (`damage_numbers::body`).
 #[allow(clippy::type_complexity)]
-fn hurt_zombies(at: Vec3, radius: f32, (lo, hi): (f32, f32), zombies: &mut Query<(&Transform, &KinematicBody, &mut Health, Option<&mut UpperAction>), (With<LevelZombie>, Without<Dead>)>) -> Vec<f32> {
+pub(crate) fn hurt_zombies(at: Vec3, radius: f32, (lo, hi): (f32, f32), zombies: &mut Query<(&Transform, &KinematicBody, &mut Health, Option<&mut UpperAction>), (With<LevelZombie>, Without<Dead>)>) -> Vec<(f32, Vec3)> {
     let mut rng = rand::thread_rng();
     let mut hit = Vec::new();
     for (t, body, mut h, flinch) in zombies.iter_mut() {
         if reaches(at, radius, t.translation, body) {
             let dmg = rng.gen_range(lo..=hi);
             h.hp -= dmg;
-            hit.push(dmg);
+            hit.push((dmg, super::damage_numbers::body(t.translation, body.height)));
             if let Some(mut a) = flinch {
                 a.start(ActionKind::Hit);
             }
@@ -324,7 +327,7 @@ fn detonate(
     mut zombies: Query<(&Transform, &KinematicBody, &mut Health, Option<&mut UpperAction>), (With<LevelZombie>, Without<Dead>)>,
     player: Query<(&Transform, &KinematicBody), (With<CharacterModel>, Without<LevelZombie>)>,
     mut noise: MessageWriter<Noise>,
-    (mut numbers, mut sound, mut fx): (MessageWriter<DamageNumber>, MessageWriter<crate::audio::Sound>, MessageWriter<Fx>),
+    (mut numbers, mut sound, mut fx, mut objects): (MessageWriter<DamageNumber>, MessageWriter<crate::audio::Sound>, MessageWriter<Fx>, MessageWriter<super::barrels::ObjectBlast>),
 ) {
     let mut rng = rand::thread_rng();
     for (e, t, th) in &thrown {
@@ -343,7 +346,7 @@ fn detonate(
                 commands.spawn((
                     Transform::from_translation(at + Vec3::Y * 0.5),
                     PointLight { color: Color::srgb(1.0, 0.55, 0.2), intensity: 400_000.0, range: 12.0, ..default() },
-                    Fire { age: 0.0, next_tick: FIRE_TICK, damage: (th.def.min_damage * demo, th.def.max_damage * demo) },
+                    Fire { age: 0.0, next_tick: FIRE_TICK, damage: (th.def.min_damage * demo, th.def.max_damage * demo), objects: demo },
                     DespawnOnExit(AppState::InGame),
                 ));
                 commands.entity(e).despawn();
@@ -351,6 +354,8 @@ fn detonate(
             }
             Effect::Blast { radius, noise: heard } if th.age >= th.def.fuse => {
                 noise.write(Noise { at, range: heard });
+                // Damage_Object(SkillCheck's multiplier) on every object in the blast.
+                objects.write(super::barrels::ObjectBlast { at, radius, damage: demo });
                 let hit = hurt_around(at, radius, (th.def.min_damage * demo, th.def.max_damage * demo), &mut zombies, &player, &mut game, &db, &store);
                 // FX_Explosion_New at a random yaw, scaled by Random Vector In Range(1, 2) (each
                 // axis its own roll).
@@ -365,7 +370,7 @@ fn detonate(
                 info!("{} exploded at {at}: {} zombies in {radius} m", th.item, hit.len());
                 sound.write(crate::audio::Sound::at("explosion_large_06_Cue", at));
                 // SpawnFloatingDamageText per zombie hit, in white.
-                numbers.write_batch(hit.iter().map(|&damage| DamageNumber { damage, colour: super::damage_numbers::BLAST }));
+                numbers.write_batch(hit.iter().map(|&(damage, at)| DamageNumber::blast(damage, at)));
             }
             Effect::Noise(heard) if th.age >= th.def.fuse => {
                 noise.write(Noise { at, range: heard });
@@ -392,7 +397,7 @@ pub fn demolition(state: Option<&crate::engine::GameState>) -> f32 {
 
 /// The Molotov's fire: Fire_Damage every 0.8 s for 10 s, the flame flickering. Zombies in it take
 /// the damage, and everyone in it who isn't burning yet is set burning.
-#[allow(clippy::type_complexity)]
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 fn burn(
     mut commands: Commands,
     time: Res<Time>,
@@ -401,6 +406,7 @@ fn burn(
     mut zombies: Query<(&Transform, &KinematicBody, &mut Health, Option<&mut UpperAction>), (With<LevelZombie>, Without<Dead>)>,
     unlit: Query<(Entity, &Transform, &KinematicBody), (With<LevelZombie>, Without<Dead>, Without<Burning>)>,
     player: Query<(&Transform, &KinematicBody), (With<CharacterModel>, Without<LevelZombie>)>,
+    mut objects: MessageWriter<super::barrels::ObjectBlast>,
 ) {
     let dt = time.delta_secs();
     let mut rng = rand::thread_rng();
@@ -415,6 +421,7 @@ fn burn(
             f.next_tick += FIRE_TICK;
             let ground = t.translation - Vec3::Y * 0.5;
             hurt_zombies(ground, FIRE_RADIUS, f.damage, &mut zombies);
+            objects.write(super::barrels::ObjectBlast { at: ground, radius: FIRE_RADIUS, damage: f.objects });
             for (z, zt, body) in &unlit {
                 if reaches(ground, FIRE_RADIUS, zt.translation, body) {
                     commands.entity(z).insert(Burning(Burn::zombie(&mut rng)));

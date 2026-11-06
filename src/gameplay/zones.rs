@@ -16,9 +16,10 @@
 //!   taking that much from the well ("'Water Jug' filled"...); under 40 it's "Not enough water in
 //!   well". Drink takes what the survivor's thirst lacks from the well and adds the well's water
 //!   to thirst (capped), or says "No water to drink from". Every 5 s a well gains 0.25, +5 in the
-//!   rain and +1 in snow (its Actor_Weather_Status exposure).
+//!   rain and +1 in snow (its Actor_Weather_Status exposure). Either option plays
+//!   Loot_TableTop_LeftHand_Montage.
 //!
-//! Not ported: the wells' Loot_TableTop_LeftHand_Montage, the outline.
+//! The wells' outline is `outline.rs`'s.
 
 use std::collections::BTreeMap;
 
@@ -103,7 +104,7 @@ pub struct Wells {
     collected: bool,
     tick: f32,
     /// The prompt's chosen option (0 Fill Bottle, 1 Drink).
-    option: usize,
+    pub option: usize,
 }
 
 impl Wells {
@@ -190,9 +191,10 @@ fn collect(level: Option<Res<crate::level::Level>>, mut zones: ResMut<SafeZones>
     info!("safe zones: {}, water wells: {}", zones.list.len(), wells.list.len());
 }
 
-/// A ZoneAreaWidget to show once the one up has finished its FadeStop.
+/// A ZoneAreaWidget to show once the one up has finished its FadeStop: entering, the name and
+/// the Texture (Image_182, tinted white; none = the image removed).
 #[derive(Resource, Default)]
-struct PendingBanner(Option<(bool, String)>);
+pub struct PendingBanner(pub Option<(bool, String, Option<String>)>);
 
 #[allow(clippy::too_many_arguments)]
 fn track_zones(
@@ -217,14 +219,14 @@ fn track_zones(
     }
     // Event_ExitZone then Event_EnterZone.
     if let Some(old) = zones.inside.take() {
-        pending.0 = Some((false, zones.list[old].name.clone()));
+        pending.0 = Some((false, zones.list[old].name.clone(), None));
         for mut b in &mut badges {
             b.leaving.get_or_insert(0.0);
         }
         info!("left safe zone {}", zones.list[old].name);
     }
     if let Some(new) = now {
-        pending.0 = Some((true, zones.list[new].name.clone()));
+        pending.0 = Some((true, zones.list[new].name.clone(), None));
         for mut b in &mut badges {
             b.leaving = None;
         }
@@ -249,9 +251,10 @@ pub struct ZoneBanner {
 struct BannerBack;
 #[derive(Component)]
 struct BannerFront;
+/// Image_182, when the zone passes a texture.
+#[derive(Component)]
+struct BannerIcon;
 
-/// FadeStart's ZoneArea slide (60000 ticks/s): from -525 px in by 1.51 s, back out from 4.29 to 5.55 s.
-const SLIDE: [(f32, f32); 4] = [(0.0, -525.0), (90771.0 / 60000.0, 0.0), (257183.0 / 60000.0, 0.0), (332825.0 / 60000.0, -525.0)];
 /// FadeStart's length (the same widget as POIDiscoveredUI's) and FadeStop's 0.5 s to -625 px.
 const BANNER_END: f32 = 344928.0 / 60000.0;
 const STOP_SECS: f32 = 0.5;
@@ -269,11 +272,11 @@ fn show_banner(mut commands: Commands, font: Res<MenuFont>, assets: Res<AssetSer
     if up {
         return;
     }
-    let Some((entering, name)) = pending.0.take() else { return };
+    let Some((entering, name, icon)) = pending.0.take() else { return };
     let grey = Color::linear_rgb(0.567708, 0.567708, 0.567708);
     // CanvasPanel slot: bottom left, alignment (0, 2.75); the Border's padding 25 / 50 around the
     // VerticalBox's own 25 / 50.
-    commands.spawn((
+    let banner = commands.spawn((
         Node { position_type: PositionType::Absolute, left: Val::Px(0.0), bottom: Val::Px(1.75 * 75.0), padding: UiRect::new(Val::Px(50.0), Val::Px(100.0), Val::Px(0.0), Val::Px(0.0)), flex_direction: FlexDirection::Column, ..default() },
         ImageNode::new(assets.load("game/SurrounDead/Content/UI/Textures/fade-left.png")).with_color(Color::BLACK.with_alpha(0.0)).with_mode(bevy::ui::widget::NodeImageMode::Stretch),
         ZoneBanner { entering, name: name.clone(), age: 0.0, stopping: None },
@@ -283,10 +286,15 @@ fn show_banner(mut commands: Commands, font: Res<MenuFont>, assets: Res<AssetSer
         DespawnOnExit(AppState::InGame),
         children![
             (label_colored(&font, if entering { "Now Entering" } else { "Now Leaving" }, 20.0, grey.with_alpha(0.0)), BannerBack),
-            // Image_182 is removed: the safe zone passes no texture.
-            (label_colored(&font, name, 34.0, Color::WHITE.with_alpha(0.0)), BannerFront),
         ],
-    ));
+    )).id();
+    // HorizontalBox_1: Image_182 (82 px; removed when no texture is passed, as for the safe
+    // zones) and Area (10 px left padding).
+    let row = commands.spawn((Node { align_items: AlignItems::Center, ..default() }, ChildOf(banner))).id();
+    if let Some(icon) = icon {
+        commands.spawn((Node { width: Val::Px(82.0), height: Val::Px(82.0), ..default() }, ImageNode::new(assets.load(icon)).with_color(Color::WHITE.with_alpha(0.0)), BannerIcon, ChildOf(row)));
+    }
+    commands.spawn((label_colored(&font, name, 34.0, Color::WHITE.with_alpha(0.0)), Node { margin: UiRect::left(Val::Px(10.0)), ..default() }, BannerFront, ChildOf(row)));
 }
 
 #[allow(clippy::type_complexity)]
@@ -295,8 +303,10 @@ fn fade_banners(
     time: Res<Time>,
     mut banners: Query<(Entity, &mut ZoneBanner, &mut Node, &mut ImageNode, &Children)>,
     mut texts: Query<(&mut TextColor, Has<BannerFront>)>,
+    rows: Query<&Children, Without<ZoneBanner>>,
+    mut icons: Query<&mut ImageNode, (With<BannerIcon>, Without<ZoneBanner>)>,
 ) {
-    use super::map::{BANNER_BACK, BANNER_FRONT, track};
+    use super::map::{BANNER_BACK, BANNER_FRONT, BANNER_SLIDE as SLIDE, track};
     for (e, mut b, mut node, mut img, kids) in &mut banners {
         let dt = time.delta_secs();
         let ZoneBanner { age, stopping, .. } = &mut *b;
@@ -322,10 +332,14 @@ fn fade_banners(
         };
         node.left = Val::Px(x);
         img.color.set_alpha(back);
-        for k in kids.iter() {
+        let row_kids = kids.iter().filter_map(|k| rows.get(k).ok()).flat_map(|c| c.iter());
+        for k in kids.iter().chain(row_kids) {
             if let Ok((mut c, f)) = texts.get_mut(k) {
                 // RenderOpacity multiplies down the tree.
                 c.0.set_alpha(if f { back * front } else { back });
+            }
+            if let Ok(mut i) = icons.get_mut(k) {
+                i.color.set_alpha(back * front);
             }
         }
     }
@@ -407,7 +421,7 @@ fn refill_wells(time: Res<Time>, weather: Option<Res<super::weather::Weather>>, 
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
-fn use_wells(
+pub(crate) fn use_wells(
     keys: Res<ButtonInput<KeyCode>>,
     scroll: Res<AccumulatedMouseScroll>,
     db: Res<ItemDb>,
@@ -417,10 +431,12 @@ fn use_wells(
     mut game: ResMut<CurrentGame>,
     mut ground: ResMut<super::inventory_ui::Ground>,
     mut notify: MessageWriter<Notify>,
+    mut montage: MessageWriter<super::interact::PlayerMontage>,
     player: Query<&Transform, (With<crate::models::CharacterModel>, With<crate::level::KinematicBody>)>,
     mut prompt: Query<&mut Visibility, With<Prompt>>,
     mut text: Query<&mut Text, With<PromptText>>,
     mut bar: Query<&mut Node, With<PromptBar>>,
+    mut highlight: ResMut<super::outline::Highlight>,
 ) {
     let (Ok(p), Ok(mut vis)) = (player.single(), prompt.single_mut()) else { return };
     if overlay.is_open() || *vis != Visibility::Hidden || driving.active() {
@@ -434,6 +450,7 @@ fn use_wells(
     }
     let water = wells.water(&game, i);
     *vis = Visibility::Inherited;
+    highlight.claim(super::outline::Highlit::Actor { class: "BP_WaterWell_C".into(), at: wells.list[i].pos });
     if let Ok(mut n) = bar.single_mut() {
         n.width = Val::Percent(0.0);
     }
@@ -444,6 +461,8 @@ fn use_wells(
         return;
     }
     let name = wells.list[i].name.clone();
+    // Both options play Loot_TableTop_LeftHand_Montage first.
+    montage.write(super::interact::PlayerMontage::new(crate::models::ActionKind::TableTop));
     if wells.option == 0 {
         let pick = {
             let inv = player_inv(&mut game);

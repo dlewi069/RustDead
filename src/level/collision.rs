@@ -40,6 +40,12 @@ impl KinematicBody {
     pub fn new(radius: f32, height: f32) -> Self {
         Self { radius, height, vertical_velocity: 0.0, grounded: true, jump: None, climbing: false, swimming: false, scripted: false, landed: None, held: 0.0 }
     }
+
+    /// CharacterMovement's IsFalling: off the ground, unless held for props still loading (UE
+    /// has the floor there already).
+    pub fn falling(&self) -> bool {
+        !self.grounded && !(self.held > 0.0 && self.held < HOLD_FOR && self.vertical_velocity == 0.0)
+    }
 }
 
 /// The highest kerb or stair the body walks up.
@@ -119,6 +125,13 @@ impl CollisionCache {
     pub fn set_dynamic(&mut self, key: usize, tris: Vec<[Vec3; 3]>) {
         let item = bounded(tris).unwrap_or(ItemTris { min: Vec3::MAX, max: Vec3::MIN, tris: Arc::default() });
         self.dynamic.insert(key, item);
+    }
+
+    /// `PropRays::dynamic_within`.
+    pub fn dynamic_within(&self, keys: std::ops::Range<usize>, centre: Vec3, radius: f32) -> bool {
+        self.dynamic.iter().filter(|(k, _)| keys.contains(k)).any(|(_, it)| {
+            centre.clamp(it.min, it.max).distance(centre) <= radius && it.tris.iter().any(|t| closest_on_triangle(centre, *t).distance(centre) <= radius)
+        })
     }
 
     /// Triangles currently held for moving prop `key`.
@@ -274,6 +287,12 @@ impl CollisionCache {
     /// The first streamed prop along `dir` (unit) within `max` (a short ray: a melee swing),
     /// with its distance.
     pub fn cast_item(&mut self, level: &Level, streaming: &PropStreaming, meshes: &Assets<Mesh>, origin: Vec3, dir: Vec3, max: f32) -> Option<(f32, super::PropKey)> {
+        self.cast_item_except(level, streaming, meshes, origin, dir, max, &[])
+    }
+
+    /// `cast_item` ignoring the props in `skip` (a trace's ignored self).
+    #[allow(clippy::too_many_arguments)]
+    pub fn cast_item_except(&mut self, level: &Level, streaming: &PropStreaming, meshes: &Assets<Mesh>, origin: Vec3, dir: Vec3, max: f32, skip: &[super::PropKey]) -> Option<(f32, super::PropKey)> {
         let end = origin + dir * max;
         let (lo, hi) = (origin.min(end) - Vec3::splat(0.05), origin.max(end) + Vec3::splat(0.05));
         let mut best: Option<(f32, super::PropKey)> = None;
@@ -286,6 +305,9 @@ impl CollisionCache {
                     continue;
                 }
                 for i in 0..items.len() as u32 {
+                    if skip.contains(&(cell, i)) {
+                        continue;
+                    }
                     let Some(it) = self.item(level, streaming, meshes, cell, i) else { continue };
                     if it.min.cmpgt(hi).any() || it.max.cmplt(lo).any() {
                         continue;
@@ -608,6 +630,29 @@ impl PropRays<'_> {
         sets.iter().flat_map(|s| s.iter()).any(|t| tri_box(t.map(|v| inv * (v - centre)), half))
     }
 
+    /// Whether a moving prop keyed in `keys` has a triangle within `radius` of `centre` (a
+    /// SphereTraceSingle whose start and end are the same point, against those props only).
+    pub fn dynamic_within(&self, keys: std::ops::Range<usize>, centre: Vec3, radius: f32) -> bool {
+        self.cache.dynamic_within(keys, centre, radius)
+    }
+
+    /// Distance along `dir` (unit) to moving prop `key`'s first triangle within `max`.
+    pub fn cast_dynamic(&self, key: usize, origin: Vec3, dir: Vec3, max: f32) -> Option<f32> {
+        let it = self.cache.dynamic.get(&key)?;
+        first_hit(std::slice::from_ref(&it.tris), origin, dir, max).map(|(d, _)| d)
+    }
+
+    /// The first streamed static prop along `dir` (unit) within `max`, ignoring `skip`.
+    pub fn cast_except(&mut self, origin: Vec3, dir: Vec3, max: f32, skip: &[super::PropKey]) -> Option<f32> {
+        let (Some(level), Some(streaming)) = (self.level.as_deref(), self.streaming.as_deref()) else { return None };
+        self.cache.cast_item_except(level, streaming, &self.meshes, origin, dir, max, skip).map(|(d, _)| d)
+    }
+
+    /// The level, while one is loaded.
+    pub fn level(&self) -> Option<&Level> {
+        self.level.as_deref()
+    }
+
     /// Distance to the first prop surface along `dir` (unit) within `max`.
     pub fn cast(&mut self, origin: Vec3, dir: Vec3, max: f32) -> Option<f32> {
         self.cast_hit(origin, dir, max).map(|(d, _)| d)
@@ -674,6 +719,17 @@ mod tests {
         // A hit beyond the arm or right at the pivot.
         assert_eq!(spring_arm(3.0, Some(5.0)), 3.0);
         assert_eq!(spring_arm(3.0, Some(0.05)), 0.1);
+    }
+
+    #[test]
+    fn a_sphere_touches_moving_props_in_its_key_range() {
+        let mut c = CollisionCache::default();
+        // A wall 4 m off along X, keyed 10; another right at the centre, keyed 99.
+        c.set_dynamic(10, vec![[Vec3::new(4.0, -1.0, -1.0), Vec3::new(4.0, 1.0, -1.0), Vec3::new(4.0, 0.0, 1.0)]]);
+        c.set_dynamic(99, vec![[Vec3::new(0.0, -1.0, -1.0), Vec3::new(0.0, 1.0, -1.0), Vec3::new(0.0, 0.0, 1.0)]]);
+        assert!(c.dynamic_within(0..50, Vec3::ZERO, 5.0));
+        assert!(!c.dynamic_within(0..50, Vec3::ZERO, 3.9));
+        assert!(!c.dynamic_within(0..10, Vec3::ZERO, 5.0), "99 and 10 are outside 0..10");
     }
 
     #[test]

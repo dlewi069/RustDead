@@ -207,6 +207,7 @@ fn player_movement(
     swim: Res<surroundead::gameplay::swim::Swim>,
     vault: Res<surroundead::gameplay::vault::Vault>,
     fishing: Res<surroundead::gameplay::fishing::Fishing>,
+    binos: Res<surroundead::gameplay::binoculars::Binoculars>,
 ) {
     let camera_yaw = camera_query.iter().next().map(|c| c.yaw).unwrap_or(0.0);
     let stamina = game.state.as_ref().map_or(100.0, |s| s.survival.stamina);
@@ -362,7 +363,7 @@ fn player_movement(
             let direction = (forward * raw_direction.z + right * raw_direction.x).normalize();
             aim_dir = direction;
             // Sprint input while crouched is the crouch sprint (`Crouch Sprint`).
-            let sprinting = !armed.aiming && !player.exhausted && stamina > 0.0 && keyboard_input.any_pressed(shift);
+            let sprinting = !armed.aim_pose() && !player.exhausted && stamina > 0.0 && keyboard_input.any_pressed(shift);
             // Walking while aiming (the Ironsights blend spaces sample 115 cm/s; ours is a bit
             // quicker so it doesn't feel stuck). Crouched, MaxWalkSpeedCrouched rules either way.
             let speed = match (player.crouched, sprinting) {
@@ -376,14 +377,15 @@ fn player_movement(
             moving = Some(sprinting);
 
             // Smoothly rotate character to face travel direction (aiming faces the camera below).
-            if !armed.aiming {
+            if !armed.aim_pose() {
                 let target_rotation = Quat::from_rotation_y(direction.x.atan2(direction.z));
                 transform.rotation = transform.rotation.slerp(target_rotation, 12.0 * time.delta_secs());
             }
         }
 
-        // Aiming: face where the camera looks instead of the way they walk.
-        if armed.aiming {
+        // Aiming or hip firing (Set Aimed Focus), or first person with the binoculars
+        // (bUseControllerRotationYaw): face where the camera looks instead of the way they walk.
+        if armed.aim_pose() || binos.active {
             let target_rotation = Quat::from_rotation_y(camera_yaw + std::f32::consts::PI);
             transform.rotation = transform.rotation.slerp(target_rotation, 18.0 * time.delta_secs());
         }
@@ -410,7 +412,8 @@ fn player_movement(
         };
         // Aiming: the *_Ironsights blend spaces, by walking direction relative to the facing
         // (the model faces +Z, its right is -X).
-        if armed.aiming && body.grounded {
+        // Hip firing too: the AnimBP's IsADS is IsADS? OR HipFire?.
+        if armed.aim_pose() && body.grounded {
             use Locomotion::*;
             let [idle, fwd, bwd, left, right] = if player.crouched {
                 [CrouchAimIdle, CrouchAimFwd, CrouchAimBwd, CrouchAimLeft, CrouchAimRight]
@@ -452,6 +455,7 @@ fn camera_controls(
     mut rays: surroundead::level::collision::PropRays,
     driving: Res<surroundead::gameplay::vehicles::Driving>,
     build: Res<surroundead::gameplay::building::BuildMode>,
+    (store, binos, zoom): (Res<surroundead::menus::settings::SettingsStore>, Res<surroundead::gameplay::binoculars::Binoculars>, Res<surroundead::gameplay::attachments::Zoom>),
 ) {
     let Ok((player_transform, body)) = player_query.single() else {
         return;
@@ -463,14 +467,19 @@ fn camera_controls(
     if let Some(yaw) = yaw_request.0.take() {
         controller.yaw = yaw;
     }
-    // Mouse look (IA_CameraRotation) and wheel zoom (IA_CameraScroll).
+    // Mouse look (IA_CameraRotation): the multiplier for aiming, a scope or the binoculars
+    // (0.002 rad per pixel per unit: the default 1.5 is the 0.003 this used before), INVERT
+    // MOUSE Y; and wheel zoom (IA_CameraScroll). First person (the binoculars) looks down to 80°.
+    let scope = zoom.0.is_some_and(|z| z.1.is_some());
+    let rate = 0.002 * surroundead::gameplay::binoculars::look_sensitivity(&store, armed.aiming, scope, binos.active);
+    let (up, down) = if binos.active { (89.9f32, 80.0f32) } else { (50.0, 70.0) };
     let delta = mouse_motion.delta;
-    controller.yaw -= delta.x * 0.003;
-    controller.pitch = (controller.pitch + delta.y * 0.003).clamp(-50.0f32.to_radians(), 70.0f32.to_radians());
+    controller.yaw -= delta.x * rate;
+    controller.pitch = (controller.pitch + delta.y * rate * surroundead::gameplay::binoculars::invert_y(&store)).clamp(-up.to_radians(), down.to_radians());
     // Recoil (degrees up and right): looking up lowers the camera, turning right lowers the yaw.
     let kick = std::mem::take(&mut recoil.pending);
     controller.yaw -= kick.y.to_radians();
-    controller.pitch = (controller.pitch - kick.x.to_radians()).clamp(-50.0f32.to_radians(), 70.0f32.to_radians());
+    controller.pitch = (controller.pitch - kick.x.to_radians()).clamp(-up.to_radians(), down.to_radians());
     if let Some(pitch) = pitch_request.0.take() {
         controller.pitch = pitch;
     }

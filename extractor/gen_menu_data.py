@@ -236,6 +236,10 @@ def main():
         norm = lambda n: "".join(c for c in n.lower() if c.isalnum())
         cdo = next(e for e in json.loads(sd.read_text()) if e["Name"].startswith("Default__"))
         defaults = {norm(k): v for k, v in cdo.get("Properties", {}).items() if isinstance(v, (int, float))}
+        # The save's boolean fields (serialized or not): a check row with none of its own (PRIMARY
+        # / RANDOM INFESTATIONS ENABLED?) takes SD_GameInstance's registered value below instead.
+        cls = next((e for e in json.loads(sd.read_text()) if e["Name"] == "Save_Difficulties_C"), {})
+        bools = {norm(p["Name"]) for p in cls.get("ChildProperties", []) if p.get("Type") == "BoolProperty"}
         matched = 0
         for p in data["difficulty"]:
             for r in p["rows"]:
@@ -247,6 +251,8 @@ def main():
                     # Check rows carry no CVar: match the save's booleans by label ("Airdrop" ->
                     # AIRDROPS ENABLED?). Booleans left at false aren't serialized.
                     label = norm(r.get("label", ""))
+                    if not any(len(k) > 4 and k in label for k in bools):
+                        continue
                     on = any(v is True and len(k) > 4 and k in label for k, v in defaults.items())
                     r["default"] = 1.0 if on else 0.0
         print(f"difficulty defaults from Save_Difficulties: {matched}")

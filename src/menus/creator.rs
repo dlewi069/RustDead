@@ -44,7 +44,7 @@ pub enum TextField {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum Cycler {
+pub(crate) enum Cycler {
     Occupation,
     Body(usize),
 }
@@ -58,7 +58,7 @@ enum CreatorAction {
 
 /// Text showing a field's current value.
 #[derive(Component, Clone, Copy)]
-enum CreatorValue {
+pub(crate) enum CreatorValue {
     Text(TextField),
     Cycler(Cycler),
 }
@@ -97,7 +97,12 @@ fn spawn_creator(mut commands: Commands, font: Res<MenuFont>, data: Res<MenuData
         ));
     });
 
-    // Left column: 1200 wide from y=60, a 50% black border inset 25px with 20px padding.
+    spawn_profile_panel(&mut commands, font, &data, &profile, root, true);
+}
+
+/// The Details / Body column CharacterCreatorMenu and CharacterBarberMenu share (the barber's has
+/// no note under it): 1200 wide from y=60, a 50% black border inset 25px with 20px padding.
+pub fn spawn_profile_panel(commands: &mut Commands, font: &MenuFont, data: &MenuData, profile: &CharacterProfile, root: Entity, note: bool) {
     let panel = commands
         .spawn((
             Node {
@@ -133,13 +138,13 @@ fn spawn_creator(mut commands: Commands, font: Res<MenuFont>, data: Res<MenuData
         l
     };
 
-    header(&mut commands, "Details");
+    header(commands, "Details");
     for (text, field, value) in [
         ("Forename:", TextField::Forename, &profile.forename),
         ("Surname:", TextField::Surname, &profile.surname),
         ("Age:", TextField::Age, &profile.age),
     ] {
-        let l = line(&mut commands, text);
+        let l = line(commands, text);
         let b = commands
             .spawn((
                 button(
@@ -154,13 +159,16 @@ fn spawn_creator(mut commands: Commands, font: Res<MenuFont>, data: Res<MenuData
             .id();
         commands.entity(l).add_child(b);
     }
-    let occupation = line(&mut commands, "Prior Occupation:");
-    spawn_cycler(&mut commands, font, occupation, Cycler::Occupation, data.creator.occupations[profile.occupation].clone());
+    let occupation = line(commands, "Prior Occupation:");
+    spawn_cycler(commands, font, occupation, Cycler::Occupation, data.creator.occupations[profile.occupation].clone());
 
-    header(&mut commands, "Body");
+    header(commands, "Body");
     for (i, row) in data.creator.body.iter().enumerate() {
-        let l = line(&mut commands, &row.label);
-        spawn_cycler(&mut commands, font, l, Cycler::Body(i), row.options[profile.body[i]].clone());
+        let l = line(commands, &row.label);
+        spawn_cycler(commands, font, l, Cycler::Body(i), row.options[profile.body[i]].clone());
+    }
+    if !note {
+        return;
     }
     let note = commands
         .spawn((label_colored(font, "If changing sex, you will need to change accessory type again.", 12.0, TEXT_DIM), Node { margin: UiRect::top(Val::Px(10.0)), ..default() }))
@@ -217,6 +225,7 @@ fn on_creator(
             }
             let mut state = GameState::new();
             state.difficulty = crate::engine::difficulty::DifficultyModifiers::for_level(game.difficulty);
+            state.permadeath = game.permadeath;
             game.state = Some(state);
             game.slot = Some(format!("{}{}", profile.forename, profile.surname).replace(' ', ""));
             next_app.set(AppState::InGame);
@@ -225,7 +234,7 @@ fn on_creator(
     }
 }
 
-fn type_into_field(
+pub(crate) fn type_into_field(
     mut keys: MessageReader<KeyboardInput>,
     mut focus: ResMut<TextFocus>,
     mut game: ResMut<CurrentGame>,
@@ -267,7 +276,7 @@ fn type_into_field(
     }
 }
 
-fn refresh_creator(
+pub(crate) fn refresh_creator(
     game: Res<CurrentGame>,
     focus: Res<TextFocus>,
     data: Res<MenuData>,

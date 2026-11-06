@@ -23,7 +23,7 @@
 //! - The crate's ParticleSystem (62 cm up, under the actor's scale): its class's coloured smoke
 //!   ([`smoke`]) from the moment it appears, Deactivate()d once it's opened.
 //!
-//! Not ported: the outline and magnifier, saving crates, the event manager's jets, explosions, blood moon and dynamic random
+//! The outline and the magnifier are `outline.rs`'s. Not ported: saving crates, the event manager's jets, explosions, blood moon and dynamic random
 //! events. Crates land on terrain and on props streamed in near the survivor; one far away lands on
 //! the terrain under it.
 

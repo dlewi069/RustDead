@@ -7,6 +7,62 @@ use bevy::prelude::*;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
+/// A melee weapon's BP_WeaponsPickupComponent attacks (montage names in `ItemDb::melee_montages`).
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct MeleeDef {
+    pub normal: Vec<String>,
+    pub power: Vec<String>,
+    pub crouched: Option<String>,
+    /// DelayBetweenSwings (s).
+    pub delay: f32,
+    /// MaxActorsToHitInSwing? (with MELEE MULTI HIT; else 1).
+    pub max_hits: u32,
+}
+
+/// An attack montage: its sequence (under Content/Animations), length, and the
+/// MeleeHitDetect(_Power) window [start, duration] in montage seconds.
+#[derive(Deserialize, Clone, Debug)]
+pub struct MeleeMontage {
+    pub clip: Option<String>,
+    pub length: f32,
+    pub hit: Option<[f32; 2]>,
+    #[serde(default)]
+    pub power: bool,
+}
+
+/// W_DisassemblyWorkbenchUI's view of an item (`utility_benches.rs`).
+#[derive(Deserialize, Clone, Debug)]
+pub struct Disassembly {
+    /// CanBeDisassembled? (true by default).
+    #[serde(default = "yes")]
+    pub can: bool,
+    #[serde(default)]
+    pub items: Vec<DisassemblyPart>,
+}
+
+impl Default for Disassembly {
+    fn default() -> Self {
+        Self { can: true, items: Vec::new() }
+    }
+}
+
+fn yes() -> bool {
+    true
+}
+
+fn default_zoom() -> [f32; 2] {
+    [1.0, 100.0]
+}
+
+/// A DisassemblyItems entry (RandomContainerItem): SpawnChance %, RandomCountMin-Max.
+#[derive(Deserialize, Clone, Debug)]
+pub struct DisassemblyPart {
+    pub item: String,
+    pub chance: f32,
+    pub min: u32,
+    pub max: u32,
+}
+
 /// A throwable's Blueprint class and its class defaults.
 #[derive(Deserialize, Clone, Debug, PartialEq)]
 pub struct ThrowableDef {
@@ -48,6 +104,10 @@ pub struct ItemDef {
     /// Grids this item carries when worn (backpacks, clothing pockets, rigs, cases).
     #[serde(default)]
     pub grids: Vec<[u8; 2]>,
+    /// How its SC_ widget lays those grids out (gen_items.py `sc_layout`): the inventory
+    /// column and its container window draw this.
+    #[serde(default)]
+    pub layout: Option<Layout>,
     /// Clothing mesh drawn on the survivor when equipped.
     #[serde(default)]
     pub clothing: Option<Clothing>,
@@ -59,6 +119,35 @@ pub struct ItemDef {
     /// `DefaultAttachments` (a firearm's magazine, a magazine's rounds).
     #[serde(default)]
     pub attachments: Vec<AttachmentRoll>,
+    /// The disassembly workbench: CanBeDisassembled? and DisassemblyItems.
+    #[serde(default)]
+    pub disassembly: Disassembly,
+    /// Melee weapons: their attack montages and swing settings.
+    #[serde(default)]
+    pub melee: Option<MeleeDef>,
+    /// The item inspector's MaxZoomIn / MaxZoomOut (FOV degrees).
+    #[serde(default = "default_zoom")]
+    pub zoom: [f32; 2],
+    /// Description (the inspector's info text; most items have none).
+    #[serde(default)]
+    pub description: String,
+    /// Firearms: their attachment slots (SC_<gun>), in display order (`attachments.rs`).
+    #[serde(default)]
+    pub slots: Vec<WeaponSlot>,
+    /// Firearms: their skeleton's sockets, where the attachments hang (`attachments.rs`).
+    #[serde(default)]
+    pub mesh_sockets: HashMap<String, Socket>,
+    /// Weapon attachments: their Local_AttachmentType, socket, sight zoom and role.
+    #[serde(default)]
+    pub attachment: Option<AttachmentDef>,
+    /// SC_Battery's (and SC_NVG's) container: the battery it takes (flashlights, tactical
+    /// lights, the range finder, NVGs).
+    #[serde(default)]
+    pub holds: Vec<String>,
+    /// SpecialContainerWidget (SC_<gun>, SC_Battery, SC_TwoPocketsClothing...): a double click
+    /// opens it in a window instead of the inspector (`inspect::double_click`).
+    #[serde(default)]
+    pub special: Option<String>,
     /// `TextStats`: "Firemodes" ("Semi, Auto"), "Caliber".
     #[serde(default)]
     pub text_stats: HashMap<String, String>,
@@ -70,6 +159,12 @@ pub struct ItemDef {
     /// Sockets the weapon sits in, drawn and holstered, and its offset from them.
     #[serde(default)]
     pub equip: Option<EquipSockets>,
+    /// Head gear: the pickup actor BP_PlayerCharacter hangs on its socket (`head_gear.rs`).
+    #[serde(default)]
+    pub worn: Option<Worn>,
+    /// Binoculars: BinocularsZoomValue and ShowDistance? (`binoculars.rs`).
+    #[serde(default)]
+    pub binoculars: Option<BinocularsDef>,
     /// `MaxDurability`, and `ReduceDurabilityAmount` lost per shot (ReduceDurability).
     #[serde(default)]
     pub durability: f32,
@@ -89,6 +184,10 @@ pub struct ItemDef {
     /// ContextMenuOptions without the `Jig.Context.` prefix ("ReadBook", "Use"...).
     #[serde(default)]
     pub context: Vec<String>,
+    /// OverItemOptions without the `Jig.ItemOverItem.` prefix: what dropping it onto another
+    /// item does ("WeaponRepair", "AttachmentRepair", "ArmorRepair": the repair kits).
+    #[serde(default)]
+    pub over_item: Vec<String>,
     #[serde(default = "one")]
     pub swing_speed: f32,
     /// Melee weapons: what their swings harvest ("tree", "rock"; `gameplay::harvest`).
@@ -139,6 +238,41 @@ pub struct FirearmData {
     /// FirearmSound: the shot's SoundCue.
     #[serde(default)]
     pub sound: Option<String>,
+    /// FirearmSuppressedSound and SuppressedMuzzleFlash (with a suppressor on).
+    #[serde(default)]
+    pub suppressed_sound: Option<String>,
+    #[serde(default)]
+    pub suppressed_muzzle_flash: Option<String>,
+    /// DoesWeaponUseAProjectile?: the ProjectileClass fired instead of a trace (`projectiles.rs`).
+    #[serde(default)]
+    pub projectile: Option<ProjectileDef>,
+}
+
+/// A launcher's ProjectileClass (BP_ProjectileMaster's children), resolved by gen_items.py.
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct ProjectileDef {
+    pub class: String,
+    /// ProjectileMovement's InitialSpeed (= MaxSpeed), m/s.
+    pub speed: f32,
+    /// ProjectileGravityScale.
+    pub gravity: f32,
+    #[serde(default)]
+    pub mesh: Option<String>,
+    /// The class's own MinDamage / MaxDamage (the rocket), else the launcher's FirearmDamage.
+    #[serde(default)]
+    pub damage: Option<[f32; 2]>,
+    #[serde(default)]
+    pub light: Option<ProjectileLight>,
+}
+
+/// A projectile's PointLight template.
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct ProjectileLight {
+    pub color: [f32; 3],
+    pub intensity: f32,
+    /// AttenuationRadius, m.
+    pub radius: f32,
+    pub inverse_square: bool,
 }
 
 impl FirearmData {
@@ -166,8 +300,26 @@ pub struct EquipSockets {
     pub transform: Option<LocalTransform>,
 }
 
+/// A pair of binoculars: the first-person field of view is divided by `zoom`; `distance` shows
+/// the range readout.
+#[derive(Deserialize, Clone, Copy, Debug, PartialEq)]
+pub struct BinocularsDef {
+    pub zoom: f32,
+    pub distance: bool,
+}
+
+/// A head gear item's PickupClass actor: its StaticMeshComponent's mesh, transform in the actor
+/// and OverrideMaterials (packages by slot; None keeps the mesh's).
+#[derive(Deserialize, Clone, Debug)]
+pub struct Worn {
+    pub mesh: String,
+    pub transform: LocalTransform,
+    #[serde(default)]
+    pub materials: Vec<Option<String>>,
+}
+
 /// A local transform already in glb space (t metres, r quat xyzw, s scale).
-#[derive(Deserialize, Clone, Copy, Debug)]
+#[derive(Deserialize, Clone, Copy, Debug, PartialEq)]
 pub struct LocalTransform {
     pub t: [f32; 3],
     pub r: [f32; 4],
@@ -200,6 +352,65 @@ pub struct RandomStat {
     /// Percent.
     pub chance: f32,
     pub rounded: bool,
+}
+
+/// A storage SC_ widget's tree: a VerticalBox (`v`) or HorizontalBox (`h`) of children, a
+/// Spacer (`gap`, px) or a JSIContainer (`grid`: an index into [`ItemDef::grids`] and the
+/// stack's `contents`); `center` = its slot's HAlign_Center.
+#[derive(Deserialize, Clone, Debug, Default)]
+pub struct Layout {
+    #[serde(default)]
+    pub v: Option<Vec<Layout>>,
+    #[serde(default)]
+    pub h: Option<Vec<Layout>>,
+    #[serde(default)]
+    pub gap: Option<[f32; 2]>,
+    #[serde(default)]
+    pub grid: Option<usize>,
+    #[serde(default)]
+    pub center: bool,
+}
+
+/// One of a firearm's special containers: its ContainerTag (Muzzle, Tactical, Grip, Mag, Sight,
+/// Chamber) and OnlySupportTheseItems.
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct WeaponSlot {
+    pub tag: String,
+    pub items: Vec<String>,
+}
+
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct AttachmentDef {
+    /// Local_AttachmentType: Muzzle, Tactical, Grip, Mag, Sight.
+    #[serde(rename = "type")]
+    pub kind: String,
+    pub socket: Option<String>,
+    /// FOVZoom (sights).
+    pub fov_zoom: Option<f32>,
+    /// BP_WeaponsPickupComponent's list naming it: suppressor, muzzle_brake, sight, scope.
+    pub role: Option<String>,
+    /// Local_ActorClass: the mesh and lights put on the gun's socket.
+    #[serde(default)]
+    pub actor: Option<LocalActor>,
+}
+
+/// A BP_AMainLocalAttachment child: its StaticMesh and lights, relative to the actor.
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct LocalActor {
+    pub mesh: Option<String>,
+    pub transform: Option<LocalTransform>,
+    #[serde(default)]
+    pub lights: Vec<ActorLight>,
+}
+
+/// A Point/SpotLightComponent template (UE units: Intensity, AttenuationRadius cm, degrees).
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct ActorLight {
+    pub kind: String,
+    pub intensity: f32,
+    pub radius: f32,
+    pub outer_cone: f32,
+    pub transform: LocalTransform,
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -282,6 +493,24 @@ pub struct ContainerDef {
     /// Airdrop crates: their map marker's title and colour.
     #[serde(default)]
     pub airdrop: Option<AirdropInfo>,
+    /// BP_MASTER_ToolRequiredContainer's children (`interact.rs`): the tool its search needs.
+    #[serde(default)]
+    pub tool: Option<ToolNeed>,
+    /// Its BP_JigMultiplayer's DoesContainerRefillLoot? (`loot_refill.rs`); false for classes
+    /// whose Blueprint never starts the refill timer.
+    #[serde(default)]
+    pub refills: bool,
+    /// MagnifierTransform's offset from the actor (Bevy metres, actor space): where the search
+    /// icon hangs (`loot_refill.rs`).
+    #[serde(default)]
+    pub magnifier: [f32; 3],
+}
+
+/// `ToolNeeded?` and the class's `ToolNeeded` data asset (instances may name their own).
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct ToolNeed {
+    pub required: bool,
+    pub item: Option<String>,
 }
 
 /// Master_AirdropContainer's `Text` and `Color` (its BP_Marker's title and tint).
@@ -315,6 +544,9 @@ pub struct ItemDb {
     pub recipes: HashMap<String, Vec<Recipe>>,
     #[serde(default)]
     pub sockets: HashMap<String, Socket>,
+    /// The melee weapons' attack montages (`combat.rs`).
+    #[serde(default)]
+    pub melee_montages: HashMap<String, MeleeMontage>,
 }
 
 impl ItemDb {
@@ -469,11 +701,19 @@ pub struct Grid {
     pub width: u8,
     pub height: u8,
     pub items: Vec<Placed>,
+    /// JSIContainer's OnlySupportTheseItems (the battery charger's DA_Battery); empty = anything.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub only: Vec<String>,
 }
 
 impl Grid {
     pub fn new(name: impl Into<String>, width: u8, height: u8) -> Self {
-        Self { name: name.into(), width, height, items: Vec::new() }
+        Self { name: name.into(), width, height, items: Vec::new(), only: Vec::new() }
+    }
+
+    /// Does the grid take this item (OnlySupportTheseItems)?
+    pub fn accepts(&self, item: &str) -> bool {
+        self.only.is_empty() || self.only.iter().any(|o| o == item)
     }
 
     fn free(&self, x: u8, y: u8, w: u8, h: u8) -> bool {
@@ -496,7 +736,7 @@ impl Grid {
 
     pub fn place_rotated(&mut self, db: &ItemDb, stack: Stack, x: u8, y: u8, rotated: bool) -> Result<(), Stack> {
         let Some((w, h)) = footprint(db, &stack.item, rotated) else { return Err(stack) };
-        if !self.free(x, y, w, h) {
+        if !self.accepts(&stack.item) || !self.free(x, y, w, h) {
             return Err(stack);
         }
         self.items.push(Placed { stack, x, y, w, h, rotated });
@@ -554,6 +794,9 @@ impl Grid {
     /// Returns whatever didn't fit.
     pub fn insert(&mut self, db: &ItemDb, mut stack: Stack) -> Option<Stack> {
         let Some(def) = db.items.get(&stack.item) else { return Some(stack) };
+        if !self.accepts(&stack.item) {
+            return Some(stack);
+        }
         for p in self.items.iter_mut().filter(|p| p.stack.item == stack.item && def.is_stackable()) {
             let room = def.max_stack.saturating_sub(p.stack.count);
             let moved = room.min(stack.count);
@@ -604,17 +847,30 @@ mod tests {
             inspect_rotation: [0.0, 0.0, 0.0, 1.0],
             fov: 30.0,
             grids: Vec::new(),
+            layout: None,
             clothing: None,
             random_stats: Vec::new(),
             max_stats: 0,
             attachments: Vec::new(),
+            disassembly: Disassembly::default(),
+            melee: None,
+            zoom: default_zoom(),
+            description: String::new(),
+            slots: Vec::new(),
+            mesh_sockets: HashMap::new(),
+            holds: Vec::new(),
+            special: None,
+            attachment: None,
             text_stats: HashMap::new(),
             capacity: 0,
             ammo: Vec::new(),
             equip: None,
+            worn: None,
+            binoculars: None,
             durability: 0.0,
             reduce_durability: 0.0,
             context: Vec::new(),
+            over_item: Vec::new(),
             swing_speed: 1.0,
             harvests: Vec::new(),
             reload_speed: 1.0,
@@ -629,6 +885,7 @@ mod tests {
             unique_loot: HashMap::new(),
             recipes: HashMap::new(),
             sockets: HashMap::new(),
+            melee_montages: HashMap::new(),
         }
     }
 

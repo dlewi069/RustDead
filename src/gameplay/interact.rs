@@ -39,12 +39,29 @@ pub enum GameOverlay {
     Keypad(usize),
     /// Reading a keypad door's note (door index).
     Note(usize),
+    /// Reading a BP_StandardNote (its index in `Level::notes`).
+    Letter(usize),
     /// The journal (J), on its Skills page.
     Journal,
     /// The map (M).
     Map,
     /// Talking to a trader (its container key; `traders.rs`).
     Dialogue(usize),
+    /// "Are you sure you want to pick up this container?" (a placed buildable's id; `storage.rs`).
+    ConfirmPickup(usize),
+    /// Renaming a placed container (its id; `storage.rs`).
+    Rename(usize),
+    /// SleepingUI (`sleep.rs`).
+    Sleep,
+    /// RespawnScreen, while dead (`respawn.rs`): Esc doesn't close it.
+    Respawn,
+    /// ScreenPermadeath, dead with PERMADEATH on (`respawn.rs`): Esc doesn't close it.
+    Permadeath,
+    /// RadioUI for a radio (`radio.rs`).
+    Radio(super::radio::RadioOwner),
+    /// CharacterBarberMenu at a barber (its index; `barber.rs`, which handles Esc: a focused text
+    /// box lets go first).
+    Barber(usize),
 }
 
 impl GameOverlay {
@@ -87,6 +104,36 @@ pub struct Containers {
     pub quest_opened: Vec<usize>,
     /// Dead wandering traders already searched (their DoOnce "All of the trader's loot is destroyed...").
     pub told: HashSet<usize>,
+    /// Refilled while their loot screen was up (`loot_refill.rs`): the grid stays, but they're
+    /// unsearched (ContainerLooted false) and the next search adds a new roll to it.
+    pub refilled: HashSet<usize>,
+    /// Marked As Storage Container (`loot_refill::mark`): never refilled.
+    pub marked: HashSet<usize>,
+}
+
+impl Containers {
+    /// ContainerLooted: searched, and not refilled since.
+    pub fn looted(&self, key: usize) -> bool {
+        self.searched.contains_key(&key) && !self.refilled.contains(&key)
+    }
+
+    /// A corpse's entity, by its key.
+    pub fn corpse(&self, key: usize) -> Option<Entity> {
+        self.corpses.get(&key).copied()
+    }
+
+    /// The level's containers (and the item spawners') are listed.
+    pub fn collected(&self) -> bool {
+        self.collected
+    }
+}
+
+/// A container's HoldToInteract finished (or a picked lock opened it): BP_JigMultiplayer's
+/// StartRefillTimer (`loot_refill.rs`).
+#[derive(Message, Clone, Debug)]
+pub struct Searched {
+    pub key: usize,
+    pub class: String,
 }
 
 impl Containers {
@@ -122,8 +169,16 @@ pub fn container_def(db: &ItemDb, class: &str) -> Option<super::items::Container
     if let Some(d) = db.containers.get(class) {
         return Some(d.clone());
     }
+    // A destroyed infestation's pile (JigCanInteract = IsDestroyed?), opened on a press.
+    if let Some(d) = super::infestations::container(class) {
+        return Some(d);
+    }
+    // Container_DeadPlayerLoot: OnExecuteInteract opens it on a press.
+    if class == super::death_loot::CLASS {
+        return Some(super::items::ContainerDef { name: super::death_loot::PROMPT_NAME.into(), table: None, hold: 0.0, lockpick: false, noise: 0.0, mesh: None, airdrop: None, tool: None, refills: false, magnifier: [0.0; 3] });
+    }
     let c = super::zombies::ZombieKind::from_class(class)?.class();
-    Some(super::items::ContainerDef { name: c.container.clone().unwrap_or_else(|| "Dead Zombie".into()), table: c.loot_table.clone(), hold: 0.0, lockpick: false, noise: 0.0, mesh: None, airdrop: None })
+    Some(super::items::ContainerDef { name: c.container.clone().unwrap_or_else(|| "Dead Zombie".into()), table: c.loot_table.clone(), hold: 0.0, lockpick: false, noise: 0.0, mesh: None, airdrop: None, tool: None, refills: false, magnifier: [0.0; 3] })
 }
 
 #[derive(Resource, Default)]
@@ -133,6 +188,8 @@ pub(crate) struct Search {
     /// Quick Search's NoiseEvent timer (0.075 s) and whether this press already made its noise.
     noise_tick: f32,
     noise_done: bool,
+    /// The selected interact option (the wheel; SetupWidget selects the first).
+    option: usize,
 }
 
 #[derive(Component)]
@@ -142,8 +199,32 @@ pub(crate) struct PromptText;
 #[derive(Component)]
 pub(crate) struct PromptBar;
 
+/// BPI_Player.PlayMontage on the survivor (Svr_Montage -> MC_Montage: played at once, over
+/// whatever montage was playing): the interactions' Loot_* montages.
+#[derive(Message, Clone, Copy, Debug)]
+pub struct PlayerMontage(pub crate::models::ActionKind, pub Option<f32>);
+
+impl PlayerMontage {
+    /// At rate 1 (the montage's own).
+    pub fn new(kind: crate::models::ActionKind) -> Self {
+        Self(kind, None)
+    }
+}
+
+fn play_montages(mut msgs: MessageReader<PlayerMontage>, mut player: Query<&mut crate::models::UpperAction, (With<crate::models::CharacterModel>, With<crate::level::KinematicBody>)>) {
+    for m in msgs.read() {
+        if let Ok(mut a) = player.single_mut() {
+            a.start_at(m.0, m.1);
+            info!("montage: {:?} at {:?}", m.0, m.1);
+        }
+    }
+}
+
 pub fn plugin(app: &mut App) {
-    app.init_resource::<GameOverlay>()
+    app.add_message::<PlayerMontage>()
+        .add_message::<Searched>()
+        .add_systems(Update, play_montages.run_if(in_state(AppState::InGame)))
+        .init_resource::<GameOverlay>()
         .init_resource::<Containers>()
         .init_resource::<Search>()
         .add_systems(OnEnter(AppState::InGame), (spawn_prompt, reset_session))
@@ -273,7 +354,8 @@ pub(crate) fn search_containers(
     mut bar: Query<&mut Node, With<PromptBar>>,
     mut game: ResMut<CurrentGame>,
     mut notify: MessageWriter<super::notify::Notify>,
-    (level, power, store, mut noise, tdb, traders, driving, mut tasks): (
+    mut searched_msg: MessageWriter<Searched>,
+    (level, power, store, mut noise, tdb, traders, driving, mut tasks, mut view, mut montage, scroll, mut highlight): (
         Option<Res<crate::level::Level>>,
         Option<Res<crate::level::power::Power>>,
         Res<crate::menus::settings::SettingsStore>,
@@ -282,14 +364,23 @@ pub(crate) fn search_containers(
         Res<super::traders::Traders>,
         Res<super::vehicles::Driving>,
         MessageWriter<super::quests::DataTask>,
+        ResMut<super::search_widget::SearchView>,
+        MessageWriter<PlayerMontage>,
+        Res<bevy::input::mouse::AccumulatedMouseScroll>,
+        ResMut<super::outline::Highlight>,
     ),
 ) {
+    // BP_LootContainerWidget is only up while a loot container below fills it in (`show`).
+    view.bypass_change_detection().shown = false;
     if let Some(actor) = containers.open_now.take()
         && let Some((_, _, class)) = containers.list.iter().find(|c| c.0 == actor).cloned()
     {
+        // BP_MASTER_PicklockContainer, picked: SetInspected(true), StartRefillTimer.
+        searched_msg.write(Searched { key: actor, class: class.clone() });
         open_loot(&db, &mut containers, actor, &class);
         *overlay = GameOverlay::Loot(actor);
         dirty.0 = true;
+        montage.write_batch(open_montage(&db, &class).map(PlayerMontage::new));
     }
     let (Ok(p), Ok(mut vis)) = (player.single(), prompt.single_mut()) else { return };
     // In a vehicle nothing around is in reach (`vehicles::interact` owns F).
@@ -305,7 +396,7 @@ pub(crate) fn search_containers(
         .min_by(|a, b| a.1.distance(p).total_cmp(&b.1.distance(p)))
         .cloned()
         // A nearer door or keypad note takes F (`level::doors::interact_doors`).
-        .filter(|c| level.as_ref().and_then(|l| crate::level::doors::reach_distance(&l.doors, power.as_deref(), p)).is_none_or(|d| c.1.distance(p) <= d));
+        .filter(|c| level.as_ref().and_then(|l| crate::level::doors::reach_distance(&l.doors, &l.notes, power.as_deref(), p)).is_none_or(|d| c.1.distance(p) <= d));
     let Some((actor, _, class)) = nearest else {
         *vis = Visibility::Hidden;
         *search = Search::default();
@@ -315,6 +406,7 @@ pub(crate) fn search_containers(
     if super::traders::is_trader(actor) {
         let line = traders.get(&tdb, actor).map(|(_, c)| super::traders::prompt(c)).unwrap_or_default();
         *vis = Visibility::Inherited;
+        highlight.claim(super::outline::Highlit::Key(actor));
         if let Ok(mut t) = text.single_mut() {
             t.0 = line;
         }
@@ -334,6 +426,7 @@ pub(crate) fn search_containers(
     // A dead wandering trader: JigCanInteract is off; Interact tells once that its loot is gone.
     if actor >= CORPSE_KEYS && super::zombies::ZombieKind::from_class(&class).and_then(|k| k.human()).is_some_and(|h| h.trader) {
         *vis = Visibility::Inherited;
+        highlight.claim(super::outline::Highlit::Key(actor));
         if let Ok(mut t) = text.single_mut() {
             t.0 = "Press [F] to Interact".into();
         }
@@ -350,7 +443,8 @@ pub(crate) fn search_containers(
         def.name = name.clone();
     }
     *vis = Visibility::Inherited;
-    let searched = containers.searched.contains_key(&actor);
+    highlight.claim(super::outline::Highlit::Key(actor));
+    let searched = containers.looted(actor);
 
     if search.target != Some(actor) {
         *search = Search { target: Some(actor), ..default() };
@@ -374,9 +468,83 @@ pub(crate) fn search_containers(
         }
         return;
     }
+    // A tool-required container (BP_MASTER_ToolRequiredContainer) not yet looted: no hold
+    // without its tool (FindItem_Pure: "{A} not found").
+    let instance_tool = level.as_ref().and_then(|l| l.actors.get(actor)).and_then(|a| a.props.as_ref()?.get("ToolNeeded").cloned());
+    let tool = tool_needed(&def, instance_tool);
+    // Loot containers (BP_LootContainer and its kin) show BP_LootContainerWidget; corpses and
+    // crafting stations keep the plain prompt.
+    let loot_widget = class != super::inventory_ui::STATION && super::zombies::ZombieKind::from_class(&class).is_none();
+    let marked = containers.marked.contains(&actor);
+    let storage = db.containers.contains_key(&class) && !containers.quest_crates.contains(&actor);
+    let options = super::search_widget::options(&def, storage, marked);
+    if scroll.delta.y != 0.0 && options.len() > 1 {
+        search.option = (search.option + 1) % options.len();
+    }
+    let option = search.option.min(options.len() - 1);
+    let mut show = |vis: &mut Visibility, progress: f32, held: bool| {
+        if !loot_widget {
+            return;
+        }
+        *vis = Visibility::Hidden;
+        let next = super::search_widget::SearchView {
+            shown: true,
+            key: Some(actor),
+            name: def.name.clone(),
+            looted: searched,
+            marked,
+            loot_type: super::search_widget::loot_type_name(def.table.as_deref()).into(),
+            held,
+            progress,
+            options: options.iter().map(|o| o.to_string()).collect(),
+            selected: option,
+        };
+        if *view != next {
+            *view = next;
+        } else {
+            view.bypass_change_detection().shown = true;
+        }
+    };
+    if let Some(tool) = &tool
+        && !searched
+        && !tool.as_ref().is_some_and(|t| player_inv(&mut game).count(t) > 0)
+    {
+        if let Ok(mut t) = text.single_mut() {
+            t.0 = format!("Hold [F] to search {}", def.name);
+        }
+        if let Ok(mut n) = bar.single_mut() {
+            n.width = Val::Percent(0.0);
+        }
+        show(&mut vis, 0.0, false);
+        search.progress = 0.0;
+        if keys.just_pressed(KeyCode::KeyF) {
+            let name = tool.as_ref().and_then(|t| db.items.get(t)).map_or("", |d| d.name.as_str());
+            notify.write(super::notify::Notify::new(format!("{name} not found")));
+        }
+        return;
+    }
+    // Option2 (BP_LootContainer's Mark As Storage / Loot Container) is a press, never a search.
+    if option == 1 {
+        if let Ok(mut n) = bar.single_mut() {
+            n.width = Val::Percent(0.0);
+        }
+        search.progress = 0.0;
+        show(&mut vis, 0.0, false);
+        if keys.just_pressed(KeyCode::KeyF) {
+            match super::loot_refill::mark(&mut containers, actor) {
+                Ok(on) => info!("loot: {actor} marked as {} container", if on { "storage" } else { "loot" }),
+                Err(why) => {
+                    notify.write(super::notify::Notify::new(why));
+                }
+            }
+        }
+        return;
+    }
     let passive = game.state.as_ref().map(|s| s.passive.clone()).unwrap_or_default();
     let scavenging = passive.multiplier(Passive::Scavenging);
-    let hold = if searched { 0.0 } else { search_time(def.hold, scavenging, super::survival::difficulty(&store, "Loot / Environment", "SEARCH TIME MULTIPLIER")) };
+    // The tool-required master's MaxTime is DurationToHold / ScavengingMultiplier alone.
+    let setting = if def.tool.is_some() { 1.0 } else { super::survival::difficulty(&store, "Loot / Environment", "SEARCH TIME MULTIPLIER") };
+    let hold = if searched { 0.0 } else { search_time(def.hold, scavenging, setting) };
     let holding = keys.pressed(KeyCode::KeyF);
     // IA_QuickSearch (Left Shift) while holding: the bar fills 2.85 x ScavengingMultiplier as fast,
     // and every 0.075 s there's a ChanceToProduceNoise / ThiefMultiplier % chance of a 40 m noise
@@ -410,14 +578,13 @@ pub(crate) fn search_containers(
         if class == super::inventory_ui::STATION {
             t.0 = format!("Press [F] to use {}", def.name);
         }
-        // The widget's QuickSearch line, shown while the key is held.
-        if holding && hold > 0.0 {
-            t.0.push_str("\n[LeftShift] Quick Search");
-        }
     }
+    let progress = if hold > 0.0 { (search.progress / hold).min(1.0) } else { 0.0 };
     if let Ok(mut n) = bar.single_mut() {
-        n.width = Val::Percent(if hold > 0.0 { (search.progress / hold).min(1.0) * 100.0 } else { 0.0 });
+        n.width = Val::Percent(progress * 100.0);
     }
+    // The widget's QuickSearch line shows while the hold is on (IsHeld?).
+    show(&mut vis, progress, holding && hold > 0.0);
     if holding && search.progress >= hold {
         // OpenContainer after a hold: AddXP_Scavenging(4-6).
         if hold > 0.0
@@ -426,16 +593,71 @@ pub(crate) fn search_containers(
             st.passive.add_xp(Passive::Scavenging, rand::thread_rng().gen_range(4.0..=6.0));
         }
         search.progress = 0.0;
-        // BP_GuaranteedSpawner.OpenContainer: Opened, so it can't be searched again.
+        if def.tool.is_some() && !searched {
+            let minus = 10.0 * super::survival::difficulty(&store, "General", "OTHER ITEMS DURABILITY MULTIPLIER");
+            for line in tool_looted(&db, &mut game, tool.flatten().as_deref(), minus, &mut rand::thread_rng()) {
+                notify.write(super::notify::Notify::new(line));
+            }
+        }
+        montage.write_batch(open_montage(&db, &class).map(PlayerMontage::new));
+        // BP_GuaranteedSpawner.OpenContainer: Opened, so it can't be searched again (its
+        // PlayMontage(Loot_MidShelf_GrabItem_Montage) is `open_montage`'s: quests.rs registers it).
         if containers.quest_crates.remove(&actor) {
             containers.list.retain(|c| c.0 != actor);
             containers.quest_opened.push(actor);
             return;
         }
+        // HoldToInteract done: StartRefillTimer.
+        if hold > 0.0 {
+            searched_msg.write(Searched { key: actor, class: class.clone() });
+        }
         open_loot(&db, &mut containers, actor, &class);
         *overlay = GameOverlay::Loot(actor);
         dirty.0 = true;
     }
+}
+
+/// The montage opening a container plays: Loot_MidShelf_GrabItem for BP_LootContainer and its
+/// children (the level's, picklock and tool-required ones, airdrops, the briefcases), the quest
+/// crate (BP_GuaranteedSpawner), the death crate and the infestation piles; none for corpses, the crafting / cooking stations, traders.
+pub fn open_montage(db: &ItemDb, class: &str) -> Option<crate::models::ActionKind> {
+    let grabs = db.containers.contains_key(class) || class == super::death_loot::CLASS || super::infestations::db().classes.contains_key(class);
+    grabs.then_some(crate::models::ActionKind::Grab)
+}
+
+/// The tool a tool-required container's search needs: `None` when it needs none, `Some(None)`
+/// when ToolNeeded? is set with no tool named (FindItem_Pure then never finds it).
+pub fn tool_needed(def: &super::items::ContainerDef, instance: Option<String>) -> Option<Option<String>> {
+    def.tool.as_ref().filter(|t| t.required).map(|t| instance.or_else(|| t.item.clone()))
+}
+
+/// BP_MASTER_ToolRequiredContainer's HoldToInteract, done: the tool loses 10 x OTHER ITEMS
+/// DURABILITY MULTIPLIER (ReduceDurabilityOfFoundItem: only while it has more; "No durability - {name}"
+/// when it has no more than that, the container opening anyway), AddXP_Thief(40-60) (Scavenging's
+/// 4-6 is every search's), and the first time Level x 100 XP: "Container Looted, XP Given: {XP}".
+/// Returns the toasts.
+pub fn tool_looted(db: &ItemDb, game: &mut CurrentGame, tool: Option<&str>, minus: f32, rng: &mut impl Rng) -> Vec<String> {
+    let mut out = Vec::new();
+    if let Some(t) = tool {
+        let max = db.items.get(t).map_or(0.0, |d| d.durability);
+        if let Some(s) = player_inv(game).find_mut(t)
+            && max != 0.0
+        {
+            let now = s.durability.unwrap_or(max);
+            if now > minus {
+                s.durability = Some(now - minus);
+            } else {
+                out.push(format!("No durability - {}", db.items.get(t).map_or(t, |d| d.name.as_str())));
+            }
+        }
+    }
+    if let Some(st) = game.state.as_mut() {
+        st.passive.add_xp(Passive::Thief, rng.gen_range(40.0..=60.0));
+        let xp = st.progression.level.max(1) as u64 * 100;
+        st.progression.add_xp(xp);
+        out.push(format!("Container Looted, XP Given: {xp}"));
+    }
+    out
 }
 
 /// Quick Search's bar speed (BP_LootContainerWidget: 2.85 x ScavengingMultiplier).
@@ -449,32 +671,35 @@ pub fn search_time(hold: f32, scavenging: f32, setting: f32) -> f32 {
     hold / scavenging.max(0.01) * setting
 }
 
-/// Roll a container's loot the first time it's opened.
-fn open_loot(db: &ItemDb, containers: &mut Containers, actor: usize, class: &str) {
+/// Roll a container's loot the first time it's opened, and again after a refill (into what a
+/// refill left in it while its loot screen was up: ours, see `loot_refill.rs`).
+pub(crate) fn open_loot(db: &ItemDb, containers: &mut Containers, actor: usize, class: &str) {
     let Some(def) = container_def(db, class) else { return };
+    let refilled = containers.refilled.remove(&actor);
+    if containers.searched.contains_key(&actor) && !refilled {
+        return;
+    }
     let (name, unique) = containers.spawned.get(&actor).cloned().unwrap_or_default();
-    containers.searched.entry(actor).or_insert_with(|| {
-        let mut g = Grid::new(name.unwrap_or(def.name), LOOT_COLUMNS, 6);
-        let mut rng = rand::thread_rng();
-        let table = def.table.as_deref().map(|t| db.roll(t, &mut rng)).unwrap_or_default();
-        // AddUniqueLoot: the spawner's sets join the container's starting items.
-        let sets = unique.iter().flat_map(|u| db.roll_unique(u, &mut rng)).collect::<Vec<_>>();
-        for s in table.into_iter().chain(sets) {
-            insert_growing(db, &mut g, s);
-        }
-        g
-    });
+    let mut rng = rand::thread_rng();
+    let table = def.table.as_deref().map(|t| db.roll(t, &mut rng)).unwrap_or_default();
+    // AddUniqueLoot: the spawner's sets join the container's starting items.
+    let sets = unique.iter().flat_map(|u| db.roll_unique(u, &mut rng)).collect::<Vec<_>>();
+    let g = containers.searched.entry(actor).or_insert_with(|| Grid::new(name.unwrap_or(def.name), LOOT_COLUMNS, 6));
+    for s in table.into_iter().chain(sets) {
+        insert_growing(db, g, s);
+    }
 }
 
 fn toggle_inventory(keys: Res<ButtonInput<KeyCode>>, screen: Res<State<MenuScreen>>, mut overlay: ResMut<GameOverlay>, mut dirty: ResMut<Dirty>) {
-    if *screen.get() == MenuScreen::None && keys.just_pressed(KeyCode::Tab) {
+    // Tab is a key like any other while typing a name.
+    if *screen.get() == MenuScreen::None && keys.just_pressed(KeyCode::Tab) && !matches!(*overlay, GameOverlay::Rename(_) | GameOverlay::Barber(_) | GameOverlay::Respawn | GameOverlay::Permadeath) {
         *overlay = if overlay.is_open() { GameOverlay::None } else { GameOverlay::Inventory };
         dirty.0 = true;
     }
 }
 
 fn close_overlay(keys: Res<ButtonInput<KeyCode>>, mut overlay: ResMut<GameOverlay>, mut dirty: ResMut<Dirty>) {
-    if overlay.is_open() && keys.just_pressed(KeyCode::Escape) {
+    if overlay.is_open() && !matches!(*overlay, GameOverlay::Respawn | GameOverlay::Permadeath | GameOverlay::Barber(_)) && keys.just_pressed(KeyCode::Escape) {
         *overlay = GameOverlay::None;
         dirty.0 = true;
     }
@@ -482,6 +707,9 @@ fn close_overlay(keys: Res<ButtonInput<KeyCode>>, mut overlay: ResMut<GameOverla
 
 /// Insert into a loot grid, adding rows until it fits (loot is never lost to a full grid).
 pub fn insert_growing(db: &ItemDb, g: &mut Grid, mut stack: super::items::Stack) {
+    if !g.accepts(&stack.item) {
+        return;
+    }
     for _ in 0..40 {
         match g.insert(db, stack) {
             None => return,
@@ -495,7 +723,7 @@ pub fn insert_growing(db: &ItemDb, g: &mut Grid, mut stack: super::items::Stack)
 
 /// Keep the survivor dressed in whatever clothing is equipped.
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
-fn dress_player(
+pub(crate) fn dress_player(
     mut commands: Commands,
     mut game: ResMut<CurrentGame>,
     db: Res<ItemDb>,
@@ -535,6 +763,19 @@ fn dress_player(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn opening_containers_grabs_but_corpses_and_stations_dont() {
+        let Ok(text) = std::fs::read_to_string("assets/data/items.json") else { return };
+        let db: ItemDb = serde_json::from_str(&text).unwrap();
+        let grab = Some(crate::models::ActionKind::Grab);
+        for c in ["Container_ResidentialFoodLoot_Sink_C", "AirdropContainer_Military_C", "PicklockContainer_Safe_C", "BP_ToolRequired_GunLocker_C", super::super::death_loot::CLASS] {
+            assert_eq!(open_montage(&db, c), grab, "{c}");
+        }
+        for c in ["BP_Zombie_Roamer_C", "BP_CraftingStation_C", "BP_MilitaryTrader_C"] {
+            assert_eq!(open_montage(&db, c), None, "{c}");
+        }
+    }
 
     #[test]
     fn scavenging_and_the_setting_scale_search_time() {
@@ -580,6 +821,33 @@ mod tests {
         }
         // Level containers still come from items.json.
         assert!(container_def(&db, "Nonexistent_C").is_none());
+    }
+
+    #[test]
+    fn tool_containers_need_their_tool() {
+        let Ok(text) = std::fs::read_to_string("assets/data/items.json") else { return };
+        let db: ItemDb = serde_json::from_str(&text).unwrap();
+        let def = |c: &str| container_def(&db, c).unwrap();
+        // The axe cabinet needs nothing; the gun locker its Bolt Cutters; the second gun locker's
+        // instances name Wire Cutters (none named: never found).
+        assert_eq!(tool_needed(&def("BP_ToolRequired_Axe_C"), None), None);
+        assert_eq!(tool_needed(&def("BP_ToolRequired_GunLocker_C"), None), Some(Some("DA_BoltCutters".into())));
+        assert_eq!(tool_needed(&def("BP_ToolRequired_GunLocker2_C"), Some("DA_WireCutters".into())), Some(Some("DA_WireCutters".into())));
+        assert_eq!(tool_needed(&def("BP_ToolRequired_GunLocker2_C"), None), Some(None));
+        assert_eq!((def("BP_ToolRequired_Axe_C").name.as_str(), def("BP_ToolRequired_Axe_C").hold), ("Emergency Axe", 12.0));
+        assert!(db.loot_tables["Axe"].iter().any(|r| r.item == "DA_FiremansAxe"));
+        // Looted: the cutters lose 10, the XP is Level x 100.
+        let mut game = CurrentGame { state: Some(crate::engine::game::GameState::new()), ..default() };
+        player_inv(&mut game).insert(&db, db.stack("DA_BoltCutters", 1));
+        let toasts = tool_looted(&db, &mut game, Some("DA_BoltCutters"), 10.0, &mut rand::thread_rng());
+        assert_eq!(player_inv(&mut game).find_mut("DA_BoltCutters").unwrap().durability, Some(90.0));
+        let level = game.state.as_ref().unwrap().progression.level.max(1);
+        assert_eq!(toasts, [format!("Container Looted, XP Given: {}", level * 100)]);
+        // Worn down to 10 or less: no wear, a message, the container opens anyway.
+        player_inv(&mut game).find_mut("DA_BoltCutters").unwrap().durability = Some(10.0);
+        let toasts = tool_looted(&db, &mut game, Some("DA_BoltCutters"), 10.0, &mut rand::thread_rng());
+        assert_eq!(toasts[0], "No durability - Bolt Cutters");
+        assert_eq!(player_inv(&mut game).find_mut("DA_BoltCutters").unwrap().durability, Some(10.0));
     }
 
     #[test]

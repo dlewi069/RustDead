@@ -45,6 +45,11 @@ pub struct CompassStrip;
 pub(crate) struct FlashlightDur;
 #[derive(Component)]
 struct FlashlightText;
+/// `RespiratorDur` (SetFilterUI: a respirator on in a radiation zone) and its `RespiratorText`.
+#[derive(Component)]
+pub(crate) struct RespiratorDur;
+#[derive(Component)]
+struct RespiratorText;
 #[derive(Component)]
 pub(crate) struct MedicalIcon(MedicalUi);
 
@@ -77,7 +82,15 @@ impl MedicalUi {
     }
 }
 #[derive(Component)]
-struct HudRoot;
+pub struct HudRoot;
+/// The crosshair (PowerAttackAnim turns it: `melee.rs`).
+#[derive(Component)]
+pub struct Crosshair;
+
+/// The crosshair and the action bar, which SetEnableScope hides while a scope is up
+/// (`scopes::enable_scope`).
+#[derive(Component)]
+pub struct HideWhenScoped;
 /// `OxygenStat` (its OxygenBar fill and OxygenText): faded in under water (OxygenAnim, 0.5 s).
 #[derive(Component)]
 pub struct OxygenStat(pub f32);
@@ -94,7 +107,7 @@ struct ActionIcon(usize);
 
 pub fn plugin(app: &mut App) {
     app.add_systems(OnEnter(AppState::InGame), spawn_hud)
-        .add_systems(Update, (update_stats, update_compass, hide_under_inventory, update_action_bar, update_flashlight, update_oxygen).run_if(in_state(AppState::InGame)))
+        .add_systems(Update, (update_stats, update_compass, hide_under_inventory, update_action_bar, update_flashlight, update_respirator, update_oxygen).run_if(in_state(AppState::InGame)))
         .add_systems(OnEnter(MenuScreen::None), |mut q: Query<&mut Visibility, With<HudRoot>>| q.iter_mut().for_each(|mut v| *v = Visibility::Inherited))
         .add_systems(OnExit(MenuScreen::None), |mut q: Query<&mut Visibility, With<HudRoot>>| q.iter_mut().for_each(|mut v| *v = Visibility::Hidden));
 }
@@ -145,6 +158,8 @@ fn spawn_hud(mut commands: Commands, font: Res<MenuFont>, assets: Res<AssetServe
         .spawn((
             Node { position_type: PositionType::Absolute, left: Val::Percent(50.0), top: Val::Percent(50.0), margin: UiRect::new(Val::Px(-10.0), Val::ZERO, Val::Px(-10.0), Val::ZERO), width: Val::Px(20.0), height: Val::Px(20.0), ..default() },
             ImageNode::new(assets.load(format!("{TEX}/BoxCrosshair.png"))),
+            HideWhenScoped,
+            Crosshair,
         ))
         .id();
 
@@ -215,6 +230,29 @@ fn spawn_hud(mut commands: Commands, font: Res<MenuFont>, assets: Res<AssetServe
         ))
         .id();
 
+    // RespiratorDur: the same box at (10, -147.5) with UI_filter and RespiratorText; the
+    // ShowRespiratorDur fade is a show/hide here too.
+    let respirator = commands
+        .spawn((
+            Node {
+                position_type: PositionType::Absolute,
+                left: Val::Px(10.0),
+                bottom: Val::Px(147.5),
+                width: Val::Px(68.0),
+                height: Val::Px(20.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            BackgroundColor(Color::linear_rgba(0.0, 0.0, 0.0, 0.5)),
+            Visibility::Hidden,
+            RespiratorDur,
+            children![
+                (Node { width: Val::Px(18.0), height: Val::Px(18.0), ..default() }, ImageNode::new(assets.load(format!("{TEX}/UI_filter.png")))),
+                (label_colored(font, "0%", 10.0, Color::WHITE), Node { margin: UiRect::left(Val::Px(5.0)), ..default() }, RespiratorText),
+            ],
+        ))
+        .id();
     let stats = spawn_stats(&mut commands, font, &assets);
     let action_bar = spawn_action_bar(&mut commands, font);
     // OxygenStat: bottom centre, 350 x 20, alignment (0.5, 8): its bottom 7 heights up.
@@ -239,7 +277,7 @@ fn spawn_hud(mut commands: Commands, font: Res<MenuFont>, assets: Res<AssetServe
             ],
         ))
         .id();
-    commands.entity(root).add_children(&[cross, compass, marker, effects, flashlight, stats, action_bar, oxygen]);
+    commands.entity(root).add_children(&[cross, compass, marker, effects, flashlight, respirator, stats, action_bar, oxygen]);
 }
 
 /// OnRep_UnderWater? / OxygenTimer: shown under water, hidden once the air is full again.
@@ -377,6 +415,7 @@ fn spawn_action_bar(commands: &mut Commands, font: &MenuFont) -> Entity {
                 ..default()
             },
             BackgroundColor(Color::linear_rgba(0.072917, 0.072917, 0.072917, 0.7)),
+            HideWhenScoped,
         ))
         .id();
     for n in 1..=9 {
@@ -477,6 +516,28 @@ fn update_flashlight(
     let charge = game.inventory.as_ref().and_then(|i| i.equipped.get(&super::equipment::Slot::Flashlight)).and_then(|f| super::flashlight::battery(f, &db)).map(|b| super::flashlight::charge(b, &db));
     if let (true, Some(c), Ok(mut t)) = (light.on, charge, text.single_mut()) {
         let s = format!("{:.0}%", c);
+        if t.0 != s {
+            t.0 = s;
+        }
+    }
+}
+
+/// ShowRespiratorDurability / GetRespiratorDurability: the filter left, whole percent.
+fn update_respirator(
+    rad: Res<super::radiation::Radiation>,
+    game: Res<CurrentGame>,
+    db: Res<super::ItemDb>,
+    mut boxes: Query<&mut Visibility, With<RespiratorDur>>,
+    mut text: Query<&mut Text, With<RespiratorText>>,
+) {
+    let Ok(mut vis) = boxes.single_mut() else { return };
+    vis.set_if_neq(if rad.filter_ui { Visibility::Inherited } else { Visibility::Hidden });
+    if !rad.filter_ui {
+        return;
+    }
+    let left = game.inventory.as_ref().and_then(|i| super::radiation::filter_left(i, &db)).unwrap_or(0.0);
+    if let Ok(mut t) = text.single_mut() {
+        let s = format!("{left:.0}%");
         if t.0 != s {
             t.0 = s;
         }

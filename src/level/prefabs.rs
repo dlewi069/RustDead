@@ -23,6 +23,12 @@
 //!   takes out the harvestable trees and rocks within FoliageRemoverRadius (the foliage we can
 //!   tell apart; bushes stay).
 //!
+//! - **The observatory** (BP_AlternatePOI, BP_AlternatePOI_Listener_Observatory, decompiled): the
+//!   POI spawns its Prefab (Alternate_ZombiesObservatory) 3 s after BeginPlay, or its
+//!   AlternatePrefab (Alternate_CoyotesObservatory) when its saved AlternatePrefab? is set. The
+//!   listener, 4 s after BeginPlay, sets that flag on its AlternatePOIToChange when DaysSurvived
+//!   is over 4, so the Coyotes hold the observatory from the next load on. Ours: the prefab
+//!   spawns with the level's sites, not 3 s in; the flag is `GameState::alternate_pois`.
 //! - **The settlement** (BP_SettlementManager decompiled): one of its 4 Camps
 //!   (BP_SettlementCampSpawner: their Settlement prefab) picked at random once a game and kept in
 //!   the save (SettlementSpawned?, CampToSpawn), spawned at BeginPlay. Its traders (Safe Zone and
@@ -57,6 +63,15 @@ const PLAYER_CLEARANCE: f32 = 25.0;
 /// DynamicRandomEventSpawn's timer and its days-survived gate.
 const DYNAMIC_PERIOD: [f32; 2] = [60.0, 4800.0];
 const DYNAMIC_AFTER_DAYS: u32 = 3;
+/// BP_AlternatePOI_Listener_Observatory: its Delay after BeginPlay, and DaysSurvived must be over 4.
+const LISTENER_DELAY: f32 = 4.0;
+const LISTENER_DAYS: u32 = 4;
+
+/// The observatory listener's check: SetAlternate when DaysSurvived > 4 (then it's destroyed
+/// either way).
+pub fn listener_flips(days_survived: u32) -> bool {
+    days_survived > LISTENER_DAYS
+}
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct PrefabActor {
@@ -156,6 +171,9 @@ pub struct PrefabSite {
     pub keys: Vec<PropKey>,
     /// A BP_SettlementCampSpawner (spawned only when BP_SettlementManager picks it).
     pub settlement: bool,
+    /// One of a BP_AlternatePOI's two prefabs: `Some(true)` its AlternatePrefab, `Some(false)` its
+    /// Prefab (spawned by the actor's saved AlternatePrefab?).
+    pub alternate: Option<bool>,
 }
 
 impl PrefabSite {
@@ -176,6 +194,7 @@ impl PrefabSite {
                 transform: affine(&a.transform),
                 keys: Vec::new(),
                 settlement: true,
+                alternate: None,
             });
         }
         if !a.class.starts_with("BP_PrefabSpawner") {
@@ -204,7 +223,36 @@ impl PrefabSite {
             transform: affine(&a.transform),
             keys: Vec::new(),
             settlement: false,
+            alternate: None,
         })
+    }
+
+    /// BP_AlternatePOI: its Prefab and its AlternatePrefab, both at its transform.
+    pub fn alternates(actor: usize, a: &ActorInfo) -> Vec<Self> {
+        if a.class != "BP_AlternatePOI_C" {
+            return Vec::new();
+        }
+        let props = a.props.clone().unwrap_or_default();
+        [("Prefab", false), ("AlternatePrefab", true)]
+            .into_iter()
+            .filter_map(|(k, alt)| {
+                Some(Self {
+                    actor,
+                    prefab: props.get(k)?.clone(),
+                    dynamic: false,
+                    chance: 0.0,
+                    random: false,
+                    kind: PrefabType::Other,
+                    marker: false,
+                    marker_title: String::new(),
+                    marker_texture: None,
+                    transform: affine(&a.transform),
+                    keys: Vec::new(),
+                    settlement: false,
+                    alternate: Some(alt),
+                })
+            })
+            .collect()
     }
 
     pub fn def(&self) -> Option<&'static PrefabDef> {
@@ -245,6 +293,8 @@ pub struct Prefabs {
     pending: Vec<(usize, f32)>,
     /// Map markers still up: (marker key, where).
     markers: Vec<(usize, Vec3)>,
+    /// BP_AlternatePOI_Listener_Observatory's Delay: (seconds left, its AlternatePOIToChange).
+    listeners: Vec<(f32, String)>,
 }
 
 impl Prefabs {
@@ -475,9 +525,28 @@ pub(super) fn run_prefabs(
                 spawn_site(&mut ctx, &mut prefabs, i, false);
             }
         }
+        // BP_AlternatePOI: its Prefab, or its AlternatePrefab once a listener has set
+        // AlternatePrefab? in the save.
+        let flipped = game.state.as_ref().map(|s| s.alternate_pois.clone()).unwrap_or_default();
         for &i in &sites {
             let site = &ctx.level.prefabs[i];
-            if site.dynamic || site.settlement || !site.portable() {
+            if let Some(alt) = site.alternate {
+                if alt == flipped.contains(&ctx.level.actors[site.actor].name) {
+                    spawn_site(&mut ctx, &mut prefabs, i, false);
+                }
+                continue;
+            }
+        }
+        prefabs.listeners = ctx
+            .level
+            .actors
+            .iter()
+            .filter(|a| a.class == "BP_AlternatePOI_Listener_Observatory_C")
+            .filter_map(|a| Some((LISTENER_DELAY, a.props.as_ref()?.get("AlternatePOIToChange")?.clone())))
+            .collect();
+        for &i in &sites {
+            let site = &ctx.level.prefabs[i];
+            if site.dynamic || site.settlement || site.alternate.is_some() || !site.portable() {
                 continue;
             }
             let mult = site.kind.multiplier_row().map_or(1.0, |r| difficulty(&ctx.store, r));
@@ -492,6 +561,25 @@ pub(super) fn run_prefabs(
         info!("prefabs: {} of {} sites spawned; {} dynamic events in waiting", prefabs.spawned.len(), ctx.level.prefabs.len(), prefabs.order.len());
     }
     let dt = time.delta_secs();
+    // The observatory's listener: past 4 days survived, its POI flips for the next load.
+    let days = game.state.as_ref().map_or(0, |s| s.stats.days_survived);
+    let mut fired = Vec::new();
+    prefabs.listeners.retain_mut(|(left, target)| {
+        *left -= dt;
+        if *left <= 0.0 {
+            fired.push(target.clone());
+        }
+        *left > 0.0
+    });
+    for target in fired {
+        if listener_flips(days)
+            && let Some(state) = game.state.as_mut()
+            && !state.alternate_pois.contains(&target)
+        {
+            info!("alternate POI {target}: AlternatePrefab? set (days survived {days})");
+            state.alternate_pois.push(target);
+        }
+    }
     // Markers come off within DistanceToRemoveMarker.
     let within = data().spawner.remove_marker_within;
     let gone: Vec<usize> = prefabs.markers.iter().filter(|(_, at)| at.distance(me) < within).map(|m| m.0).collect();
@@ -559,6 +647,29 @@ mod tests {
         let d = PrefabSite::from_actor(1, &actor("BP_PrefabSpawner_Dynamic_C", &[("Prefab", "Prefab_CrashedHelicopter01_C")])).unwrap();
         assert!(d.dynamic && !d.random && d.kind == PrefabType::HelicopterCrash, "the dynamic class has no random check");
         assert!(PrefabSite::from_actor(2, &actor("BP_AISpawner_Zombies_C", &[])).is_none());
+    }
+
+    #[test]
+    fn the_observatory_is_two_sites_picked_by_the_save() {
+        let a = actor("BP_AlternatePOI_C", &[("Prefab", "Alternate_ZombiesObservatory_C"), ("AlternatePrefab", "Alternate_CoyotesObservatory_C")]);
+        assert!(PrefabSite::from_actor(0, &a).is_none());
+        let sites = PrefabSite::alternates(0, &a);
+        assert_eq!(sites.iter().map(|s| (s.prefab.as_str(), s.alternate)).collect::<Vec<_>>(), [("Alternate_ZombiesObservatory_C", Some(false)), ("Alternate_CoyotesObservatory_C", Some(true))]);
+        assert!(sites.iter().all(|s| !s.random && s.def().is_some()), "both in prefabs.json");
+        assert!(sites[1].portable(), "the Coyotes are ported");
+        assert!(PrefabSite::alternates(0, &actor("BP_PrefabSpawner_C", &[("Prefab", "Prefab_CrashedHelicopter01_C")])).is_empty());
+        // The listener: DaysSurvived > 4.
+        assert!(!listener_flips(4) && listener_flips(5));
+    }
+
+    #[test]
+    fn level_observatory() {
+        let Some(level) = Level::load() else { return };
+        let sites: Vec<_> = level.prefabs.iter().filter(|s| s.alternate.is_some()).collect();
+        assert_eq!(sites.len(), 2);
+        assert!(sites.iter().all(|s| !s.keys.is_empty()), "their meshes are in the cells");
+        let listener = level.actors.iter().find(|a| a.class == "BP_AlternatePOI_Listener_Observatory_C").unwrap();
+        assert_eq!(listener.props.as_ref().and_then(|p| p.get("AlternatePOIToChange")).map(String::as_str), Some(level.actors[sites[0].actor].name.as_str()));
     }
 
     #[test]

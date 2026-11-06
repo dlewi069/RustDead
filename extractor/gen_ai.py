@@ -62,13 +62,21 @@ def classes():
         if not cls:
             continue
         comps = {}
+        named = {}
         for e in exports:
             if e["Name"].endswith("_GEN_VARIABLE") or e["Type"] in ("CapsuleComponent", "CharacterMovementComponent") or e["Name"] == "CharacterMesh0":
                 comps.setdefault(e["Type"], {}).update(e.get("Properties") or {})
+            if e["Name"].endswith("_GEN_VARIABLE"):
+                named[e["Name"].removesuffix("_GEN_VARIABLE")] = e.get("Properties") or {}
+            if e["Type"] == "SCS_Node" and (e.get("Properties") or {}).get("AttachToName"):
+                named.setdefault("@attach", {})[e["Properties"].get("InternalVariableName")] = e["Properties"]["AttachToName"]
         out[cls["Name"]] = {
+            "file": f,
             "super": (cls.get("Super") or {}).get("ObjectName", "").split("'")[1] if cls.get("Super") else None,
             "cdo": next((e.get("Properties") or {} for e in exports if e["Name"].startswith("Default__")), {}),
             "components": comps,
+            # Components by variable name (both eyes are StaticMeshComponents), "@attach": their sockets.
+            "named": named,
         }
     return out
 
@@ -152,7 +160,11 @@ def main():
     humans = {name: human(name, cls, get, comp, loot_by_value) for name in cls}
     humans = {k: v for k, v in humans.items() if v}
     out.update(humans)
-    OUT.write_text(json.dumps({"classes": out, "weapons": weapons() if (ROOT / "AI/Humans/Weapons").exists() else {}}, indent=1, sort_keys=True))
+    for name, c in out.items():
+        c["marker"] = marker(name, cls)
+        c["eyes"] = eyes(name, cls, c["meshes"])
+    blood = eye_material("SurrounDead/Content/AI/Zombies/Other/M_GlowingEyes_BloodMoon")
+    OUT.write_text(json.dumps({"classes": out, "blood_moon_eyes": blood, "weapons": weapons() if (ROOT / "AI/Humans/Weapons").exists() else {}}, indent=1, sort_keys=True))
     if (ROOT / "AI/SafeZoneAndCivilians").exists():
         civilians(cls, get, comp)
     print(f"human classes: {sorted(humans)}")
@@ -681,6 +693,128 @@ def civilians(cls, get, comp):
         names[key] = [field(rows[k], "Name").get("SourceString", "") for k in sorted(rows, key=lambda k: int(k) if k.isdigit() else 0)]
     CIVILIANS.write_text(json.dumps({"classes": out, "behaviour": bt, "names": names}, indent=1, sort_keys=True))
     print(f"civilians: {sorted(out)}, {len(names['male'])} / {len(names['female'])} / {len(names['surname'])} names")
+
+
+def marker(name, cls):
+    """BPI_AI's GetMarker and CanAddMarkerToAI? (BP_PlayerCharacter.MarkEnemy, the binoculars'
+    tags), each from the nearest class in the chain that has it with bytecode: the Texture
+    (package), Color (linear RGBA), MarkerOffset (m above the actor), and what CanAddMarkerToAI?
+    answers: "flag" (CanAddMarker?, which AddMarker clears and the 60 s delay sets), "always" or
+    "never". None when the chain can't be marked."""
+    def find(fn):
+        for c in [name, *iter_supers(cls, name)]:
+            f = cls.get(c, {}).get("file")
+            lines = script(f).get(fn) if f else None
+            if lines:
+                return f, lines
+        return None, None
+    f, get = find("GetMarker")
+    _, can = find("CanAddMarkerToAI?")
+    if not get or not can:
+        return None
+    answer = next((l.split(" = ", 1)[1] for l in can if l.startswith("CanAdd? = ")), "false")
+    can_add = {"CanAddMarker?": "flag", "true": "always"}.get(answer, "never")
+    tex = next((l.split(" = ", 1)[1] for l in get if l.startswith("Texture = ")), "null")
+    colour = next((re.findall(r"[\d.]+", l.split(" = ", 1)[1]) for l in get if l.startswith("Color = ")), None)
+    offset = next((float(l.split(" = ", 1)[1]) for l in get if l.startswith("MarkerOffset = ")), 0.0)
+    if can_add == "never" or tex == "null":
+        return None
+    return {
+        "texture": refs(f).get(tex, tex).removeprefix(CONTENT),
+        "color": [float(v) for v in colour] if colour else [0.0, 0.0, 0.0, 0.0],
+        "offset": offset / 100.0,
+        "can_add": can_add,
+    }
+
+
+def rotator_quat(r):
+    """UE FRotator (degrees) -> FQuat (x, y, z, w), FRotator::Quaternion()."""
+    import math
+    r = r or {}
+    p, y, rl = (math.radians(r.get(k, 0.0)) / 2 for k in ("Pitch", "Yaw", "Roll"))
+    sp, cp, sy, cy, sr, cr = math.sin(p), math.cos(p), math.sin(y), math.cos(y), math.sin(rl), math.cos(rl)
+    return [cr * sp * sy - sr * cp * cy, -cr * sp * cy - sr * cp * sy, cr * cp * sy - sr * sp * cy, cr * cp * cy + sr * sp * sy]
+
+
+def glb_transform(loc, rot, scale=None):
+    """UE local transform -> glb space (gen_items.glb_transform): translation (X, Z, Y)/100,
+    quat (x, z, y, -w), scale (X, Z, Y)."""
+    loc, scale = loc or {}, scale or {}
+    x, y, z, w = rotator_quat(rot)
+    return {
+        "t": [loc.get("X", 0.0) / 100, loc.get("Z", 0.0) / 100, loc.get("Y", 0.0) / 100],
+        "r": [x, z, y, -w],
+        "s": [scale.get("X", 1.0), scale.get("Z", 1.0), scale.get("Y", 1.0)],
+    }
+
+
+def eye_material(package):
+    """A M_GlowingEyes instance's Colour (linear RGB) and EmissiveStrength."""
+    f = file_of(package)
+    if not f.exists():
+        return None
+    p = next((e.get("Properties") or {} for e in load(f) if e["Type"] == "MaterialInstanceConstant"), {})
+    colour = next((v["ParameterValue"] for v in p.get("VectorParameterValues", []) if v["ParameterInfo"]["Name"] == "Colour"), None)
+    strength = next((v["ParameterValue"] for v in p.get("ScalarParameterValues", []) if v["ParameterInfo"]["Name"] == "EmissiveStrength"), None)
+    if colour is None or strength is None:
+        return None
+    return {"colour": [colour["R"], colour["G"], colour["B"]], "strength": strength}
+
+
+def skeleton_sockets(mesh):
+    """The sockets of a skeletal mesh's skeleton (and the mesh's own): name -> (bone, glb transform)."""
+    f = file_of(CONTENT + mesh)
+    if not f.exists():
+        return None
+    exports = load(f)
+    skel = next((e["Properties"]["Skeleton"] for e in exports if e["Type"] == "SkeletalMesh" and (e.get("Properties") or {}).get("Skeleton")), None)
+    files = [exports]
+    if skel and file_of(pkg(skel)).exists():
+        files.insert(0, load(file_of(pkg(skel))))
+    out = {}
+    for exp in files:
+        for e in exp:
+            p = e.get("Properties") or {}
+            if e["Type"] == "SkeletalMeshSocket" and p.get("SocketName") and p.get("BoneName"):
+                out[p["SocketName"]] = {"bone": p["BoneName"], **glb_transform(p.get("RelativeLocation"), p.get("RelativeRotation"), p.get("RelativeScale"))}
+    return out
+
+
+def eyes(name, cls, meshes):
+    """EyeLeftMesh / EyeRightMesh (BP_MasterZombie, BP_ZombieBoss): 1M_Cube on the mesh's
+    eyesleft / eyesright sockets, each component's transform (the nearest class in the chain
+    that sets each value) and its OverrideMaterials' Colour and EmissiveStrength. `blood_moon`:
+    the class answers Event_BloodMoon (BP_MasterZombie's children). None without the components
+    or the sockets (the meshes' skeletons must be exported)."""
+    chain = [name, *iter_supers(cls, name)]
+    named = [cls[c]["named"] for c in chain if c in cls]
+
+    def value(comp, key):
+        return next((n[comp][key] for n in named if key in n.get(comp, {})), None)
+
+    attach = {}
+    for n in reversed(named):
+        attach.update(n.get("@attach", {}))
+    if not meshes or "EyeLeftMesh" not in attach:
+        return None
+    sockets = skeleton_sockets(meshes[0])
+    if sockets is None:
+        print(f"eyes: {name}: {meshes[0]} not exported", file=sys.stderr)
+        return None
+    parts = []
+    material = None
+    for comp in ("EyeLeftMesh", "EyeRightMesh"):
+        socket = sockets.get(attach.get(comp))
+        if not socket:
+            print(f"eyes: {name}: no socket {attach.get(comp)} on {meshes[0]}", file=sys.stderr)
+            return None
+        parts.append({"socket": socket, "local": glb_transform(value(comp, "RelativeLocation"), value(comp, "RelativeRotation"), value(comp, "RelativeScale3D"))})
+        mats = value(comp, "OverrideMaterials") or []
+        material = material or (pkg(mats[0]) if mats and mats[0] else None)
+    look = eye_material(material) if material else None
+    if not look:
+        return None
+    return {**look, "material": material.rsplit("/", 1)[1], "blood_moon": "BP_MasterZombie_C" in chain, "parts": parts}
 
 
 def iter_supers(cls, name):

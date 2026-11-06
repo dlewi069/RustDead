@@ -39,11 +39,6 @@ use crate::models::{ActionKind, AnimLibrary, AnimSet, CharacterModel, Locomotion
 /// Seconds to reload when the stance has no reload clip (the rifle and pistol use their
 /// Reload_*_Hip montage's length).
 const RELOAD_SECS: f32 = 2.0;
-/// Melee reach (a guess) and the shortest time between swings (the swing clips set the rest).
-const MELEE_REACH: f32 = 2.2;
-const MELEE_COOLDOWN: f32 = 0.6;
-/// Half-angle of the melee swing, degrees.
-const MELEE_CONE: f32 = 60.0;
 /// Furthest a shot can land.
 const RANGE: f32 = 300.0;
 /// Zombie body: capsule radius and the head sphere above the feet (metres).
@@ -81,22 +76,33 @@ pub struct Armed {
     pub aiming: bool,
     /// Over the right shoulder (+1) or the left (-1).
     pub shoulder: f32,
-    cooldown: f32,
+    /// Firing's next-shot wait; melee's Attacking? lockout (`melee.rs`).
+    pub(crate) cooldown: f32,
     /// Seconds into a reload.
     reload: Option<f32>,
-    /// Next melee swing clip (1HMeleeAttack1-4 in turn).
-    swing: u8,
+    /// HipFire?'s time left: a shot without aiming sets it, BP_PlayerCharacter's
+    /// RetriggerableDelay(3.0) -> StopHipFire clears it 3 s after the last one.
+    pub hip_fire: f32,
 }
+
+/// The hip-fire RetriggerableDelay (BP_PlayerCharacter's primary action).
+pub const HIP_FIRE_HOLD: f32 = 3.0;
 
 impl Default for Armed {
     fn default() -> Self {
-        Self { drawn: None, auto: false, aiming: false, shoulder: 1.0, cooldown: 0.0, reload: None, swing: 0 }
+        Self { drawn: None, auto: false, aiming: false, shoulder: 1.0, cooldown: 0.0, reload: None, hip_fire: 0.0 }
     }
 }
 
 impl Armed {
     pub fn reloading(&self) -> bool {
         self.reload.is_some()
+    }
+
+    /// The aim pose: Player_AnimBP's IsADS = the character's IsADS? OR HipFire?. The survivor
+    /// faces the camera and plays the Ironsights sets; the camera only moves in for `aiming`.
+    pub fn aim_pose(&self) -> bool {
+        self.aiming || (self.hip_fire > 0.0 && self.drawn.is_some())
     }
 
     /// A shot, swing or reload is still under way (its montage playing).
@@ -206,7 +212,7 @@ pub fn plugin(app: &mut App) {
         .add_systems(OnEnter(AppState::InGame), (|mut a: ResMut<Armed>| *a = Armed::default(), spawn_ammo_box))
         .add_systems(
             Update,
-            (draw_and_aim, set_stance, reload, fire)
+            (draw_and_aim, set_stance, reload, fire, super::melee::melee)
                 .chain()
                 .in_set(CombatSet)
                 .run_if(in_state(AppState::InGame))
@@ -242,6 +248,7 @@ fn draw_and_aim(
     if swim.swimming {
         armed.drawn = None;
         armed.aiming = false;
+        armed.hip_fire = 0.0;
         armed.reload = None;
         return;
     }
@@ -462,6 +469,19 @@ fn with_crit(base: f32, chance: f32, mult: f32, rng: &mut impl Rng) -> (f32, boo
     if rng.gen_range(0.0..100.0) < chance { (base * (1.0 + mult / 100.0), true) } else { (base, false) }
 }
 
+/// KismetMathLibrary.RandomUnitVectorInConeInDegrees.
+pub fn cone_dir(forward: Vec3, half_deg: f32, rng: &mut impl Rng) -> Vec3 {
+    if half_deg <= 0.0 {
+        return forward;
+    }
+    // Uniform over the cap: cos(theta) uniform in [cos(half), 1].
+    let cos_t = 1.0 - rng.gen_range(0.0..1.0) * (1.0 - half_deg.to_radians().cos());
+    let sin_t = (1.0 - cos_t * cos_t).sqrt();
+    let phi = rng.gen_range(0.0..std::f32::consts::TAU);
+    let (a, b) = forward.any_orthonormal_pair();
+    (forward * cos_t + (a * phi.cos() + b * phi.sin()) * sin_t).normalize()
+}
+
 /// `EffectiveDamage`: within the effective range (`DamageFallOff` metres; a muzzle attachment's
 /// Falloff stat would shorten it) full damage, beyond it `damage - 7 * dist / range`, at least 1.
 /// Projectile weapons (no DamageFallOff stat) don't use it.
@@ -489,6 +509,11 @@ fn ray_sphere(origin: Vec3, dir: Vec3, centre: Vec3, r: f32) -> Option<f32> {
     let c = m.dot(m) - r * r;
     let disc = b * b - c;
     (disc >= 0.0 && (c <= 0.0 || b < 0.0)).then(|| (-b - disc.sqrt()).max(0.0))
+}
+
+/// [`ray_capsule`] for other modules.
+pub(crate) fn ray_capsule_between(origin: Vec3, dir: Vec3, a: Vec3, b: Vec3, r: f32) -> Option<f32> {
+    ray_capsule(origin, dir, a, b, r)
 }
 
 /// Distance along unit `dir` into a capsule from `a` to `b` of radius `r` (Quilez).
@@ -538,7 +563,7 @@ fn ray_hits_prone(origin: Vec3, dir: Vec3, t: &Transform) -> Option<(f32, bool)>
 }
 
 /// Where a ray first meets a zombie of `kind`: (distance, headshot).
-fn ray_hits(origin: Vec3, dir: Vec3, t: &Transform, kind: ZombieKind) -> Option<(f32, bool)> {
+pub(crate) fn ray_hits(origin: Vec3, dir: Vec3, t: &Transform, kind: ZombieKind) -> Option<(f32, bool)> {
     match kind.shape() {
         Shape::Upright if kind.boss().is_some() => ray_hits_upright(origin, dir, t.translation, t.scale, BOSS_BULK),
         Shape::Upright => ray_hits_zombie(origin, dir, t.translation),
@@ -639,28 +664,28 @@ fn fire(
     mut game: ResMut<CurrentGame>,
     camera: Query<&GlobalTransform, With<PlayerCamera>>,
     mut player: PlayerAnim,
-    lib: Res<AnimLibrary>,
     mut zombies: Query<(&Transform, &LevelZombie, &mut Health, Option<&mut UpperAction>), (Without<Dead>, Without<CharacterModel>)>,
     safe: Res<super::zones::SafeZones>,
-    (mut noise, mut notify, mut numbers, mut recoil, mut sound, mut swings, mut fx, mut shots): (
+    (mut noise, mut notify, mut numbers, mut recoil, mut sound, mut fx, mut shots, mut launches): (
         MessageWriter<super::zombies::Noise>,
         MessageWriter<super::notify::Notify>,
         MessageWriter<super::damage_numbers::DamageNumber>,
         ResMut<super::recoil::Recoil>,
         MessageWriter<crate::audio::Sound>,
-        MessageWriter<super::harvest::Swing>,
         MessageWriter<Fx>,
         MessageWriter<super::turrets::Shot>,
+        MessageWriter<super::projectiles::Launch>,
     ),
 ) {
     armed.cooldown = (armed.cooldown - time.delta_secs()).max(0.0);
+    armed.hip_fire = (armed.hip_fire - time.delta_secs()).max(0.0);
     if armed.drawn.is_none() {
+        armed.hip_fire = 0.0;
         return;
     }
-    let (Ok(cam), Ok((me, stance, mut action, loco))) = (camera.single(), player.single_mut()) else { return };
+    let (Ok(cam), Ok((me, _, mut action, loco))) = (camera.single(), player.single_mut()) else { return };
     let crouching = loco.is_some_and(|l| l.crouched());
     let me = *me;
-    let stance = *stance;
     let auto = armed.auto;
     let trigger = if auto { mouse.pressed(MouseButton::Left) } else { mouse.just_pressed(MouseButton::Left) };
     // BP_PlayerCharacter's primary action: nothing in a safe zone (GameInstance.InSafeZone?).
@@ -668,7 +693,6 @@ fn fire(
         return;
     }
     let headshot_mode = store_bool(&store, "General", "HEADSHOT MODE ENABLED?");
-    let multi_hit = store_bool(&store, "General", "MELEE MULTI HIT ENABLED?");
     let Some(weapon) = drawn(&armed, &mut game).cloned() else { return };
     let Some(def) = db.items.get(&weapon.item) else { return };
     let mut rng = rand::thread_rng();
@@ -687,9 +711,26 @@ fn fire(
     };
 
     if is_firearm(&def.kind) {
+        let fa = def.firearm.clone().unwrap_or_default();
+        if !armed.aiming {
+            // A projectile weapon can't be fired from the hip.
+            if fa.projectile.is_some() {
+                armed.cooldown = 0.25;
+                if mouse.just_pressed(MouseButton::Left) {
+                    notify.write(super::notify::Notify::new("You need to ADS to fire"));
+                }
+                return;
+            }
+            // HipFire? (before Local_StartShooting, so an empty click raises the gun too): the
+            // first sets it with ToggleSprint(false) and Weapon_Hand_Move_02_Cue; each shot
+            // retriggers the 3 s delay.
+            if armed.hip_fire <= 0.0 {
+                sound.write(crate::audio::Sound::at("Weapon_Hand_Move_02_Cue", me.translation + Vec3::Y * 1.2));
+            }
+            armed.hip_fire = HIP_FIRE_HOLD;
+        }
         let rpm = weapon.stat(&db, "FirearmRPM").unwrap_or(600.0).max(1.0);
         armed.cooldown = 60.0 / rpm;
-        let fa = def.firearm.clone().unwrap_or_default();
         // Local_StartShooting: an empty or missing magazine clicks and says so.
         let rounds = drawn(&armed, &mut game).and_then(|w| w.mag_mut(&db).map(|m| m.rounds));
         if rounds.is_none_or(|r| r == 0) {
@@ -719,19 +760,47 @@ fn fire(
             w.durability = Some((durability - loss).max(0.0));
         }
         play(&mut action, ActionKind::Fire);
-        // MuzzleEffects: FirearmSound at the muzzle socket (suppressors aren't ported).
-        if let Some(cue) = &fa.sound {
+        // MuzzleEffects (`attachments::muzzle`): a working suppressor plays FirearmSuppressedSound
+        // and SuppressedMuzzleFlash; suppressors and muzzle brakes scale the noise by WeaponNoise.
+        let wear = store_bool(&store, "General", "MUZZLE ATTACHMENT DURABILITY ENABLED?").then(|| difficulty(&store, "General", "MUZZLE ATTACHMENT DURABILITY MULTIPLIER"));
+        let muzzle_fx = drawn(&armed, &mut game).map(|w| super::attachments::muzzle(&db, w, wear)).unwrap_or(super::attachments::Muzzle { suppressed: false, noise: 1.0 });
+        let cue = if muzzle_fx.suppressed { fa.suppressed_sound.as_ref().or(fa.sound.as_ref()) } else { fa.sound.as_ref() };
+        if let Some(cue) = cue {
             sound.write(crate::audio::Sound::at(cue.clone(), me.translation + Vec3::Y * 1.35));
         }
-        // StartRecoil (after the trace below has used this frame's aim).
-        let kick = super::recoil::kick(&fa, !armed.aiming, crouching, &mut rng);
+        // StartRecoil (after the trace below has used this frame's aim), x the attachments'
+        // recoil strengths.
+        let strength = Vec2::new(super::attachments::recoil_strength(&db, &weapon, "VerticalRecoilControl"), super::attachments::recoil_strength(&db, &weapon, "HorizontalRecoilControl"));
+        let kick = super::recoil::kick(&fa, !armed.aiming, crouching, &mut rng) * strength;
         recoil.start(&fa, kick);
         info!("recoil kick {:.2} {:.2}", kick.x, kick.y);
-        // ReportNoiseEvent out to the weapon's DefaultSoundRadius (suppressors aren't modelled).
-        let heard = if fa.sound_radius > 0.0 { fa.sound_radius } else { super::zombies::HEARING };
+        // ReportNoiseEvent out to DefaultSoundRadius x (1 + WeaponNoise / 100).
+        let heard = if fa.sound_radius > 0.0 { fa.sound_radius * muzzle_fx.noise } else { super::zombies::HEARING };
         noise.write(super::zombies::Noise { at: me.translation, range: heard.min(super::zombies::HEARING) });
+        info!("attachments: shot suppressed {} noise {heard:.1} m", muzzle_fx.suppressed);
         let origin = cam.translation();
-        let dir = cam.forward().as_vec3();
+        // Tracer from the weapon (right hand, chest height) to where the round landed.
+        let muzzle = me.translation + Vec3::Y * 1.35 + me.rotation * Vec3::new(-0.25, 0.0, 0.5);
+        // DoesWeaponUseAProjectile?: ProjectileTraceFromCamera and the ProjectileClass instead of
+        // FireTrace (`projectiles.rs`); MuzzleEffects has already run.
+        if let Some(proj) = fa.projectile.clone() {
+            let fwd = cam.forward().as_vec3();
+            let ground = terrain_hit(terrain.as_deref(), origin, fwd, RANGE);
+            let first = [ground, props.cast(origin, fwd, ground.unwrap_or(RANGE)), zombies.iter().filter_map(|(t, z, _, _)| ray_hits(origin, fwd, t, z.kind).map(|h| h.0)).reduce(f32::min)]
+                .into_iter()
+                .flatten()
+                .reduce(f32::min);
+            let dir = super::projectiles::aim_dir(muzzle, origin, fwd, first);
+            if let Some(flash) = &fa.muzzle_flash {
+                fx.write(Fx::at(flash.clone(), muzzle).pointing(dir).scaled(Vec3::splat(0.75)));
+            }
+            let damage = super::projectiles::damage_range(&proj, weapon.stat(&db, "FirearmDamage").unwrap_or(30.0));
+            launches.write(super::projectiles::Launch { def: proj, from: muzzle, dir, damage });
+            return;
+        }
+        // FireTrace: from the hip, a random cone of 3 / (1 + HipFireAccuracy / 100) degrees.
+        let cone = super::attachments::hip_cone(&db, &weapon, !armed.aiming);
+        let dir = cone_dir(cam.forward().as_vec3(), cone, &mut rng);
         // Rounds stop at the ground or the first prop (walls, cars, trees with collision).
         let ground = terrain_hit(terrain.as_deref(), origin, dir, RANGE).unwrap_or(RANGE);
         let wall = props.cast(origin, dir, ground).unwrap_or(ground);
@@ -753,7 +822,10 @@ fn fire(
             let base = weapon.stat(&db, "FirearmDamage").unwrap_or(30.0);
             // DamageMultiplier (and HEADSHOT MODE's quarter on the body), EffectiveDamage, then
             // CriticalHit; Client_HitUI shows the result (headshots too).
-            let (dmg, critical) = crit(falloff(shot_damage(base, head, &fa, headshot_mode), d, weapon.stat(&db, "DamageFallOff").unwrap_or(0.0)), &mut rng);
+            // DamageChange adds to the damage; the muzzle's Falloff shortens the effective range.
+            let change = super::attachments::stat_sum(&db, &weapon, "DamageChange").unwrap_or(0.0);
+            let range = weapon.stat(&db, "DamageFallOff").unwrap_or(0.0) / super::attachments::falloff_divisor(&db, &weapon);
+            let (dmg, critical) = crit(falloff(shot_damage(base, head, &fa, headshot_mode) + change, d, range), &mut rng);
             hurt(&mut h, a, dmg, head);
             // Trace_Headshot: Head_shot_1-5; Trace_BodyImpact: bullet_impact_body_thump_01-08.
             let cue = if head { format!("Head_shot_{}_Cue", rng.gen_range(1..=5)) } else { format!("bullet_impact_body_thump_0{}_Cue", rng.gen_range(1..=8)) };
@@ -765,19 +837,18 @@ fn fire(
             if let Some(st) = game.state.as_mut() {
                 st.passive.add_xp(Passive::Marksmanship, if head { rng.gen_range(4.0..=6.0) } else { rng.gen_range(1.0..=2.0) });
             }
-            numbers.write(super::damage_numbers::DamageNumber::hit(dmg, critical));
+            numbers.write(super::damage_numbers::DamageNumber::hit(dmg, critical, origin + dir * d));
         }
         // A round that met the ground or a prop: FX_WorldImpact, spraying back along the shot
         // (the impact normal isn't traced).
         if !hit_zombie && wall < RANGE {
             fx.write(Fx::at("FX_WorldImpact", end).pointing(-dir));
         }
-        // Tracer from the weapon (right hand, chest height) to where the round landed.
-        let muzzle = me.translation + Vec3::Y * 1.35 + me.rotation * Vec3::new(-0.25, 0.0, 0.5);
         // Svr_WeaponEffects: the weapon's MuzzleFlash at its Muzzle socket (scale 0.75), and its
         // BrassType at the ejection port, a little behind it.
         let aim = (end - muzzle).normalize_or(dir);
-        if let Some(flash) = &fa.muzzle_flash {
+        let flash = if muzzle_fx.suppressed { fa.suppressed_muzzle_flash.as_ref().or(fa.muzzle_flash.as_ref()) } else { fa.muzzle_flash.as_ref() };
+        if let Some(flash) = flash {
             fx.write(Fx::at(flash.clone(), muzzle).pointing(aim).scaled(Vec3::splat(0.75)));
         }
         if let Some(brass) = &fa.brass {
@@ -792,67 +863,6 @@ fn fire(
                 Tracer(0.06),
                 DespawnOnExit(AppState::InGame),
             ));
-        }
-    } else if def.kind == "Melee" {
-        if !mouse.just_pressed(MouseButton::Left) {
-            return;
-        }
-        // A melee weapon worn to 0 doesn't swing.
-        let durability = weapon.durability.unwrap_or(def.durability);
-        if def.durability > 0.0 && durability <= 0.0 {
-            notify.write(super::notify::Notify::new("Item durability too low"));
-            return;
-        }
-        // The weapon's attack montages in turn; the next swing waits for most of this one.
-        let swing = ActionKind::Swing(armed.swing);
-        armed.swing = (armed.swing + 1) % 4;
-        let drain = weapon.stat(&db, "StaminaDrain").unwrap_or(0.0);
-        let (stamina, strength_speed, strength) =
-            game.state.as_ref().map_or((100.0, 1.0, 1.0), |s| (s.survival.stamina, s.passive.strength_speed, s.passive.multiplier(Passive::Strength)));
-        let night = game.state.as_ref().map_or(1.0, |s| night_creature(s.tech.has(tech::NIGHT_CREATURE), s.environment.time_of_day_hours));
-        let rate = swing_rate(def.swing_speed, strength_speed, stamina >= drain);
-        armed.cooldown = lib.action_secs(AnimSet::Survivor, stance, swing).map_or(MELEE_COOLDOWN, |d| (d / rate * 0.8).max(MELEE_COOLDOWN));
-        action.start_at(swing, Some(rate));
-        sound.write(crate::audio::Sound::at("whoosh_weapon_knife_swing_01_Cue", me.translation));
-        if let Some(state) = game.state.as_mut() {
-            state.survival.stamina = (state.survival.stamina - drain).max(0.0);
-        }
-        let facing = me.rotation * Vec3::Z;
-        // The same sweep can meet a tree, a rock or a trash pile (`harvest::hit_props`).
-        let base = weapon.stat(&db, "MeleeDamage").unwrap_or(20.0);
-        swings.write(super::harvest::Swing { feet: me.translation, facing: facing.with_y(0.0).normalize_or_zero(), weapon: weapon.item.clone(), damage: base });
-        let mut hits: Vec<(f32, f32, Vec3, Mut<Health>, Option<Mut<UpperAction>>)> = zombies
-            .iter_mut()
-            .filter_map(|(t, _, h, a)| {
-                let to = (t.translation - me.translation) * Vec3::new(1.0, 0.0, 1.0);
-                let d = to.length();
-                let back = backstab(t.rotation * Vec3::Z, to);
-                (d < MELEE_REACH && facing.angle_between(to.normalize_or_zero()).to_degrees() < MELEE_CONE).then_some((d, back, t.translation, h, a))
-            })
-            .collect();
-        hits.sort_by(|a, b| a.0.total_cmp(&b.0));
-        // MELEE MULTI HIT: everyone in the arc, else the nearest.
-        for (_, back, at, mut h, a) in hits.into_iter().take(if multi_hit { usize::MAX } else { 1 }) {
-            // DamageCalc: x2 into its back, CriticalHit, x StrengthMultiplier, DurabilityCheck.
-            let (dmg, critical) = crit(base * back, &mut rng);
-            let dmg = worn_damage(dmg * strength * night, durability, store_bool(&store, "General", "MELEE DAMAGE DEGRADATION ENABLED?"));
-            hurt(&mut h, a, dmg, false);
-            // HitBody: one of Body_Flesh_1-5.
-            sound.write(crate::audio::Sound::at(format!("Body_Flesh_{}_Cue", rng.gen_range(1..=5)), at + Vec3::Y));
-            // BP_MeleePickup: FX_BloodHeadshot at the hit, scale 0.6.
-            fx.write(Fx::at("FX_BloodHeadshot", at + Vec3::Y * 1.2).pointing(me.translation - at).scaled(Vec3::splat(0.6)));
-            numbers.write(super::damage_numbers::DamageNumber::hit(dmg, critical));
-            // HitBody / HitHead: Client_StrengthXP(1-2), ReduceDurability(1).
-            if let Some(st) = game.state.as_mut() {
-                st.passive.add_xp(Passive::Strength, rng.gen_range(1.0..=2.0));
-            }
-            if store_bool(&store, "General", "WEAPON DURABILITY ENABLED?")
-                && let Some(w) = drawn(&armed, &mut game)
-            {
-                let loss = def.reduce_durability * difficulty(&store, "General", "WEAPON DURABILITY MULTIPLIER");
-                let now = w.durability.unwrap_or(def.durability);
-                w.durability = Some((now - loss).max(0.0));
-            }
         }
     }
 }
@@ -878,7 +888,7 @@ fn give_zombies_health(mut commands: Commands, store: Res<SettingsStore>, added:
 
 /// `XpMultiplierCalc` then `AddXP`: CurrentLevel x Random(XPMultiplier_Min 5, Max 10) x the
 /// LevellingComponent's MultiplyValue 1.05, times XP MULTIPLIER (`Difficulty_MultiplierValue`).
-fn kill_xp(level: u32, roll: f32, xp_mult: f32) -> f32 {
+pub(super) fn kill_xp(level: u32, roll: f32, xp_mult: f32) -> f32 {
     level.max(1) as f32 * roll * 1.05 * xp_mult
 }
 
@@ -1208,6 +1218,30 @@ mod tests {
         assert!((kill_xp(1, 5.0, 1.0) - 5.25).abs() < 1e-4);
         assert!((kill_xp(10, 10.0, 2.0) - 210.0).abs() < 1e-3);
         assert!((kill_xp(0, 10.0, 1.0) - 10.5).abs() < 1e-4, "level 0 counts as 1");
+    }
+
+    #[test]
+    fn hip_fire_holds_the_aim_pose() {
+        let mut armed = Armed { drawn: Some(Slot::Primary), ..default() };
+        assert!(!armed.aim_pose());
+        armed.hip_fire = HIP_FIRE_HOLD;
+        assert!(armed.aim_pose() && !armed.aiming, "HipFire? poses without the ADS camera");
+        armed.drawn = None;
+        assert!(!armed.aim_pose(), "holstered: no pose");
+        armed = Armed { aiming: true, ..default() };
+        assert!(armed.aim_pose());
+    }
+
+    #[test]
+    fn hip_fire_stays_in_its_cone() {
+        let mut rng = rand::thread_rng();
+        let f = Vec3::new(0.3, -0.1, 0.9).normalize();
+        assert_eq!(cone_dir(f, 0.0, &mut rng), f);
+        for _ in 0..500 {
+            let d = cone_dir(f, 3.0, &mut rng);
+            assert!(d.angle_between(f).to_degrees() <= 3.0 + 1e-3);
+            assert!((d.length() - 1.0).abs() < 1e-4);
+        }
     }
 
     #[test]

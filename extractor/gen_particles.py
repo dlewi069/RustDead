@@ -42,6 +42,8 @@ FOLDERS = [
     "SurrounDead/Content/PolygonFiles/PolygonMilitary/FX/",
     "SurrounDead/Content/PolygonFiles/PolygonStreetRacer/FX/",
     "SurrounDead/Content/PolygonFiles/FX_Particle_BloodDrip",
+    # The decontamination shower's FX_Water / FX_Water2.
+    "SurrounDead/Content/PolygonFiles/PolygonDog/FX/",
     "SurrounDead/Content/SmartAI/Effects/",
     # The gunshot muzzle flashes (BP_WeaponsPickupComponent.MuzzleFlash).
     "SurrounDead/Content/FX/",

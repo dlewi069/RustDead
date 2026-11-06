@@ -76,7 +76,7 @@ pub fn clock_rate(hour: f32, day_minutes: f32, night_minutes: f32) -> f32 {
     }
 }
 
-fn advance_clock(time: Res<Time>, store: Res<SettingsStore>, overlay: Res<GameOverlay>, mut game: ResMut<CurrentGame>) {
+pub fn advance_clock(time: Res<Time>, store: Res<SettingsStore>, overlay: Res<GameOverlay>, mut game: ResMut<CurrentGame>) {
     let Some(state) = game.state.as_mut() else { return };
     let env = &mut state.environment;
     let day = difficulty(&store, "General", "DAY LENGTH");

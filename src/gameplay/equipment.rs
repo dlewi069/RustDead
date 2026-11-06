@@ -296,6 +296,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn only_clothing_slots_dress_the_survivor() {
+        let Ok(text) = std::fs::read_to_string("assets/data/items.json") else { return };
+        let db: ItemDb = serde_json::from_str(&text).unwrap();
+        let mut inv = PlayerInventory::default();
+        // The respirator's data asset names OfficePants; the game never attaches it.
+        inv.equip(Slot::Facewear, db.stack("DA_HazmatRespirator", 1));
+        assert!(worn_meshes(&inv, &db, false).is_empty());
+        inv.equip(Slot::Legs, db.stack("DA_CargoPants", 1));
+        assert_eq!(worn_meshes(&inv, &db, false).iter().map(|(s, _)| s.as_str()).collect::<Vec<_>>(), ["Legs"]);
+    }
+
+    #[test]
     fn armor_divides_damage_and_wears_out() {
         let Ok(text) = std::fs::read_to_string("assets/data/items.json") else { return };
         let db: ItemDb = serde_json::from_str(&text).unwrap();
@@ -382,6 +394,9 @@ mod tests {
 /// off restores the bare region (UpdateBodyParts). An `update_all` item (the robe) on Torso, Body
 /// Armor or Legs sets every part, and the Torso and Legs regions then stay as it set them
 /// (CheckClothing); gloves and footwear still apply on top.
+/// The slots whose items are drawn as skinned clothing.
+pub const CLOTHING_SLOTS: [Slot; 5] = [Slot::Torso, Slot::Legs, Slot::Feet, Slot::Gloves, Slot::BodyArmor];
+
 pub fn body_meshes(inv: &PlayerInventory, db: &ItemDb, female: bool) -> crate::models::BodyMeshes {
     let sex = if female { "Female" } else { "Male" };
     let mut body = crate::models::default_body(sex);
@@ -416,6 +431,10 @@ pub fn body_meshes(inv: &PlayerInventory, db: &ItemDb, female: bool) -> crate::m
 pub fn worn_meshes(inv: &PlayerInventory, db: &ItemDb, female: bool) -> Vec<(String, String)> {
     inv.equipped
         .iter()
+        // Only these slots call MC_AttachClothing (BP_PlayerCharacter's Clothing_Torso / Legs /
+        // Feet / Gloves / Armor). Respirators and some accessories carry a copied ClothingSettings
+        // (OfficePants, SimpleShirtGreen) that the game never draws; they hang on sockets instead.
+        .filter(|(slot, _)| CLOTHING_SLOTS.contains(slot))
         .filter_map(|(slot, s)| {
             let c = db.items.get(&s.item)?.clothing.as_ref()?;
             let m = if female { c.female.clone().or(c.male.clone()) } else { c.male.clone().or(c.female.clone()) }?;

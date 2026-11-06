@@ -26,8 +26,16 @@
 //! BP_Lever's SetPower_TurnedOn / SetPower_Warning do the same on its Base (LeverBase): grey
 //! and green with power, red and grey without.
 //!
-//! Not ported: the generators' shake and hum, the stairwell switches (a trigger
-//! box).
+//! `BP_LaboratoryStairwellLightSwitch` (2, "Light Switch", option "Interact"): Event_LightSwitch
+//! walks its `Lights` (9 `BP_LaboratoryStairwellLight`s) in order, each one flipped by its own
+//! intensity: 0 -> SetIntensity(1000) and its Audio (light_fluorescent_hum_flicker_loop1_Cue) on,
+//! else 0 and the hum off, with a Delay of 0.6-1.2 s after each. Pressing again restarts the
+//! walk at the first light while the pending Delay keeps its time (a latent Delay ignores a second
+//! call). No power needed: the stairwell lights aren't on the generators' lists.
+//!
+//! Every target here plays Loot_MidShelf_GrabItem_Montage on interact (a switch in Warning
+//! doesn't). Not ported: the lab generators' shake and hum, the stairwell lights' flicker (their M_LightFlicker light
+//! function with a random FlickerAmount 0.01-0.25).
 
 use std::collections::HashMap;
 
@@ -276,14 +284,34 @@ impl PowerGenerator {
     }
 }
 
-/// The lab power network, and the police generator.
+/// A `BP_LaboratoryStairwellLightSwitch`.
+#[derive(Clone, Debug)]
+pub struct StairwellSwitch {
+    pub pos: Vec3,
+    /// Light actor names, in the order they're flipped.
+    pub lights: Vec<String>,
+    /// While the walk runs: the next light's index and the Delay left before it.
+    next: Option<(usize, f32)>,
+}
+
+/// Event_LightSwitch's Delay between two lights.
+pub fn stairwell_delay(rng: &mut impl rand::Rng) -> f32 {
+    rng.gen_range(0.6..1.2)
+}
+
+/// The lab power network, the stairwells, the police generator and the sirens.
 #[derive(Resource, Default, Debug)]
 pub struct Power {
     pub generators: Vec<Generator>,
     pub switches: Vec<Switch>,
     pub power_generators: Vec<PowerGenerator>,
+    pub stairwells: Vec<StairwellSwitch>,
+    /// BP_Siren (`sirens`).
+    pub sirens: Vec<super::sirens::Siren>,
     /// Lab light actor -> lit.
     lit: HashMap<String, bool>,
+    /// Stairwell light actor -> lit (its intensity isn't 0).
+    stair_lit: HashMap<String, bool>,
 }
 
 /// What F is pointed at.
@@ -292,6 +320,8 @@ pub enum Target {
     Generator(usize),
     Switch(usize),
     PowerGenerator(usize),
+    Stairwell(usize),
+    Siren(usize),
 }
 
 /// A generator flipped: the door actors to power or cut.
@@ -357,8 +387,64 @@ impl Power {
                 actors: prop(a, "Actors").map(|j| refs(&j)).unwrap_or_default().iter().filter_map(|n| by_name.get(n.as_str()).copied()).collect(),
             });
         }
+        for a in actors.iter().filter(|a| a.class == "BP_LaboratoryStairwellLightSwitch_C") {
+            let lights = prop(a, "Lights").map(|j| refs(&j)).unwrap_or_default();
+            power.stairwells.push(StairwellSwitch { pos: a.position(), lights, next: None });
+        }
+        power.sirens = actors.iter().filter(|a| a.class == "BP_Siren_C").map(|a| super::sirens::Siren::new(a.position(), &mut rand::thread_rng())).collect();
         power.relight();
         power
+    }
+
+    /// Is this stairwell light actor lit?
+    pub fn stair_lit(&self, light: &str) -> bool {
+        self.stair_lit.get(light).copied().unwrap_or(false)
+    }
+
+    /// How many stairwell lights are lit.
+    pub fn stair_lit_count(&self) -> usize {
+        self.stair_lit.values().filter(|&&on| on).count()
+    }
+
+    fn flip_stair(&mut self, switch: usize, k: usize) {
+        if let Some(l) = self.stairwells[switch].lights.get(k) {
+            let on = self.stair_lit.entry(l.clone()).or_insert(false);
+            *on = !*on;
+        }
+    }
+
+    /// Event_LightSwitch on stairwell switch `i`: flip its first light now, the rest one by one.
+    pub fn press_stairwell(&mut self, i: usize, delay: f32) {
+        let Some(s) = self.stairwells.get_mut(i) else { return };
+        if s.lights.is_empty() {
+            return;
+        }
+        s.next = Some((1, s.next.map_or(delay, |n| n.1)));
+        self.flip_stair(i, 0);
+    }
+
+    /// Whether any stairwell walk is running.
+    pub fn stairwells_busy(&self) -> bool {
+        self.stairwells.iter().any(|s| s.next.is_some())
+    }
+
+    /// Run the stairwell walks for `dt`; `delay` rolls the next Delay. Returns whether a light flipped.
+    pub fn tick_stairwells(&mut self, dt: f32, mut delay: impl FnMut() -> f32) -> bool {
+        let mut flipped = false;
+        for i in 0..self.stairwells.len() {
+            let Some((k, left)) = self.stairwells[i].next else { continue };
+            let left = left - dt;
+            if left > 0.0 {
+                self.stairwells[i].next = Some((k, left));
+            } else if k < self.stairwells[i].lights.len() {
+                self.flip_stair(i, k);
+                self.stairwells[i].next = Some((k + 1, delay()));
+                flipped = true;
+            } else {
+                self.stairwells[i].next = None;
+            }
+        }
+        flipped
     }
 
     fn relight(&mut self) {
@@ -416,7 +502,10 @@ impl Power {
         let s = self.switches.iter().enumerate().filter_map(|(i, s)| near(s.pos).map(|d| (Target::Switch(i), d)));
         // The police generator is a large prop: reached from a little farther.
         let pg = self.power_generators.iter().enumerate().filter(|(_, g)| (g.pos.y - p.y).abs() < 3.0 && g.pos.xz().distance(p.xz()) < REACH + 0.6).map(|(i, g)| (Target::PowerGenerator(i), g.pos.distance(p)));
-        g.chain(s).chain(pg).min_by(|a, b| a.1.total_cmp(&b.1))
+        let st = self.stairwells.iter().enumerate().filter_map(|(i, s)| near(s.pos).map(|d| (Target::Stairwell(i), d)));
+        // A siren is a 9 m pole: reached at its foot, like the police generator.
+        let sr = self.sirens.iter().enumerate().filter(|(_, s)| (s.pos.y - p.y).abs() < 3.0 && s.pos.xz().distance(p.xz()) < REACH + 0.6).map(|(i, s)| (Target::Siren(i), s.pos.distance(p)));
+        g.chain(s).chain(pg).chain(st).chain(sr).min_by(|a, b| a.1.total_cmp(&b.1))
     }
 }
 
@@ -424,6 +513,14 @@ pub(super) fn setup_power(mut commands: Commands, level: Option<Res<super::Level
     commands.insert_resource(level.as_ref().map(|l| Power::from_actors(&l.actors)).unwrap_or_default());
     // The actors' looping AudioComponents.
     let Some(level) = level else { return };
+    for a in level.actors.iter().filter(|a| a.class == "BP_LaboratoryStairwellLight_C") {
+        commands.spawn((
+            Transform::from_translation(a.position()),
+            crate::audio::AmbientLoop { cue: "light_fluorescent_hum_flicker_loop1_Cue".into(), volume: 1.0, active: false },
+            StairwellHum(a.name.clone()),
+            DespawnOnExit(crate::menus::AppState::InGame),
+        ));
+    }
     let mut police = 0;
     for a in &level.actors {
         let Some((cue, volume, active)) = ambient_sound(&a.class) else { continue };
@@ -437,13 +534,40 @@ pub(super) fn setup_power(mut commands: Commands, level: Option<Res<super::Level
 
 /// An actor class's looping AudioComponent: (cue, VolumeMultiplier, playing from the start).
 /// BP_BarrelFire / BP_Campfire: SC_CampFire at 0.5; BP_Generator (camps): its engine loop at
-/// 0.25; BP_PowerGenerator: the engine loop at 0.5 once turned on (bAutoActivate off).
+/// 0.25; BP_PowerGenerator: the engine loop at 0.5 once turned on (bAutoActivate off);
+/// BP_RoadLightGenerator: the engine loop, always.
 pub fn ambient_sound(class: &str) -> Option<(&'static str, f32, bool)> {
     match class {
         "BP_BarrelFire_C" | "BP_Campfire_C" | "BP_EasterEgg_Campfire_C" => Some(("SC_CampFire", 0.5, true)),
         "BP_Generator_C" => Some(("engine_generator_loop_01_Cue", 0.25, true)),
         "BP_PowerGenerator_C" => Some(("engine_generator_loop_01_Cue", 0.5, false)),
+        // BP_RoadLightGenerator's LightHum_Cue component plays the engine loop, auto-activated.
+        "BP_RoadLightGenerator_C" => Some(("engine_generator_loop_01_Cue", 1.0, true)),
         _ => None,
+    }
+}
+
+/// A stairwell light's Audio (its actor name).
+#[derive(Component)]
+pub(super) struct StairwellHum(String);
+
+/// Run the stairwell switches' walks; each light's hum follows it.
+pub(super) fn run_stairwells(time: Res<Time>, power: Option<ResMut<Power>>, mut hums: Query<(&StairwellHum, &mut crate::audio::AmbientLoop)>) {
+    let Some(mut power) = power else { return };
+    let mut rng = rand::thread_rng();
+    // Ticking alone mustn't mark Power changed (the lamps re-pick on every change).
+    if power.bypass_change_detection().tick_stairwells(time.delta_secs(), || stairwell_delay(&mut rng)) {
+        power.set_changed();
+        info!("stairwell lights lit {}", power.stair_lit_count());
+    }
+    if !power.is_changed() {
+        return;
+    }
+    for (h, mut l) in &mut hums {
+        let on = power.stair_lit(&h.0);
+        if l.active != on {
+            l.active = on;
+        }
     }
 }
 
@@ -480,6 +604,9 @@ mod tests {
             switches: vec![sw(SwitchState::Warning, &["L1", "L2"], vec![1]), sw(SwitchState::Warning, &["L3"], vec![0]), sw(SwitchState::Off, &["L4"], vec![])],
             lit: HashMap::new(),
             power_generators: Vec::new(),
+            stairwells: Vec::new(),
+            sirens: Vec::new(),
+            stair_lit: HashMap::new(),
         };
         p.relight();
         p
@@ -547,6 +674,38 @@ mod tests {
         let g = &p.power_generators[0];
         assert_eq!((g.required.as_deref(), g.consume, g.display.as_str(), g.gas), (Some("DA_PoliceGeneratorKey"), true, "Police Generator Key", false));
         assert_eq!(g.actors.iter().map(|&i| actors[i].class.as_str()).collect::<Vec<_>>(), ["BP_Lever_C"]);
+        // The two stairwell switches light the nine stairwell lights.
+        assert_eq!(p.stairwells.len(), 2);
+        let mut lights: Vec<&String> = p.stairwells.iter().flat_map(|s| &s.lights).collect();
+        lights.sort();
+        lights.dedup();
+        assert_eq!(lights.len(), 9);
+        assert!(lights.iter().all(|l| l.starts_with("BP_LaboratoryStairwellLight_C")));
+        assert_eq!(p.sirens.len(), 7);
+    }
+
+    #[test]
+    fn stairwell_switch_walks_its_lights() {
+        let mut p = Power::default();
+        p.stairwells.push(StairwellSwitch { pos: Vec3::ZERO, lights: vec!["A".into(), "B".into(), "C".into()], next: None });
+        p.press_stairwell(0, 1.0);
+        assert!(p.stair_lit("A") && !p.stair_lit("B"), "the first light at once");
+        assert!(!p.tick_stairwells(0.5, || 1.0));
+        assert!(p.tick_stairwells(0.6, || 0.8) && p.stair_lit("B") && !p.stair_lit("C"));
+        assert!(p.tick_stairwells(0.8, || 0.7) && p.stair_lit("C"));
+        // A Delay after the last light, then the walk ends.
+        assert!(p.stairwells_busy());
+        assert!(!p.tick_stairwells(0.7, || 1.0));
+        assert!(!p.stairwells_busy());
+        // Each light flips by its own state: pressing again walks them all off.
+        p.press_stairwell(0, 0.6);
+        assert!(!p.stair_lit("A") && p.stair_lit("B"));
+        p.tick_stairwells(0.6, || 0.6);
+        // Pressed mid-walk: back to the first light, the pending Delay keeps its time.
+        p.press_stairwell(0, 1.2);
+        assert!(p.stair_lit("A") && !p.stair_lit("B"));
+        assert_eq!(p.stairwells[0].next, Some((1, 0.6)));
+        assert_eq!(p.stair_lit_count(), 2);
     }
 
     #[test]

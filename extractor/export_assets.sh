@@ -14,6 +14,7 @@
 #   export_assets.sh --particles  regenerate assets/data/particles.json (committed): Cascade systems; the level's emitters, the particle meshes
 #   export_assets.sh --prefabs    regenerate assets/data/prefabs.json (committed): camps, convoys, crashes...; their meshes (after --level)
 #   export_assets.sh --buildables regenerate assets/data/buildables.json (committed): buildable items/actors, the horde beacon; their meshes
+#   export_assets.sh --infestations regenerate assets/data/infestations.json (committed): the infestation classes
 #   export_assets.sh --sounds     assets/data/sounds.json + decoded waves (needs vgmstream-cli)
 #   export_assets.sh --all        everything above
 set -euo pipefail
@@ -70,6 +71,10 @@ fi
 # Crafting amount arrows (W_PlayerCraftingUI).
 "$SDX" tex "$OUT" SurrounDead/Content/UI/CleanFlatIcons/Textures/png_128/icon/icon_arrow/icon_arrow_13 \
     SurrounDead/Content/UI/CleanFlatIcons/Textures/png_128/icon/icon_arrow/icon_arrow_14 >/dev/null
+# RadioUI (gameplay/radio.rs): the volume buttons, play / pause and the close button.
+I=SurrounDead/Content/UI/CleanFlatIcons/Textures/png_128/icon
+"$SDX" tex "$OUT" $I/icon_media/icon_media_9 $I/icon_media/icon_media_10 $I/icon_media/icon_media_11 \
+    $I/icon_media/icon_media_12 $I/icon_media/icon_media_83 $I/icon_media/icon_media_88 $I/icon_common/icon_common_35 >/dev/null
 
 # Meshes (.glb) for the survivor, zombies, vehicles and world props.
 if has --models; then
@@ -117,6 +122,10 @@ EOF
     # Landscape grass (LandscapeGrassType per paint layer) and weather (UDS presets + the level's
     # Ultra_Dynamic_Weather): assets/data/grass.json, weather.json; the grass meshes.
     "$SDX" levelactors "$LEVEL_OUT" "$LEVEL" >/dev/null
+    # The infestations' destroyed meshes (gameplay/infestations.rs swaps a nest to its DestroyedMesh).
+    I=SurrounDead/Content/Infestation/Meshes/Infestations
+    "$SDX" mesh "$OUT" $I/InfestationFloor_D $I/InfestationWall_D $I/InfestationCeiling_D $I/InfestationCorner_D \
+        $I/InfestationLarge_D $I/InfestationFloor $I/InfestationWall $I/InfestationCeiling $I/InfestationCorner >/dev/null
     # The trees' simple collision (BodySetup capsules / convex hulls): assets/data/simple_collision.json.
     TREES=$(python3 -c "import json,sys; print(' '.join(m for m in json.load(open(sys.argv[1])) if 'Tree' in m.rsplit('/',1)[1]))" "$LEVEL_OUT/placements.json")
     TMP="$(mktemp -d)"
@@ -183,6 +192,9 @@ if has --anims; then
         Anims/MeleeCrouch/Crouch_Lt_Axe Anims/MeleeCrouch/Crouch_Rt_Axe
         Anims/Other/Fire_Rifle_Ironsights Anims/Other/Reload_Rifle_Hip Anims/Other/Reload_Pistol
         Player/1Handed/Attack_01_Seq Player/1Handed/Attack_02_Seq Player/1Handed/Attack_04_Seq Player/1Handed/Attack_06_Seq
+        Anims/Melee/animBatonAttack2 Anims/Melee/animBatonAttack3 Anims/Melee/animBatonAttack4
+        Player/2Handed/InPlace/Longs_Attack_p_L_InPlace Player/2Handed/InPlace/Longs_Attack_p_LD_InPlace
+        Player/2Handed/InPlace/Longs_Attack_p_R_InPlace Player/2Handed/InPlace/Longs_Attack_p_RU_InPlace
         Zombie/Regular/A_Enemy_Zombie_Idle Zombie/Regular/Locomotion/Anim_Zombie_walk1_inplace
         Zombie/Regular/Locomotion/Anim_Zombie_run1_inplace Zombie/Regular/Attacks/Anim_Zombie_attack1
         Zombie/Regular/Attacks/Anim_Zombie_attack2 Zombie/Regular/Attacks/Anim_Zombie_attack3
@@ -202,6 +214,7 @@ if has --anims; then
         Anims/Melee/animBatonAttack1 Anims/No_Rifle/A_Car_IdleShortened
         Zombie/ZombieBoss/Anim_Zombie_attack1 Zombie/ZombieBoss/Locomotion/Anim_Zombie_idle
         Zombie/ZombieBoss/Locomotion/Anim_Zombie_walk3_inplace Zombie/ZombieBoss/Locomotion/Anim_Zombie_run1_inplace
+        Anims/Other/Loot_MidShelf_GrabItem Anims/Other/Loot_TableTop_LeftHand
     )
     "$SDX" animjson "$OUT" "${CLIPS[@]/#/$A/}" | grep -c '^ok' | xargs echo "animations:"
     # BP_Zombie_Dog: ZombieDogAILocomotion (stand/walk/run), bite and hit montages, death.
@@ -225,6 +238,10 @@ if has --anims; then
     # BP_PoliceStationGarageDoor's folding gate (level/garage.rs), mesh and FoldingGate_Anim_Montage's clip.
     "$SDX" mesh "$OUT" SurrounDead/Content/Meshes/Gate/FoldingGate >/dev/null
     "$SDX" animjson "$OUT" SurrounDead/Content/Meshes/Gate/FoldingGate_Anim >/dev/null
+    # BP_LaboratoryCorpse (level/lab_corpses.rs): the scientist and guard meshes, their pose clip.
+    LC=SurrounDead/Content/Blueprints/Laboratory/Corpses
+    "$SDX" mesh "$OUT" $LC/Lab_CientistCorpse $LC/Lab_HuardCorpse >/dev/null
+    "$SDX" animjson "$OUT" $LC/Lab_CientistCorpse_Anim >/dev/null
 fi
 
 # Regenerate assets/data/zombies.json (committed): BP_MasterZombie's children and their values.
@@ -244,6 +261,8 @@ fi
 if has --ai; then
     TMP="$(mktemp -d)"
     "$SDX" json "$TMP" SurrounDead/Content/AI/Zombies/ SurrounDead/Content/AI/Enum_AILootTables SurrounDead/Content/AI/SD_AIComponent >/dev/null
+    # BP_MasterZombie with its bytecode: BPI_AI's GetMarker (the binoculars' tags).
+    SD_SCRIPT=1 "$SDX" json "$TMP" SurrounDead/Content/AI/Zombies/BP_MasterZombie >/dev/null
     # The animals: BP_Animal's children, their AI controllers, trees, tasks and blendspaces, with
     # bytecode (their meshes, loot tables and bites are set in Blueprint graphs).
     A=SurrounDead/Content/AI/Animals
@@ -258,6 +277,12 @@ if has --ai; then
     SD_SCRIPT=1 "$SDX" json "$TMP" SurrounDead/Content/AI/SafeZoneAndCivilians/ SurrounDead/Content/AI/Other/ >/dev/null
     "$SDX" json "$TMP" SurrounDead/Content/SmartAI/Blueprints/AI/Components/BP_SmartAIComponent \
         SurrounDead/Content/SmartAI/Blueprints/AI/AICharacters/BP_MasterAIController >/dev/null
+    # Each zombie class's first mesh and its skeleton (the eyes' sockets, gen_ai.eyes), from the
+    # committed zombies.json.
+    python3 -c "import json; d=json.load(open('$ROOT/assets/data/zombies.json'))['classes']; print('\n'.join(sorted({'SurrounDead/Content/'+c['meshes'][0] for c in d.values() if c['meshes'] and not c.get('human') and not c.get('animal')})))" \
+        | xargs "$SDX" json "$TMP" >/dev/null
+    python3 -c "import json,pathlib; print('\n'.join(sorted({e['Properties']['Skeleton']['ObjectPath'].split('.')[0] for f in pathlib.Path('$TMP').rglob('SK_*.json') for e in json.load(open(f)) if e['Type']=='SkeletalMesh' and e.get('Properties',{}).get('Skeleton')} | {e['Properties']['Skeleton']['ObjectPath'].split('.')[0] for f in pathlib.Path('$TMP/WIP').rglob('*.json') for e in json.load(open(f)) if e['Type']=='SkeletalMesh' and e.get('Properties',{}).get('Skeleton')})))" \
+        | xargs "$SDX" json "$TMP" >/dev/null
     python3 "$HERE/gen_ai.py" "$TMP"
     # The human AI's bodies, hair, beards and weapons (gameplay/humans.rs), not yet exported.
     python3 -c "import json,os,sys; d=json.load(open('$ROOT/assets/data/zombies.json')); h=[c for c in d['classes'].values() if c.get('human')]; m=[x for c in h for x in c['meshes']+c['human']['hair']+c['human']['beard']+[(c['human'].get('backpack') or {}).get('mesh')] if x]+[x for c in json.load(open('$ROOT/assets/data/civilians.json'))['classes'].values() for x in c['meshes']+c['hair']+c['beard']+[b['mesh'] for b in c['backpacks']]]+[w['mesh'] for w in d.get('weapons',{}).values() if w.get('mesh')]; print('\n'.join(sorted({'SurrounDead/Content/'+x for x in m if not os.path.exists('$OUT/SurrounDead/Content/'+x+'.glb')})))" > "$HERE/mappings/human_meshes.txt"
@@ -272,13 +297,29 @@ fi
 if has --items; then
     TMP="$(mktemp -d)"
     "$SDX" json "$TMP" SurrounDead/Content/Inventory/Items/DataAssets/ SurrounDead/Content/Inventory/Containers/ SurrounDead/Content/Blueprints/Throwables/ \
-        SurrounDead/Content/Inventory/Items/Pickups/Weapons/ SurrounDead/Content/Inventory/Items/Other/Components/BP_WeaponsPickupComponent \
+        SurrounDead/Content/Inventory/Items/Pickups/Weapons/ SurrounDead/Content/Inventory/Items/Pickups/Equipment/ SurrounDead/Content/Inventory/Items/Other/Components/BP_WeaponsPickupComponent SurrounDead/Content/Inventory/Items/Other/ItemProjectiles/ \
         SurrounDead/Content/Inventory/Items/Other/Components/Data/Enum_Firearms \
         SurrounDead/Content/AI/AILootTables/ SurrounDead/Content/Blueprints/SkillTree/ \
         SurrounDead/Content/Inventory/Crafting/DT_CraftingTableTypes SurrounDead/Content/PlayerModel/Other/ClothingSettings \
         SurrounDead/Content/Meshes/PlayerModels/SK_Chr_ToplessMale_01_Skeleton \
-        SurrounDead/Content/JigSInventory/Jigsaw/Data/DataAsset/JigsawItem_DataAsset >/dev/null
+        SurrounDead/Content/JigSInventory/Jigsaw/Data/DataAsset/JigsawItem_DataAsset SurrounDead/Content/Inventory/Widgets/Firearms/ \
+        SurrounDead/Content/Inventory/Items/LocalAttachments/ \
+        SurrounDead/Content/Inventory/Widgets/Equipment/SC_Battery SurrounDead/Content/Inventory/Widgets/Equipment/SC_NVG SurrounDead/Content/Inventory/Widgets/Equipment/SC_Respirator \
+        SurrounDead/Content/Animations/Anims/Montages/ SurrounDead/Content/Animations/Player/1Handed/ SurrounDead/Content/Animations/Player/2Handed/InPlace/ >/dev/null
+    # The storage SC_ widgets (backpacks, clothes, cases): their layouts, and AllContainers'
+    # order from their bytecode (gen_items.py sc_layout).
+    SD_SCRIPT=1 "$SDX" json "$TMP" SurrounDead/Content/Inventory/Widgets/Equipment/Backpacks/ SurrounDead/Content/Inventory/Widgets/Equipment/BodyArmor/ \
+        SurrounDead/Content/Inventory/Widgets/Equipment/Legs/ SurrounDead/Content/Inventory/Widgets/Equipment/PlayerContainer/ SurrounDead/Content/Inventory/Widgets/Equipment/Torso/ >/dev/null
+    # The guns' meshes and their skeletons, whose sockets the attachments hang from (the list
+    # comes from the committed items.json: every item with attachment slots).
+    python3 -c "import json; d=json.load(open('$ROOT/assets/data/items.json'))['items']; print('\n'.join(sorted({v['mesh'] for v in d.values() if v.get('slots') and v.get('mesh')})))" > "$TMP/weapon_meshes.txt"
+    xargs -a "$TMP/weapon_meshes.txt" "$SDX" json "$TMP" >/dev/null
+    python3 -c "import json,glob,sys; print('\n'.join(sorted({e['Properties']['Skeleton']['ObjectPath'].rsplit('.', 1)[0] for f in open('$TMP/weapon_meshes.txt').read().split() for e in json.load(open('$TMP/' + f.split('/Content/', 1)[1] + '.json')) if e.get('Type') == 'SkeletalMesh' and (e.get('Properties') or {}).get('Skeleton')})))" > "$TMP/weapon_skeletons.txt"
+    xargs -a "$TMP/weapon_skeletons.txt" "$SDX" json "$TMP" >/dev/null
     python3 "$HERE/gen_items.py" "$TMP"
+    # The radios' text broadcasts (gameplay/radio.rs): assets/data/radio.json.
+    "$SDX" json "$TMP" SurrounDead/Content/Blueprints/Other/Radio/DT_Radio >/dev/null
+    python3 "$HERE/gen_radio.py" "$TMP"
     rm -rf "$TMP"
     # Traders (assets/data/traders.json): BP_TraderMaster's children, DT_VendorTable, dialogues.
     TMP="$(mktemp -d)"
@@ -286,8 +327,9 @@ if has --items; then
     python3 "$HERE/gen_traders.py" "$TMP"
     rm -rf "$TMP"
     # Inventory pictures are renders of each item's inspect mesh (gameplay/icons.rs); containers
-    # spawned at runtime (police/keycard briefcases) draw their class's mesh.
-    python3 -c "import json,os,sys; d=json.load(open('$ROOT/assets/data/items.json')); m=[v['mesh'] for v in [*d['items'].values(), *d['containers'].values()]]; print('\n'.join(sorted({x for x in m if x and not os.path.exists('$OUT/'+x+'.glb')})))" > "$HERE/mappings/item_meshes.txt"
+    # spawned at runtime (police/keycard briefcases) draw their class's mesh; head gear the
+    # pickup actor's mesh it wears (the cowboy hat's differs from its inspect mesh).
+    python3 -c "import json,os,sys; d=json.load(open('$ROOT/assets/data/items.json')); m=[v['mesh'] for v in [*d['items'].values(), *d['containers'].values()]] + [(v['attachment'].get('actor') or {}).get('mesh') for v in d['items'].values() if v.get('attachment')] + [v['worn']['mesh'] for v in d['items'].values() if v.get('worn')]; print('\n'.join(sorted({x for x in m if x and not os.path.exists('$OUT/'+x+'.glb')})))" > "$HERE/mappings/item_meshes.txt"
     if [[ -s "$HERE/mappings/item_meshes.txt" ]]; then
         xargs -a "$HERE/mappings/item_meshes.txt" -n 300 "$SDX" mesh "$OUT" | grep -c '^ok' | xargs echo "item meshes:"
     fi
@@ -298,7 +340,8 @@ fi
 # the Buildable_* actors' mesh parts and options, the Horde Beacon's waves; their meshes.
 if has --buildables; then
     TMP="$(mktemp -d)"
-    "$SDX" json "$TMP" SurrounDead/Content/Inventory/Items/DataAssets/ SurrounDead/Content/Blueprints/BuildingSystem/Actors/ \
+    # SD_SCRIPT: the lights' on-intensities are SetIntensity literals in their bytecode.
+    SD_SCRIPT=1 "$SDX" json "$TMP" SurrounDead/Content/Inventory/Items/DataAssets/ SurrounDead/Content/Blueprints/BuildingSystem/Actors/ \
         SurrounDead/Content/Blueprints/BuildingSystem/BP_NoBuildArea SurrounDead/Content/Blueprints/BuildingSystem/Enum_BuildingSnapTypes \
         SurrounDead/Content/Blueprints/HordeSystem/ SurrounDead/Content/JigSInventory/Jigsaw/Data/DataAsset/JigsawItem_DataAsset >/dev/null
     python3 "$HERE/gen_buildables.py" "$TMP"
@@ -307,6 +350,9 @@ if has --buildables; then
     if [[ -s "$HERE/mappings/buildable_meshes.txt" ]]; then
         xargs -a "$HERE/mappings/buildable_meshes.txt" "$SDX" mesh "$OUT" | grep -c '^ok' | xargs echo "buildable meshes:"
     fi
+    # Buildable_GarageDoor's skeletal mesh and GarageDoor_AnimFix_Montage's clip (build_doors.rs).
+    "$SDX" mesh "$OUT" SurrounDead/Content/Meshes/Buildables/GarageDoor/GarageDoor >/dev/null
+    "$SDX" animjson "$OUT" SurrounDead/Content/Meshes/Buildables/GarageDoor/GarageDoor_AnimFix >/dev/null
     python3 "$HERE/gen_materials.py"
 fi
 
@@ -329,6 +375,14 @@ if has --sounds || has --all; then
 fi
 
 # Regenerate assets/data/menus.json (committed) from the menu widget blueprints.
+# Infestations (gameplay/infestations.rs): BP_Infestation's class chain and the random spawn point.
+if has --infestations; then
+    TMP="$(mktemp -d)"
+    "$SDX" json "$TMP" SurrounDead/Content/Infestation/ SurrounDead/Content/Inventory/Containers/Enum_ContainerLootTables >/dev/null
+    python3 "$HERE/gen_infestations.py" "$TMP"
+    rm -rf "$TMP"
+fi
+
 if has --menu-data; then
     TMP="$(mktemp -d)"
     "$SDX" json "$TMP" SurrounDead/Content/UI/Menus/ SurrounDead/Content/Input/IMC_General \

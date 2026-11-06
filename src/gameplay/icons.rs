@@ -36,6 +36,8 @@ struct Bake {
     framed: bool,
     /// The inventory cell is at least as wide as tall.
     wide: bool,
+    /// ... and exactly as wide as tall.
+    square: bool,
 }
 
 impl ItemIcons {
@@ -58,6 +60,19 @@ impl ItemIcons {
 
 #[derive(Component)]
 struct IconModel(usize);
+
+/// The screen-up axis for an icon: `order` sorts the bounds' axes (X, Y, Z = 0, 1, 2) thinnest
+/// first; the view is down the thinnest.
+pub fn icon_up(order: [usize; 3], wide: bool, square: bool) -> Vec3 {
+    let axes = [Vec3::X, Vec3::Y, Vec3::Z];
+    if square && order[0] != 1 {
+        Vec3::Y
+    } else if wide {
+        axes[order[1]]
+    } else {
+        axes[order[2]]
+    }
+}
 
 pub fn plugin(app: &mut App) {
     app.init_resource::<ItemIcons>().add_systems(Update, bake_icons).add_observer(layer_icon_model);
@@ -118,7 +133,7 @@ fn bake_icons(
                     layer(slot),
                 ))
                 .id();
-            icons.active[slot] = Some(Bake { model, camera, frames: 0, framed: false, wide: def.size[0] >= def.size[1] });
+            icons.active[slot] = Some(Bake { model, camera, frames: 0, framed: false, wide: def.size[0] >= def.size[1], square: def.size[0] == def.size[1] });
             continue;
         }
         let bake = icons.active[slot].as_mut().unwrap();
@@ -158,8 +173,10 @@ fn bake_icons(
                     let axes = [Vec3::X, Vec3::Y, Vec3::Z];
                     let mut order = [0usize, 1, 2];
                     order.sort_by(|a, b| ext[*a].total_cmp(&ext[*b]));
-                    let (view, mid, long) = (axes[order[0]], axes[order[1]], axes[order[2]]);
-                    let up = if bake.wide { mid } else { long };
+                    let view = axes[order[0]];
+                    // A square cell has no long side to follow: keep the model's own up (glb Y)
+                    // upright when it isn't the view axis (backpacks stood on their side).
+                    let up = icon_up(order, bake.wide, bake.square);
                     let face = (ext[order[1]].max(ext[order[2]])) * 0.5;
                     let dist = face / (fov * 0.5).tan() * 1.25 + ext[order[0]] * 0.5;
                     *t = Transform::from_translation(centre + view * dist).looking_at(centre, up);
@@ -177,5 +194,22 @@ fn bake_icons(
             commands.entity(bake.camera).despawn();
             icons.active[slot] = None;
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn square_cells_keep_the_model_upright() {
+        // A backpack: thin along Z, wider along X, tallest along Y.
+        let pack = [2, 0, 1];
+        assert_eq!(icon_up(pack, true, true), Vec3::Y);
+        // In a wide cell the second-longest side is up (a rifle lies flat), in a tall one the longest.
+        assert_eq!(icon_up(pack, true, false), Vec3::X);
+        assert_eq!(icon_up(pack, false, false), Vec3::Y);
+        // Seen from above (Y thinnest) a square icon falls back to the wide rule.
+        assert_eq!(icon_up([1, 0, 2], true, true), Vec3::X);
     }
 }

@@ -18,6 +18,12 @@
 //!   says "No build zone". Keys (BP_PlayerCharacter): LMB places (Svr_SpawnBuild), RMB stops,
 //!   the wheel turns ±2°, Shift+wheel moves it ±5 cm along its up, Shift+E/Q ±90°, Shift+F
 //!   toggles snapping; BP_Ingame's BuildBox lists them and BuildingDegrees shows RotationZ.
+//! - **CheckForSnap** (while snapping): with the line on a placed buildable, its snap points
+//!   (ChildActorComponents whose ComponentTags name a snap type: the wooden foundations, floors,
+//!   walls, roofs and stairs have them) tagged with the item's SnapType; the one nearest the
+//!   impact point is BuildTransform's place (AddLocation ignored), turned by RotateSnap: walls,
+//!   fences, doors and half stairs flip 180° every other RotationZ step, floors, foundations and
+//!   stairs turn 90° a step, roofs keep the point's rotation (on floors they flip too).
 //! - **SpawnBuild**: the BuildActorClass at BuildTransform, S_Build_Cue, one of the item used up;
 //!   with more of it left build mode carries on (FindJigItemByDA), else it stops. Moving a placed
 //!   buildable (ReplacingObject: build mode with ReplacingActor, its collision off) sets its
@@ -44,10 +50,12 @@
 //! Ours: interaction is by distance (`REACH`), not the look trace; the ghost's materials, the
 //! light ray's pulsing red and the dish curve (linear between its keys) are stand-ins (the
 //! material graphs aren't readable); an AI despawned by the optimiser counts as dead (in the
-//! game an invalid enemy never does); FindLocation has no navmesh (any point in the disc). Not
-//! ported: snapping to other buildables' sockets (modular walls, floors), the buildables'
-//! own functions (storage, lights, benches, beds, doors), their health, the horde music
-//! (MusicLayeringComponent) and pausing the area music, the grab montages, ACH_Builder.
+//! game an invalid enemy never does); FindLocation has no navmesh (any point in the disc).
+//!
+//! Health: Buildable_MASTER.ReceiveAnyDamage takes Health down only for a damage causer tagged
+//! 'CanAttackBuildable' (no class has the tag) and does nothing at 0, so only the turrets have
+//! working health (`turrets.rs`). Not ported: the horde music (MusicLayeringComponent) and
+//! pausing the area music, the grab montages, ACH_Builder.
 
 use std::collections::HashMap;
 
@@ -90,7 +98,7 @@ const PROJECT_DOWN: f32 = 100.0;
 /// AI_MoveToSpecificLoc.GetTargetLoc: a reachable point within 500 cm of the target.
 const LOCK_ON_SPREAD: f32 = 5.0;
 /// Collision keys of placed buildables (`CollisionCache::set_dynamic`).
-const COLLIDE_KEY: usize = 1 << 44;
+pub const COLLIDE_KEY: usize = 1 << 44;
 const BEACON: &str = "Buildable_HordeBeacon_C";
 /// CreateNotificationUI's LinearColor(1, 0, 0) on the beacon's messages.
 const RED: Color = Color::linear_rgb(1.0, 0.0, 0.0);
@@ -149,10 +157,89 @@ impl PartDef {
 pub struct ActorDef {
     /// InteractOptions' labels, in order.
     pub options: Vec<String>,
+    /// OnInteractBuildable (Option1) plays Loot_TableTop_LeftHand_Montage first.
+    #[serde(default)]
+    pub interact_montage: bool,
     pub tags: Vec<String>,
     /// PickupDataAsset: the item it goes back to.
     pub pickup: Option<String>,
     pub parts: Vec<PartDef>,
+    /// Snap points: tagged ChildActorComponents (relative to the actor).
+    #[serde(default)]
+    pub sockets: Vec<SocketDef>,
+    /// BuildableMaster_Container / _Tent: the storage grid (columns, rows).
+    #[serde(default)]
+    pub storage: Option<[u8; 2]>,
+    /// Other BP_JigMultiplayer grids (columns, rows, ContainerName): `utility_benches.rs`.
+    #[serde(default)]
+    pub grids: Vec<(i32, i32, String)>,
+    /// SetSpawnPoint's RespawnLocation (relative to the actor; beds and the sleeping bag).
+    #[serde(default)]
+    pub respawn: Option<[f32; 3]>,
+    /// Its light components (`generators.rs`).
+    #[serde(default)]
+    pub lights: Vec<LightDef>,
+    /// Requires Power? (a generator in range powers it).
+    #[serde(default)]
+    pub requires_power: bool,
+    /// Interact switches its light (LightOn).
+    #[serde(default)]
+    pub switch: bool,
+    /// Buildable_GeneratorMaster's MaxFuel and Collision radius.
+    #[serde(default)]
+    pub generator: Option<GeneratorDef>,
+    /// A trap's Box_0 (`traps.rs`).
+    #[serde(default)]
+    pub trigger: Option<TriggerDef>,
+    /// The landmine's ExplosionSphere radius (m).
+    #[serde(default)]
+    pub blast_radius: Option<f32>,
+}
+
+/// A trap's overlap box relative to the actor (glb space, metres).
+#[derive(Deserialize, Clone, Debug)]
+pub struct TriggerDef {
+    pub t: [f32; 3],
+    pub r: [f32; 4],
+    pub half: [f32; 3],
+}
+
+/// A buildable's PointLight / SpotLight component.
+#[derive(Deserialize, Clone, Debug)]
+pub struct LightDef {
+    pub spot: bool,
+    /// Relative to the actor (glb space).
+    pub t: [f32; 3],
+    pub r: [f32; 4],
+    /// The SetIntensity it lights at.
+    pub intensity: f32,
+    /// AttenuationRadius (m).
+    pub radius: f32,
+    /// OuterConeAngle (degrees).
+    pub cone: f32,
+    pub color: [f32; 3],
+}
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct GeneratorDef {
+    pub max_fuel: f32,
+    /// The Collision sphere's radius (m).
+    pub radius: f32,
+}
+
+/// A snap point: ComponentTags (snap type names) and its transform relative to the actor.
+#[derive(Deserialize, Clone, Debug)]
+pub struct SocketDef {
+    pub name: String,
+    pub tags: Vec<String>,
+    pub t: [f32; 3],
+    pub r: [f32; 4],
+}
+
+impl SocketDef {
+    pub fn local(&self) -> Transform {
+        Transform::from_translation(Vec3::from_array(self.t)).with_rotation(Quat::from_array(self.r).normalize())
+    }
 }
 
 impl ActorDef {
@@ -244,6 +331,39 @@ pub enum Overlap {
     Landscape,
     /// Anything else (props, other buildables).
     Other,
+}
+
+/// RotateSnap: the snapped build's rotation from the snap point's, by the item's SnapType.
+/// Walls, fences, doors and half stairs flip 180° every other RotationZ step (2°), floors,
+/// foundations and stairs turn 90° a step; roofs on floors turn by the 180° steps the other
+/// way round (ComposeRotators' order), elsewhere they keep the point's rotation.
+/// `hit_type`: the hit buildable's GetBuildType (its pickup's SnapType).
+pub fn rotate_snap(snap: &str, socket: Quat, rotation_z: f32, hit_type: &str) -> Quat {
+    // UE yaw turns X towards Y: about +Y the other way here. ComposeRotators(A, B) = B * A.
+    let yaw = |deg: f32| Quat::from_rotation_y(-deg.to_radians());
+    match snap {
+        "Fence" | "Wall" | "WallHalf" | "Door" | "Window" | "StairsHalf" => socket * yaw(rotation_z % 4.0 / 2.0 * 180.0),
+        "Floor" | "FloorHalf" | "FloorQuarter" | "FloorTriangle" | "Ceiling" | "Stairs" | "Foundation" | "FoundationHalf" | "FoundationQuarter" | "FoundationTriangle" => {
+            socket * yaw(rotation_z % 8.0 / 2.0 * 90.0)
+        }
+        "Roof" | "RoofTop" if matches!(hit_type, "Floor" | "FloorHalf" | "FloorQuarter" | "FloorTriangle") => yaw(rotation_z % 8.0 / 2.0 * 180.0) * socket,
+        _ => socket,
+    }
+}
+
+/// CheckForSnap on placed actor `def` at `at`: its snap points tagged with the item's SnapType,
+/// the one nearest the view line's impact point (GetNearestTransform: the first at the least
+/// distance) turned by RotateSnap. `None` when it has no such point.
+pub fn snap_to(def: &ActorDef, at: &Transform, snap: &str, impact: Vec3, rotation_z: f32, hit_type: &str) -> Option<Transform> {
+    let mut best: Option<(f32, Transform)> = None;
+    for s in def.sockets.iter().filter(|s| s.tags.iter().any(|t| t == snap)) {
+        let w = *at * s.local();
+        let d = w.translation.distance(impact);
+        if best.is_none_or(|(b, _)| d < b) {
+            best = Some((d, w));
+        }
+    }
+    best.map(|(_, w)| Transform::from_translation(w.translation).with_rotation(rotate_snap(snap, w.rotation, rotation_z, hit_type)))
 }
 
 /// BuildCycle's colour: can the build go here? `on_something`: the view line hit something.
@@ -517,6 +637,21 @@ pub struct PlacedBuildable {
     pub item: String,
     pub pos: [f32; 3],
     pub rot: [f32; 4],
+    /// ContainerName, renamed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// A container's contents (`storage::sync`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub storage: Option<super::items::Grid>,
+    /// The disassembly workbench's "Disassembled" grid (ActorPreSave keeps both).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub output: Option<super::items::Grid>,
+    /// CurrentFuel, TurnedOn?, LightOn.
+    #[serde(default, skip_serializing_if = "super::generators::PowerState::is_default")]
+    pub power: super::generators::PowerState,
+    /// A placed turret's Current Health, once hurt (`turrets.rs`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub health: Option<f32>,
 }
 
 /// The inventory's "Place".
@@ -537,6 +672,46 @@ pub struct Live {
     pub horde: Option<Horde>,
     /// Its collision is in the cache.
     solid: bool,
+    /// ContainerName once renamed (Change Container Name); else its item's name.
+    pub name: Option<String>,
+    /// Generators' fuel and switch, lights' switch, powered or not (`generators.rs`).
+    pub power: super::generators::PowerState,
+    /// The construction bench's CurrentCraftingTable (its STANDARD / MODULAR tab).
+    pub crafting_table: Option<String>,
+    /// The doors' and gates' IsClosed and timeline (`build_doors.rs`; not saved, as in the game).
+    pub door: super::build_doors::DoorState,
+    /// The decontamination shower's cooldown (`radiation.rs`).
+    pub shower: super::radiation::ShowerState,
+    /// A turret's Current Health once hurt (`turrets.rs` keeps it; saved).
+    pub health: Option<f32>,
+}
+
+/// Placed benches' crafting UIs' Loot keys: past the placed storages'.
+pub const BENCH_KEYS: usize = super::storage::STORAGE_KEYS + (1 << 28);
+
+/// A placed bench's SetItemsToCraft row (Enum_CraftingTableTypes) and whether it has the
+/// construction bench's tabs: the crafting workbench 0, the campfire 1, the weapons/equipment
+/// workbench 2, the construction bench its CurrentCraftingTable (5, or 8 on MODULAR).
+pub fn bench_table(actor: &str) -> Option<(&'static str, bool)> {
+    Some(match actor {
+        "Buildable_CraftingWorkbench_C" => ("CraftingWorkbench", false),
+        "Buildable_Campfire_C" => ("Campfire", false),
+        "Buildable_WeaponsEquipmentWorkbench_C" => ("Lvl1WeaponsEquipmentWorkbench", false),
+        "Buildable_ConstructionBench_C" => ("Lvl1ConstructionWorkbench", true),
+        _ => return None,
+    })
+}
+
+impl Live {
+    /// Its storage's container key (`storage::STORAGE_KEYS`).
+    pub fn storage_key(&self) -> usize {
+        super::storage::STORAGE_KEYS + self.id
+    }
+
+    /// Redo its collision (a door's leaves moved).
+    pub fn unsolid(&mut self) {
+        self.solid = false;
+    }
 }
 
 #[derive(Resource, Default)]
@@ -545,7 +720,9 @@ pub struct Buildables {
     next_id: usize,
     restored: bool,
     /// The option the wheel picked on the buildable in reach.
-    option: usize,
+    pub option: usize,
+    /// A container whose pickup was confirmed (ModularYesNoUI's YES).
+    pub confirmed: Option<usize>,
 }
 
 /// BuildingComponent's state.
@@ -635,7 +812,7 @@ pub struct LockOnTarget(pub Vec3);
 
 /// Materials and mesh bounds.
 #[derive(Resource, Default)]
-struct BuildAssets {
+pub struct BuildAssets {
     green: Handle<StandardMaterial>,
     red: Handle<StandardMaterial>,
     pulse: Handle<StandardMaterial>,
@@ -685,8 +862,13 @@ fn glb(path: &str) -> String {
 }
 
 /// Spawn a buildable actor's parts under a root at `t`.
-fn spawn_actor(commands: &mut Commands, assets: &AssetServer, build_assets: &BuildAssets, def: &ActorDef, id: usize, t: Transform) -> (Entity, Option<Entity>) {
+fn spawn_actor(commands: &mut Commands, assets: &AssetServer, build_assets: &BuildAssets, actor: &str, def: &ActorDef, id: usize, t: Transform) -> (Entity, Option<Entity>) {
     let root = commands.spawn((t, Visibility::default(), Placed(id), DespawnOnExit(AppState::InGame))).id();
+    let door = super::build_doors::Kind::of(actor);
+    if door == Some(super::build_doors::Kind::Garage) {
+        // Buildable_GarageDoor's SkeletalMesh (no static parts), posed by `build_doors::swing`.
+        commands.spawn((crate::models::model(assets, glb(super::build_doors::GARAGE_MESH)), Transform::default(), super::build_doors::GarageModel(id), ChildOf(root)));
+    }
     let mut ents: HashMap<&str, Entity> = HashMap::new();
     let mut dish = None;
     // Parents come before children in the construction script.
@@ -703,11 +885,57 @@ fn spawn_actor(commands: &mut Commands, assets: &AssetServer, build_assets: &Bui
         let parent = p.parent.as_deref().and_then(|n| ents.get(n).copied()).unwrap_or(root);
         commands.entity(parent).add_child(e);
         ents.insert(&p.name, e);
+        if p.name == "StaticMesh" {
+            commands.entity(e).insert(super::generators::MainMesh(p.local().translation));
+        }
+        if actor == super::radiation::SHOWER && p.name.starts_with("Light") {
+            commands.entity(e).insert(super::radiation::ShowerLamp(id));
+        }
+        if let Some(n) = super::build_doors::leaf(door, &p.name) {
+            commands.entity(e).insert(super::build_doors::Leaf(id, n));
+        }
+        // The bear trap's jaws (`traps::close_jaws` turns them; yaw 0 / 180).
+        match p.name.as_str() {
+            "SM_Prop_Bear_Trap_Jaw_01" => {
+                commands.entity(e).insert(super::traps::Jaw(0.0));
+            }
+            "SM_Prop_Bear_Trap_Jaw_02" => {
+                commands.entity(e).insert(super::traps::Jaw(180.0));
+            }
+            _ => {}
+        }
         if p.name == "Dish" {
             dish = Some(e);
         }
+        // A placed turret's gun (`turrets::pose_guns` turns it).
+        if p.name == "Turret" && super::turrets::TurretKind::of(actor).is_some() {
+            commands.entity(e).insert(super::turrets::TurretPart(id));
+        }
+    }
+    // Buildable_Campfire: its Particles (FX_Fire) and Sound (SC_CampFire) always on.
+    if def.pickup.as_deref() == Some("DA_Campfire") {
+        commands.spawn((Transform::default(), Visibility::default(), super::particles::Emitter::new("FX_Fire"), ChildOf(root)));
+        commands.entity(root).insert(crate::audio::AmbientLoop { cue: "SC_CampFire".into(), volume: 1.0, active: true });
+    }
+    // The lights, dark until `generators::light_up` says otherwise (no shadows: ours).
+    for (i, l) in def.lights.iter().enumerate() {
+        let color = Color::srgb(l.color[0], l.color[1], l.color[2]);
+        let at = Transform::from_translation(Vec3::from_array(l.t)).with_rotation(Quat::from_array(l.r).normalize());
+        if l.spot {
+            // UE lights shine along +X; a Bevy SpotLight along -Z.
+            let at = at.with_rotation(at.rotation * Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2));
+            let a = l.cone.to_radians();
+            commands.spawn((SpotLight { intensity: 0.0, range: l.radius, color, outer_angle: a, inner_angle: 0.0, shadow_maps_enabled: false, ..default() }, at, super::generators::BuildLight(i), ChildOf(root)));
+        } else {
+            commands.spawn((PointLight { intensity: 0.0, range: l.radius, color, shadow_maps_enabled: false, ..default() }, at, super::generators::BuildLight(i), ChildOf(root)));
+        }
     }
     (root, dish)
+}
+
+/// The placed buildables into the save (for other modules: a landmine going off).
+pub fn save_placed(game: &mut CurrentGame, placed: &Buildables) {
+    save(game, placed);
 }
 
 fn save(game: &mut CurrentGame, placed: &Buildables) {
@@ -715,24 +943,34 @@ fn save(game: &mut CurrentGame, placed: &Buildables) {
         state.buildables = placed
             .list
             .iter()
-            .map(|l| PlacedBuildable { item: l.item.clone(), pos: l.transform.translation.to_array(), rot: l.transform.rotation.to_array() })
+            .map(|l| PlacedBuildable { item: l.item.clone(), pos: l.transform.translation.to_array(), rot: l.transform.rotation.to_array(), name: l.name.clone(), storage: None, output: None, power: l.power.clone(), health: l.health })
             .collect();
     }
 }
 
-fn add_live(commands: &mut Commands, assets: &AssetServer, build_assets: &BuildAssets, db: &BuildableDb, placed: &mut Buildables, item: &str, t: Transform) -> Option<usize> {
+/// Put a placed buildable into the world (SpawnBuild's actor; also the tour's).
+pub fn add_live(commands: &mut Commands, assets: &AssetServer, build_assets: &BuildAssets, db: &BuildableDb, placed: &mut Buildables, item: &str, t: Transform) -> Option<usize> {
     let bi = db.items.get(item)?;
     let def = db.actors.get(&bi.actor)?;
     let id = placed.next_id;
     placed.next_id += 1;
-    let (entity, dish) = spawn_actor(commands, assets, build_assets, def, id, t);
+    let (entity, dish) = spawn_actor(commands, assets, build_assets, &bi.actor, def, id, t);
     let horde = (bi.actor == BEACON).then(Horde::default);
-    placed.list.push(Live { id, item: item.to_string(), actor: bi.actor.clone(), transform: t, entity, dish: dish.map(|d| (d, 0.0, 0.0)), horde, solid: false });
+    placed.list.push(Live { id, item: item.to_string(), actor: bi.actor.clone(), transform: t, entity, dish: dish.map(|d| (d, 0.0, 0.0)), horde, solid: false, name: None, power: default(), crafting_table: None, door: default(), shower: default(), health: None });
     Some(id)
 }
 
 /// The saved buildables come back once the world is up.
-fn restore(mut commands: Commands, game: Res<CurrentGame>, db: Res<BuildableDb>, assets: Res<AssetServer>, build_assets: Res<BuildAssets>, mut placed: ResMut<Buildables>) {
+#[allow(clippy::too_many_arguments)]
+fn restore(
+    mut commands: Commands,
+    game: Res<CurrentGame>,
+    db: Res<BuildableDb>,
+    assets: Res<AssetServer>,
+    build_assets: Res<BuildAssets>,
+    mut placed: ResMut<Buildables>,
+    mut containers: ResMut<super::interact::Containers>,
+) {
     if placed.restored {
         return;
     }
@@ -742,6 +980,17 @@ fn restore(mut commands: Commands, game: Res<CurrentGame>, db: Res<BuildableDb>,
         let t = Transform::from_translation(Vec3::from_array(b.pos)).with_rotation(Quat::from_array(b.rot).normalize());
         if add_live(&mut commands, &assets, &build_assets, &db, &mut placed, &b.item, t).is_none() {
             warn!("buildables: unknown saved buildable {}", b.item);
+            continue;
+        }
+        let Some(l) = placed.list.last_mut() else { continue };
+        l.name = b.name.clone();
+        l.power = b.power.clone();
+        l.health = b.health;
+        if let Some(g) = &b.storage {
+            containers.searched.insert(l.storage_key(), g.clone());
+        }
+        if let Some(g) = &b.output {
+            containers.searched.insert(super::utility_benches::OUTPUT_KEYS + l.id, g.clone());
         }
     }
     if !state.buildables.is_empty() {
@@ -964,6 +1213,28 @@ fn build_cycle(
     }
     let at = origin + dir * hit.map_or(TRACE, |h| h.0) + build.add_location;
     build.transform = Transform::from_translation(at).with_rotation(build.rotation());
+    // CheckForSnap: the line on a placed buildable (not the one being moved: its collision is
+    // off) takes its nearest snap point for the item's SnapType.
+    if build.snapping
+        && let Some((d, _)) = prop
+        && hit.is_some_and(|h| h.0 == d)
+    {
+        let on = placed
+            .list
+            .iter()
+            .filter(|l| l.solid && Some(l.id) != build.replacing)
+            .filter_map(|l| rays.cast_dynamic(COLLIDE_KEY + l.id, origin, dir, TRACE).map(|e| (e, l)))
+            .filter(|(e, _)| (e - d).abs() < 0.01)
+            .min_by(|a, b| a.0.total_cmp(&b.0));
+        if let Some((_, l)) = on
+            && let Some(def) = db.actors.get(&l.actor)
+        {
+            let hit_type = def.pickup.as_ref().and_then(|p| db.items.get(p)).map_or("NoSnap", |i| i.snap.as_str());
+            if let Some(t) = snap_to(def, &l.transform, &bi.snap, origin + dir * d, build.rotation_z, hit_type) {
+                build.transform = t;
+            }
+        }
+    }
     // BP_NoBuildArea (only while BLOCK BUILDING AT MAJOR POIs? keeps them) and NoBuild-tagged
     // buildables along the view line.
     let end = origin + dir * hit.map_or(TRACE, |h| h.0);
@@ -1105,9 +1376,18 @@ fn make_solid(
         let mut ready = true;
         for (i, p) in def.parts.iter().enumerate().filter(|(_, p)| p.collides) {
             let handle = assets.gltfs.entry(p.mesh.clone()).or_insert_with(|| asset_server.load(glb(&p.mesh))).clone();
-            match glb_tris(&handle, &(l.transform * def.part_transform(i)), &gltfs, &gltf_meshes, &meshes) {
+            match glb_tris(&handle, &(l.transform * super::build_doors::part_pose(l, def, i)), &gltfs, &gltf_meshes, &meshes) {
                 Some(t) => tris.extend(t),
                 // A mesh that failed to load is left out.
+                None if asset_server.load_state(&handle).is_failed() => {}
+                None => ready = false,
+            }
+        }
+        // The garage door: its closed bind pose while it blocks (ours, as `level::garage`).
+        if super::build_doors::Kind::of(&l.actor) == Some(super::build_doors::Kind::Garage) && l.door.blocks() {
+            let handle = assets.gltfs.entry(super::build_doors::GARAGE_MESH.into()).or_insert_with(|| asset_server.load(glb(super::build_doors::GARAGE_MESH))).clone();
+            match glb_tris(&handle, &l.transform, &gltfs, &gltf_meshes, &meshes) {
+                Some(t) => tris.extend(t),
                 None if asset_server.load_state(&handle).is_failed() => {}
                 None => ready = false,
             }
@@ -1227,16 +1507,27 @@ fn interact(
     mut commands: Commands,
     keys: Res<ButtonInput<KeyCode>>,
     scroll: Res<AccumulatedMouseScroll>,
-    overlay: Res<GameOverlay>,
+    mut overlay: ResMut<GameOverlay>,
     item_db: Res<super::ItemDb>,
     db: Res<BuildableDb>,
     mut build: ResMut<BuildMode>,
     mut placed: ResMut<Buildables>,
     mut game: ResMut<CurrentGame>,
-    mut ground: ResMut<super::inventory_ui::Ground>,
+    (mut ground, mut containers, mut dirty, mut station): (
+        ResMut<super::inventory_ui::Ground>,
+        ResMut<super::interact::Containers>,
+        ResMut<super::inventory_ui::Dirty>,
+        ResMut<super::inventory_ui::PlacedStation>,
+    ),
     mut notify: MessageWriter<Notify>,
     mut rays: PropRays,
-    driving: Res<super::vehicles::Driving>,
+    (driving, radios, mut extras, mut montage, mut highlight): (
+        Res<super::vehicles::Driving>,
+        Res<super::radio::Radios>,
+        ResMut<super::utility_benches::LootExtras>,
+        MessageWriter<super::interact::PlayerMontage>,
+        ResMut<super::outline::Highlight>,
+    ),
     player: Query<&Transform, (With<CharacterModel>, With<KinematicBody>)>,
     (mut prompt, mut text, mut bar): (
         Query<&mut Visibility, With<super::interact::Prompt>>,
@@ -1245,10 +1536,31 @@ fn interact(
     ),
 ) {
     let (Ok(p), Ok(mut vis)) = (player.single(), prompt.single_mut()) else { return };
+    let p = p.translation;
+    // The construction bench keeps the tab last chosen (StationOwner.CurrentCraftingTable).
+    if let Some(s) = station.0.as_ref()
+        && let Some(l) = placed.list.iter_mut().find(|l| BENCH_KEYS + l.id == s.key)
+        && l.crafting_table.as_deref() != Some(s.table.as_str())
+    {
+        l.crafting_table = Some(s.table.clone());
+    }
+    // ModularYesNoUI's YES: PickupContainer = DropAll (each item at the survivor's feet), then
+    // Svr_Spawn.
+    if let Some(id) = placed.confirmed.take()
+        && let Some(i) = placed.list.iter().position(|l| l.id == id)
+    {
+        if let Some(g) = containers.searched.remove(&placed.list[i].storage_key()) {
+            info!("buildables: dropped {} item(s) from {}", g.items.len(), placed.list[i].item);
+            for it in g.items {
+                ground.drop_at(p, it.stack);
+            }
+        }
+        pick_up(&mut commands, &db, &item_db, &mut placed, i, &mut game, &mut ground, &mut rays, p);
+        montage.write(super::interact::PlayerMontage::new(crate::models::ActionKind::TableTop));
+    }
     if overlay.is_open() || *vis != Visibility::Hidden || build.on() || driving.active() {
         return;
     }
-    let p = p.translation;
     let near = placed
         .list
         .iter()
@@ -1258,9 +1570,27 @@ fn interact(
         .map(|(i, _)| i);
     let Some(i) = near else { return };
     let l = &placed.list[i];
+    let (id, key, beacon, renamed) = (l.id, l.storage_key(), l.horde.is_some(), l.name.clone());
+    let bench = bench_table(&l.actor);
+    let door = super::build_doors::Kind::of(&l.actor);
     let Some(def) = db.actors.get(&l.actor) else { return };
-    // The options ported: the beacon's Interact, Buildable_MASTER's Move and Pickup.
-    let options: Vec<&str> = def.options.iter().map(String::as_str).filter(|o| matches!(*o, "Move" | "Pickup") || (*o == "Interact" && l.horde.is_some())).collect();
+    // The options ported: the beacon's and containers' Interact, containers' Change Container
+    // Name, Buildable_MASTER's Move and Pickup.
+    let storage = def.storage.is_some();
+    let options: Vec<&str> = def
+        .options
+        .iter()
+        .map(String::as_str)
+        .filter(|o| match *o {
+            "Move" | "Pickup" => true,
+            "Interact" => beacon || storage || def.switch || bench_table(&l.actor).is_some() || door.is_some() || l.actor == super::radiation::SHOWER || is_radio(&l.actor) || super::utility_benches::Kind::of(&l.actor).is_some(),
+            "Turn On" | "Refuel" | "Show Generator Area" => def.generator.is_some(),
+            "Change Container Name" => storage,
+            "Sleep" => true,
+            "Set Spawn Point" => def.respawn.is_some(),
+            _ => false,
+        })
+        .collect();
     if options.is_empty() {
         return;
     }
@@ -1268,20 +1598,164 @@ fn interact(
         placed.option = (placed.option + 1) % options.len();
     }
     let pick = options[placed.option.min(options.len() - 1)];
+    let power = placed.list[i].power.clone();
+    // OnRep_TurnedOn?: UpdateInteractOptions(Option1, "Turn Off" / "Turn On").
+    let label = if pick == "Turn On" && power.on { "Turn Off" } else { pick };
     *vis = Visibility::Inherited;
+    // Buildable_MASTER's StaticMesh.
+    highlight.claim(super::outline::Highlit::Buildable(id));
     if let Ok(mut n) = bar.single_mut() {
         n.width = Val::Percent(0.0);
     }
-    let name = def.pickup.as_ref().and_then(|d| item_db.items.get(d)).map_or("Buildable", |d| d.name.as_str()).to_string();
+    // ShowInteractWidget(ContainerName): BeginPlay sets it to the pickup's name.
+    let name = renamed.unwrap_or_else(|| def.pickup.as_ref().and_then(|d| item_db.items.get(d)).map_or("Buildable", |d| d.name.as_str()).to_string());
+    let held = containers.searched.get(&key).map_or(0, |g| g.items.len());
     if let Ok(mut t) = text.single_mut() {
         let more = if options.len() > 1 { "  [Wheel] change" } else { "" };
-        t.0 = format!("{name}: [F] {pick}{more}");
+        // UpdateStorageStat: the 'Storage' stat, "{A} {B}".
+        let utility = super::utility_benches::Kind::of(&placed.list[i].actor).and_then(|k| super::utility_benches::stat(k, &placed.list[i], &containers));
+        let stat = if storage {
+            format!("\n{}", storage_stat(held))
+        } else if let Some(u) = utility {
+            // The battery charger's UpdateStorageStat.
+            format!("\n{u}")
+        } else if let Some(g) = &def.generator {
+            // Svr_UpdateFuel: 'Fuel', "N %".
+            format!("\nFuel: {}", super::generators::fuel_text(power.fuel, g.max_fuel))
+        } else if def.requires_power && (!def.lights.is_empty() || door.is_some() || placed.list[i].actor == super::radiation::SHOWER || super::turrets::TurretKind::of(&placed.list[i].actor).is_some() || is_radio(&placed.list[i].actor)) {
+            // The lights', the garage door's, the turret's and the jukebox's 'Power' stat (On /
+            // Off with the delegates).
+            format!("\nPower: {}", if power.powered { "On" } else { "Off" })
+        } else if is_radio(&placed.list[i].actor) && radios.music.contains_key(&super::radio::RadioOwner::Placed(id)) {
+            // Buildable_Radio's On / Off (the RadioComponent's TurnedOn / TurnedOff; no stat
+            // until the first).
+            format!("\nPower: {}", if radios.is_on(super::radio::RadioOwner::Placed(id)) { "On" } else { "Off" })
+        } else {
+            String::new()
+        };
+        t.0 = format!("{name}: [F] {label}{more}{stat}");
     }
     if !keys.just_pressed(KeyCode::KeyF) {
         return;
     }
     let mut out = Vec::new();
+    // OnInteractBuildable (Option1, whatever its label) plays the montage before its own logic.
+    if def.interact_montage && def.options.first().is_some_and(|o| o == pick) {
+        montage.write(super::interact::PlayerMontage::new(crate::models::ActionKind::TableTop));
+    }
     match pick {
+        "Interact" if storage => {
+            // MC_OnInteractBuildable: the BP_JigMultiplayer grid beside the inventory, titled
+            // ContainerName.
+            let [cols, rows] = def.storage.unwrap_or([1, 1]);
+            let g = containers.searched.entry(key).or_insert_with(|| super::items::Grid::new(name.clone(), cols, rows));
+            g.name = name.clone();
+            *overlay = GameOverlay::Loot(key);
+            dirty.0 = true;
+            info!("buildables: opened {name} ({cols} x {rows}, {held} item(s))");
+        }
+        "Interact" if bench.is_some() => {
+            // MC_OnInteractBuildable: SetItemsToCraft, the bench's widget beside the inventory
+            // under the pickup's name.
+            let (table, tabs) = bench.unwrap_or_default();
+            let table = placed.list[i].crafting_table.clone().unwrap_or_else(|| table.to_string());
+            let k = BENCH_KEYS + id;
+            station.0 = Some(super::inventory_ui::OpenStation { key: k, name: name.clone(), table: table.clone(), tabs });
+            *overlay = GameOverlay::Loot(k);
+            dirty.0 = true;
+            info!("buildables: opened {name} ({table})");
+        }
+        "Interact" if door.is_some() => {
+            let kind = door.unwrap_or(super::build_doors::Kind::Swing);
+            let l = &mut placed.list[i];
+            if kind == super::build_doors::Kind::Garage && !l.power.powered {
+                // Not PoweredOn?: Notification "Requires power" for 2 s.
+                notify.write(Notify::new("Requires power"));
+            } else {
+                // DotProduct: StaticMesh's location (the actor's: it sits at the origin).
+                let dot = super::build_doors::dot_product(&l.transform, p);
+                if l.door.interact(kind, dot) {
+                    info!("build doors: {} {} (dot {dot:.2})", l.item, if l.door.dir > 0.0 { "opening" } else { "closing" });
+                }
+            }
+        }
+        // Buildable_Radio / _Jukebox: OnInteractBuildable = ToggleRadioUI; the jukebox only with
+        // power ("Requires power").
+        "Interact" if super::utility_benches::Kind::of(&placed.list[i].actor).is_some() => {
+            // MC_OnInteractBuildable: the grids beside the inventory, under the pickup's name.
+            let kind = super::utility_benches::Kind::of(&placed.list[i].actor).unwrap_or(super::utility_benches::Kind::TrashBin);
+            let grids = super::utility_benches::grids(&db, &placed.list[i].actor);
+            let k = super::utility_benches::open(kind, &placed.list[i], &grids, &name, &mut containers, &mut extras);
+            *overlay = GameOverlay::Loot(k);
+            dirty.0 = true;
+            info!("buildables: opened {name} ({kind:?})");
+        }
+        "Interact" if is_radio(&placed.list[i].actor) => {
+            if def.requires_power && !placed.list[i].power.powered {
+                notify.write(Notify::new("Requires power"));
+            } else {
+                super::radio::toggle_ui(&mut overlay, super::radio::RadioOwner::Placed(placed.list[i].id));
+            }
+        }
+        "Interact" if placed.list[i].actor == super::radiation::SHOWER => {
+            let l = &mut placed.list[i];
+            let under = super::radiation::under_shower(&l.transform, p);
+            match super::radiation::shower(&mut l.shower, l.power.powered, under) {
+                Ok(cleaned) => {
+                    info!("radiation: shower on (survivor under it {under}, cleaned {cleaned})");
+                    if cleaned && let Some(st) = game.state.as_mut() {
+                        // IncreaseRadiation(100): the meter full, sickness over.
+                        st.survival.radiation = 0.0;
+                        st.effects.radiation_sickness = false;
+                    }
+                }
+                Err(msg) => {
+                    notify.write(Notify::new(msg));
+                }
+            }
+        }
+        "Interact" if def.switch => {
+            // The lamps' Interact: LightOn flips (lit only with power, bar the camping lamp).
+            let l = &mut placed.list[i];
+            l.power.light_on = !l.power.light_on;
+            info!("buildables: {} switched {}", l.item, if l.power.light_on { "on" } else { "off" });
+            save(&mut game, &placed);
+        }
+        "Turn On" => {
+            let item = placed.list[i].item.clone();
+            match placed.list[i].power.toggle() {
+                Ok(on) => {
+                    info!("generators: {item} turned {}", if on { "on" } else { "off" });
+                    if !on && let Some(g) = &def.generator {
+                        // OnRep_TurnedOn? off: GetObjects powers its range off.
+                        let at = placed.list[i].transform.translation;
+                        super::generators::power_range(&mut placed, &db, at, g.radius, false);
+                    }
+                    save(&mut game, &placed);
+                }
+                Err(msg) => {
+                    notify.write(Notify::new(msg));
+                }
+            }
+        }
+        "Refuel" => {
+            let max = def.generator.as_ref().map_or(0.0, |g| g.max_fuel);
+            if !placed.list[i].power.wants_fuel(max) {
+                notify.write(Notify::new("Gas full"));
+            } else if player_inv(&mut game).count("DA_GasCan") > 0 {
+                // ServerFindThenConsumeByItemID(DA_GasCan, 1), then CurrentFuel = MaxFuel.
+                player_inv(&mut game).remove("DA_GasCan", 1);
+                placed.list[i].power.fuel = max as f64;
+                info!("generators: {} refuelled to {max}", placed.list[i].item);
+                save(&mut game, &placed);
+            } else {
+                notify.write(Notify::new("No gas can"));
+            }
+        }
+        "Show Generator Area" => {
+            let p = &mut placed.list[i].power;
+            p.area = !p.area;
+        }
         "Interact" => {
             // OnInteractBuildable: TraceForBuildables first.
             let me = placed.list[i].transform.translation;
@@ -1293,6 +1767,28 @@ fn interact(
                 info!("horde beacon: interact (started {}, can stop {})", h.started, h.can_stop);
             }
         }
+        "Sleep" => {
+            // ShowSleepWidget / the bed's own copy: SleepingUI only from 19:30 to 06:30.
+            let hour = game.state.as_ref().map_or(12.0, |s| s.environment.time_of_day_hours);
+            if super::sleep::can_sleep(hour) {
+                *overlay = GameOverlay::Sleep;
+            } else {
+                notify.write(Notify::new("It's too early to sleep yet, wait until 19:30"));
+            }
+        }
+        "Set Spawn Point" => {
+            // SetSpawnPoint: RespawnPointEnabled, RespawnLoc = RespawnLocation's world transform.
+            let at = placed.list[i].transform.transform_point(Vec3::from_array(def.respawn.unwrap_or_default()));
+            if let Some(st) = game.state.as_mut() {
+                st.respawn_point = Some(at.to_array());
+            }
+            notify.write(Notify::new("Spawn point set"));
+            info!("buildables: spawn point set at {at:.1}");
+        }
+        "Change Container Name" => {
+            // ShowChangeObjectNameWidget (BuildableRenameObject).
+            *overlay = GameOverlay::Rename(id);
+        }
         "Move" => {
             if placed.list[i].horde.as_ref().is_none_or(|h| !h.started) {
                 // ReplacingObject: build mode with this actor, RotationZ = its yaw.
@@ -1303,28 +1799,81 @@ fn interact(
                 start_build(&mut build, item, Some(id));
             }
         }
+        _ if def.generator.is_some() && power.fuel != 0.0 && power.warned <= 0.0 => {
+            // Pickup with gas in it: warn, and take a second press within 10 s.
+            placed.list[i].power.warned = super::generators::PICKUP_WINDOW;
+            notify.write(Notify::new("Removing will resort in generator losing all gas.\r\nPress again to remove."));
+        }
+        _ if storage && held > 0 => {
+            // A container with something in it asks first (YesAndNoUI).
+            *overlay = GameOverlay::ConfirmPickup(id);
+        }
         _ => {
-            // Pickup: Svr_Spawn (JigTryAddItemSomewhere, then K2_DestroyActor).
             let ok = match placed.list[i].horde.as_mut() {
                 Some(h) => h.pickup(&mut out),
                 None => true,
             };
             if ok {
-                let l = placed.list.remove(i);
-                commands.entity(l.entity).despawn();
-                rays.set_dynamic(COLLIDE_KEY + l.id, Vec::new());
-                let item = def.pickup.clone().unwrap_or(l.item.clone());
-                let stack = item_db.stack(&item, 1);
-                // Ours: what doesn't fit lands at the survivor's feet (the game drops it).
-                if let Some(rest) = player_inv(&mut game).insert(&item_db, stack) {
-                    ground.drop_at(p, rest);
+                containers.searched.remove(&placed.list[i].storage_key());
+                containers.searched.remove(&(super::utility_benches::OUTPUT_KEYS + placed.list[i].id));
+                if let Some(g) = &def.generator {
+                    // GetObjects_ForceOff.
+                    let at = placed.list[i].transform.translation;
+                    super::generators::power_range(&mut placed, &db, at, g.radius, false);
                 }
-                info!("buildables: picked up {}", l.item);
-                save(&mut game, &placed);
+                pick_up(&mut commands, &db, &item_db, &mut placed, i, &mut game, &mut ground, &mut rays, p);
+                // Svr_Spawn (the pickup), then PlayMontage(Loot_TableTop_LeftHand_Montage).
+                montage.write(super::interact::PlayerMontage::new(crate::models::ActionKind::TableTop));
             }
         }
     }
     toasts(out, &mut notify);
+}
+
+/// The buildables with a RadioComponent.
+pub fn is_radio(actor: &str) -> bool {
+    matches!(actor, "Buildable_Radio_C" | "Buildable_Jukebox_C")
+}
+
+/// UpdateStorageStat: "{A} {B}" with "Item" for one, else "Items".
+pub fn storage_stat(n: usize) -> String {
+    format!("Storage: {n} {}", if n == 1 { "Item" } else { "Items" })
+}
+
+/// K2_DestroyActor on placed buildable `id` with nothing given back (a destroyed turret).
+pub fn remove_placed(commands: &mut Commands, game: &mut CurrentGame, placed: &mut Buildables, rays: &mut PropRays, id: usize) {
+    let Some(i) = placed.list.iter().position(|l| l.id == id) else { return };
+    let l = placed.list.remove(i);
+    commands.entity(l.entity).despawn();
+    rays.set_dynamic(COLLIDE_KEY + l.id, Vec::new());
+    info!("buildables: {} destroyed", l.item);
+    save(game, placed);
+}
+
+/// Pickup: Svr_Spawn (JigTryAddItemSomewhere, then K2_DestroyActor).
+#[allow(clippy::too_many_arguments)]
+fn pick_up(
+    commands: &mut Commands,
+    db: &BuildableDb,
+    item_db: &super::ItemDb,
+    placed: &mut Buildables,
+    i: usize,
+    game: &mut CurrentGame,
+    ground: &mut super::inventory_ui::Ground,
+    rays: &mut PropRays,
+    p: Vec3,
+) {
+    let l = placed.list.remove(i);
+    commands.entity(l.entity).despawn();
+    rays.set_dynamic(COLLIDE_KEY + l.id, Vec::new());
+    let item = db.actors.get(&l.actor).and_then(|d| d.pickup.clone()).unwrap_or(l.item.clone());
+    let stack = item_db.stack(&item, 1);
+    // Ours: what doesn't fit lands at the survivor's feet (the game drops it).
+    if let Some(rest) = player_inv(game).insert(item_db, stack) {
+        ground.drop_at(p, rest);
+    }
+    info!("buildables: picked up {}", l.item);
+    save(game, placed);
 }
 
 /// The horde's messages (the dish follows `Horde::started`: Timeline.Stop leaves it where it is).
@@ -1518,6 +2067,56 @@ mod tests {
         assert!(can_build(true, false, Overlap::Other, false));
         assert!(can_build(false, false, Overlap::Other, false));
         assert!(!can_build(false, false, Overlap::None, false));
+    }
+
+    #[test]
+    fn benches_open_their_tables() {
+        let items = super::super::ItemDb::load();
+        let db = db();
+        for actor in ["Buildable_CraftingWorkbench_C", "Buildable_Campfire_C", "Buildable_WeaponsEquipmentWorkbench_C", "Buildable_ConstructionBench_C"] {
+            let (table, _) = bench_table(actor).unwrap();
+            assert!(items.recipes.get(table).is_some_and(|r| !r.is_empty()), "{actor}: {table}");
+            assert!(db.actors[actor].options.iter().any(|o| o == "Interact"), "{actor}");
+        }
+        for (_, table) in super::super::inventory_ui::CONSTRUCTION_TABS {
+            assert!(items.recipes.get(table).is_some_and(|r| !r.is_empty()), "{table}");
+        }
+        assert_eq!(bench_table("Buildable_ConstructionBench_C"), Some(("Lvl1ConstructionWorkbench", true)));
+        assert_eq!(bench_table("Buildable_DisassemblyWorkbench_C"), None);
+        assert!(BENCH_KEYS > super::super::storage::STORAGE_KEYS + (1 << 20));
+    }
+
+    #[test]
+    fn snapping_to_sockets() {
+        let db = db();
+        let foundation = &db.actors["Buildable_WoodenFoundation_C"];
+        assert!(foundation.sockets.iter().filter(|s| s.tags == ["Foundation"]).count() == 4);
+        // A foundation at the origin turned 90°: looking at its +X side (UE), the nearest
+        // Foundation point is 3 m out along its turned X.
+        let at = Transform::from_rotation(Quat::from_rotation_y(-90f32.to_radians()));
+        let side = at.rotation * Vec3::X * 3.0;
+        let t = snap_to(foundation, &at, "Foundation", side * 0.6, 0.0, "Foundation").unwrap();
+        assert!(t.translation.distance(side) < 1e-3, "{:?}", t.translation);
+        assert!(t.rotation.angle_between(at.rotation) < 1e-3);
+        // RotationZ steps: foundations turn 90° per 2°, walls flip 180°.
+        let t = snap_to(foundation, &at, "Foundation", side, 2.0, "Foundation").unwrap();
+        assert!((t.rotation.angle_between(at.rotation) - 90f32.to_radians()).abs() < 1e-3);
+        let wall = snap_to(foundation, &Transform::IDENTITY, "Wall", Vec3::new(0.0, 1.8, 1.5), 0.0, "Foundation").unwrap();
+        // Wall2: UE (0, 150, 182) yaw 180 -> glb (0, 1.82, 1.5).
+        assert!(wall.translation.distance(Vec3::new(0.0, 1.82, 1.5)) < 1e-3);
+        let flipped = snap_to(foundation, &Transform::IDENTITY, "Wall", Vec3::new(0.0, 1.8, 1.5), 2.0, "Foundation").unwrap();
+        assert!((flipped.rotation.angle_between(wall.rotation) - std::f32::consts::PI).abs() < 1e-3);
+        assert_eq!(snap_to(no_sockets(&db), &Transform::IDENTITY, "Wall", Vec3::ZERO, 0.0, "NoSnap"), None);
+        // Roofs keep the point's rotation except on floors, where they turn the other way round.
+        let s = Quat::from_rotation_y(0.3);
+        assert_eq!(rotate_snap("Roof", s, 2.0, "Foundation"), s);
+        assert!(rotate_snap("Roof", s, 2.0, "Floor").angle_between(Quat::from_rotation_y(-180f32.to_radians()) * s) < 1e-4);
+        assert_eq!(rotate_snap("NoSnap", s, 90.0, "Floor"), s);
+    }
+
+    /// An actor without snap points (the beacon).
+    fn no_sockets(db: &BuildableDb) -> &ActorDef {
+        db.actors.values().find(|a| a.sockets.is_empty()).unwrap()
     }
 
     #[test]

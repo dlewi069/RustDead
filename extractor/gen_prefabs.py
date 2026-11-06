@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Prefabs (Content/Prefabs: camps, convoys, crashed helicopters, supply trucks...) for level/prefabs.rs.
+"""Prefabs (Content/Prefabs: camps, convoys, crashed helicopters, supply trucks...; the observatory's
+POI/Alternates) for level/prefabs.rs.
 
 usage: gen_prefabs.py   (run by export_assets.sh --prefabs)
 
@@ -33,7 +34,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 SDX = str(HERE / "bin" / "out" / "SdExport")
 GAME = ROOT / "assets" / "game"
-FOLDERS = ["SurrounDead/Content/Prefabs/"]
+FOLDERS = ["SurrounDead/Content/Prefabs/", "SurrounDead/Content/POI/Alternates/Prefabs/"]
 # Child actors whose spawning volumes hold human AI (bandits, the Coyotes, scavengers, survivors).
 HUMAN_SPAWNERS = {"BP_AISpawningVolume_Prefab_C", "BP_AISpawningVolume_RandomChanceToSpawn_C", "BP_AISpawner_SettlementSurvivors_C"}
 
@@ -253,8 +254,9 @@ def spawner_defaults(d):
 
 def main():
     d = Dumps()
-    listed = subprocess.run([SDX, "list", FOLDERS[0]], capture_output=True, text=True).stdout.split()
-    prefabs = [p[: -len(".uasset")] for p in listed if p.endswith(".uasset") and p.rsplit("/", 1)[-1].startswith("Prefab_")]
+    listed = [p for f in FOLDERS for p in subprocess.run([SDX, "list", f], capture_output=True, text=True).stdout.split()]
+    # The observatory's alternates (BP_AlternatePOI's Prefab / AlternatePrefab) are PrefabMasters too.
+    prefabs = [p[: -len(".uasset")] for p in listed if p.endswith(".uasset") and p.rsplit("/", 1)[-1].startswith(("Prefab_", "Alternate_"))]
     want = set(prefabs)
     for _ in range(8):  # parents and child actors, until closed
         d.ensure(want)

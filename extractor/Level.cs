@@ -44,7 +44,7 @@ static class LevelExport
     static bool Powered(string cls) => cls.StartsWith("BP_Laboratory") || cls.Contains("Generator") || cls.Contains("PoliceStation") || cls == "BP_Lever_C";
     // Actors whose components are moved per instance (ladder points, item spawner points, the
     // military and Shakes & Cones traders' five spawn points).
-    static bool Placed(string cls) => cls == "BP_Ladder_C" || cls == "BP_SpecialItemContainerSpawner_C" || cls == "BP_Keycard_Spawner_C" || cls == "BP_MilitaryTraderSpawner_C" || cls == "BP_ShakesConesSpawner_C";
+    static bool Placed(string cls) => cls == "BP_Ladder_C" || cls == "BP_SpecialItemContainerSpawner_C" || cls == "BP_Keycard_Spawner_C" || cls == "BP_HiddenCache_Spawner_C" || cls == "BP_MilitaryTraderSpawner_C" || cls == "BP_ShakesConesSpawner_C";
     // The map (BP_MapData: its texture, world size and middle) and the POIs on it (BP_POIManager:
     // the POI struct with its marker image, discovery radius...); asset refs are kept as JSON.
     static bool Mapped(string cls) => cls == "BP_MapData_C" || cls == "BP_POIManager_C";
@@ -54,13 +54,23 @@ static class LevelExport
     // BP_Event_AirdropGoToLocation: its RegionRadius (the sphere airdrop aircraft fly over);
     // BP_EventManager: its timers and airdrop spawn distance. BP_PrefabSpawner(_Dynamic): its
     // Prefab class, Chance, PrefabType (level/prefabs.rs).
-    static bool Events(string cls) => cls == "BP_Event_AirdropGoToLocation_C" || cls == "BP_EventManager_C" || cls.StartsWith("BP_PrefabSpawner") || cls == "BP_SettlementManager_C" || cls == "BP_SettlementCampSpawner_C";
+    static bool Events(string cls) => cls == "BP_Event_AirdropGoToLocation_C" || cls == "BP_EventManager_C" || cls.StartsWith("BP_PrefabSpawner") || cls == "BP_SettlementManager_C" || cls == "BP_SettlementCampSpawner_C" || cls.StartsWith("BP_AlternatePOI")
+        // The water bodies' Radiated? (gameplay/radiation.rs), ShallowWater? and Scale X / Y / Z.
+        || cls == "BP_WaterBox_C" || cls == "BP_WaterSpline_C";
     // Vehicle spawners (VehicleSelection: Enum_VehicleSpawner) and the vehicle trader's.
     static bool Vehicles(string cls) => cls.StartsWith("BP_Vehicle");
+    // Readable notes (BP_StandardNote: its Description text, shown on LetterUI) and the radiation
+    // zones (BP_RadiationArea_Sphere: ZoneRadius, RadiationLevel, Name, UI_filter...).
+    // Radios too (BP_Radio's Sound, BP_Radio_Text(_Military)'s RadioID: a DT_Radio row).
+    static bool Notes(string cls) => cls == "BP_StandardNote_C" || cls == "BP_RadiationArea_Sphere_C" || cls.StartsWith("BP_Radio_") || cls.StartsWith("BP_ToolRequired_");
     // Quest starters: the laptop event manager's Quests pool, BP_StartQuestArea's Quest and box.
     static bool Quests(string cls) => cls == "BP_LaptopEventManager_C" || cls == "BP_StartQuestArea_C";
     // Safe zones (BP_EnterSafeZone: its Name and its Sphere's radius) and water wells.
     static bool Zones(string cls) => cls == "BP_EnterSafeZone_C" || cls == "BP_WaterWell_C" || cls == "BP_CookingStation_C";
+    // Infestations (gameplay/infestations.rs): a primary's SecondaryInfestations and Splines (actor
+    // names), every nest's AISpawningTransforms / WavesOfEnemies / Name overrides, the random
+    // spawn points' meshes and chance.
+    static bool Infest(string cls) => cls.Contains("Infestation");
 
     public static void WriteActors(IEnumerable<UObject> exports, string outDir)
     {
@@ -72,7 +82,7 @@ static class LevelExport
             string cls = actor.Class?.Name.Text ?? actor.ExportType;
             Dictionary<string, object?>? props = null;
             // Spawners, and the sky/weather actors whose settings drive day/night and weather.
-            if (cls.Contains("AISpawner") || cls.Contains("AISpawningVolume") || cls.StartsWith("Ultra_Dynamic") || cls.StartsWith("Weather_Override") || cls.StartsWith("UDS_") || cls == "BP_SkySettings_C" || cls.Contains("Door") || Placed(cls) || Powered(cls) || Mapped(cls) || Audio(cls) || Events(cls) || Vehicles(cls) || Quests(cls) || Zones(cls))
+            if (cls.Contains("AISpawner") || cls.Contains("AISpawningVolume") || cls.StartsWith("Ultra_Dynamic") || cls.StartsWith("Weather_Override") || cls.StartsWith("UDS_") || cls == "BP_SkySettings_C" || cls.Contains("Door") || Placed(cls) || Powered(cls) || Mapped(cls) || Audio(cls) || Events(cls) || Vehicles(cls) || Quests(cls) || Zones(cls) || Notes(cls) || Infest(cls))
             {
                 props = new();
                 foreach (var tag in actor.Properties)
@@ -217,6 +227,36 @@ static class LevelExport
     static bool Hidden(UObject o) =>
         o.GetOrDefault("bHiddenInGame", false) || !o.GetOrDefault("bVisible", true);
 
+    // OverrideMaterials that are all M "Invisible" (Meshes/Materials/Invisible: BP_NavModifierPlane's
+    // plane, blocking helpers): the game never draws them. The instance's own list, else the
+    // Blueprint template's (<Name>_GEN_VARIABLE in the actor's class or a parent class).
+    static readonly Dictionary<string, bool> invisibleTemplates = new();
+    static bool InvisibleOverride(UObject comp)
+    {
+        static bool? AllInvisible(UObject o)
+        {
+            var mats = o.GetOrDefault<FPackageIndex[]>("OverrideMaterials");
+            if (mats == null || mats.Length == 0) return null;
+            return mats.All(m => m != null && !m.IsNull && m.Name == "Invisible");
+        }
+        if (AllInvisible(comp) is bool own) return own;
+        UStruct? cls = comp.Outer?.Class?.Load() as UStruct;
+        for (var guard = 0; cls != null && guard < 8; guard++)
+        {
+            var key = cls.GetPathName() + ":" + comp.Name;
+            if (!invisibleTemplates.TryGetValue(key, out var hit))
+            {
+                var tmpl = cls.Owner?.GetExports().FirstOrDefault(e => e.Name == comp.Name + "_GEN_VARIABLE");
+                hit = tmpl != null && AllInvisible(tmpl) == true;
+                invisibleTemplates[key] = hit;
+                if (tmpl != null && AllInvisible(tmpl) is bool) return hit;
+            }
+            else if (hit) return true;
+            cls = cls.SuperStruct?.Load<UStruct>();
+        }
+        return false;
+    }
+
     // The physical surface an instanced component's BodyInstance override gives its instances
     // (DefaultEngine.ini: SurfaceType16 = Tree, SurfaceType17 = Stone). BP_MeleePickup's hit
     // switch turns a Tree / Stone instance into BP_HarvestableObject_Tree / _Rocks.
@@ -268,7 +308,7 @@ static class LevelExport
         {
             try
             {
-                if (Hidden(comp)) { skipped++; continue; }
+                if (Hidden(comp) || InvisibleOverride(comp)) { skipped++; continue; }
                 var mesh = PathOf(comp.GetStaticMesh());
                 if (mesh == null) continue;
                 var world = comp.GetAbsoluteTransform();

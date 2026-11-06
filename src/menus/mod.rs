@@ -13,6 +13,7 @@ pub mod new_game;
 pub mod pause;
 pub mod saves;
 pub mod settings;
+pub mod viewshot;
 pub mod widgets;
 
 use bevy::prelude::*;
@@ -91,6 +92,12 @@ impl Plugin for MenuPlugin {
             .add_observer(on_goto);
         if let Ok(dir) = std::env::var("SD_MENU_SHOTS") {
             app.add_plugins(autoshot::AutoshotPlugin { dir });
+        } else if let Some(mut v) = std::env::var("SD_VIEW").ok().and_then(|s| viewshot::View::parse(&s)) {
+            v.wait = std::env::var("SD_VIEW_WAIT").ok().and_then(|s| s.parse().ok()).unwrap_or(v.wait);
+            v.shot = std::env::var("SD_VIEW_SHOT").unwrap_or(v.shot);
+            v.items = std::env::var("SD_VIEW_ITEMS").map(|s| s.split(',').map(str::to_string).collect()).unwrap_or_default();
+            v.page = std::env::var("SD_VIEW_PAGE").ok();
+            app.add_plugins(viewshot::ViewShotPlugin(v));
         }
     }
 }

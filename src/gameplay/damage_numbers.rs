@@ -5,8 +5,15 @@
 //!   (30-60 px left or right, 0-90 px up) with Vector2DInterpTo at speed 3; the Fade animation
 //!   takes it from 0.75 opacity to 0 over 3 s, and it's removed after 2.5 s.
 //! - Montserrat-ExtraBold 14, black shadow, in the caller's colour: firearms and melee
-//!   (`CriticalHit`) gold on a crit, grey otherwise; the frag and pipe bomb white. Shoves, stomps,
-//!   the Molotov and burning show none.
+//!   (`CriticalHit`) gold on a crit, grey otherwise; the frag and pipe bomb, explosive barrels
+//!   (`barrels.rs`) and the traps (`traps.rs`) white. The game's only other callers are the
+//!   buildable turret and the nuke easter egg (not ported); shoves, stomps, the Molotov,
+//!   burning and vehicles show none (their Blueprints never call SpawnFloatingDamageText).
+//!
+//! Ours (at the user's request, 2026-10-30): the number starts on what was damaged instead of
+//! the screen centre (the widget is only AddToViewport'ed in the game): each message carries the
+//! world point (`body`: the upper chest of a pawn, else the hit), projected through the player
+//! camera every frame, and the drift is an offset from it; hidden while it's behind the camera.
 
 use bevy::prelude::*;
 use rand::Rng;
@@ -34,21 +41,36 @@ const DRIFT_SPEED: f32 = 3.0;
 pub struct DamageNumber {
     pub damage: f32,
     pub colour: Color,
+    /// Where it was dealt (world space).
+    pub at: Vec3,
 }
 
 impl DamageNumber {
     /// A weapon hit, coloured by whether it was a crit.
-    pub fn hit(damage: f32, crit: bool) -> Self {
-        Self { damage, colour: if crit { CRIT } else { HIT } }
+    pub fn hit(damage: f32, crit: bool, at: Vec3) -> Self {
+        Self { damage, colour: if crit { CRIT } else { HIT }, at }
+    }
+
+    /// An explosive's or trap's (white).
+    pub fn blast(damage: f32, at: Vec3) -> Self {
+        Self { damage, colour: BLAST, at }
     }
 }
 
+/// Where a number goes on a pawn: the upper chest of a capsule standing at `feet`.
+pub fn body(feet: Vec3, height: f32) -> Vec3 {
+    feet + Vec3::Y * height * 0.8
+}
+
+/// A number on screen (its box).
 #[derive(Component)]
-struct Floating {
+pub struct Floating {
     age: f32,
+    /// The drift (UMG px from the projected point).
     pos: Vec2,
     target: Vec2,
     colour: Color,
+    at: Vec3,
 }
 
 pub fn plugin(app: &mut App) {
@@ -94,46 +116,82 @@ fn spawn(mut commands: Commands, mut msgs: MessageReader<DamageNumber>, store: R
         info!("damage number {}", text(n.damage));
         let font = TextFont { font: assets.load("fonts/Montserrat-ExtraBold.ttf").into(), font_size: pt(14.0), ..default() };
         commands.spawn((
-            // The viewport, centring the text (the slot's 0.5 anchors and alignment).
+            // A zero-size box at the projected point, centring the text on it (the slot's 0.5
+            // alignment); `drift` places it before it's first drawn.
             Node {
                 position_type: PositionType::Absolute,
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
+                width: Val::Px(0.0),
+                height: Val::Px(0.0),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
                 ..default()
             },
+            Visibility::Hidden,
             Pickable::IGNORE,
             GlobalZIndex(55),
             DespawnOnExit(AppState::InGame),
+            Floating { age: 0.0, pos: Vec2::ZERO, target: final_offset(&mut rng), colour: n.colour, at: n.at },
             children![(
                 Text::new(text(n.damage)),
                 font,
                 TextColor(n.colour.with_alpha(FADE_FROM)),
                 TextShadow { offset: Vec2::splat(1.0), color: Color::BLACK.with_alpha(FADE_FROM) },
-                Node { position_type: PositionType::Relative, ..default() },
-                Floating { age: 0.0, pos: Vec2::ZERO, target: final_offset(&mut rng), colour: n.colour },
+                bevy::text::TextLayout::linebreak(bevy::text::LineBreak::NoWrap),
             )],
         ));
     }
 }
 
-fn drift(mut commands: Commands, time: Res<Time>, mut texts: Query<(&ChildOf, &mut Floating, &mut Node, &mut TextColor, &mut TextShadow)>) {
+/// Where the number's box goes (UI px): the point's viewport position (logical px) over the UI
+/// scale, plus the drift. None behind the camera.
+pub fn screen_spot(viewport: Option<Vec2>, ui_scale: f32, drift: Vec2) -> Option<Vec2> {
+    viewport.map(|v| v / ui_scale.max(1e-3) + drift)
+}
+
+#[allow(clippy::type_complexity)]
+fn drift(
+    mut commands: Commands,
+    time: Res<Time>,
+    ui_scale: Res<UiScale>,
+    camera: Query<(&Camera, &GlobalTransform), With<super::PlayerCamera>>,
+    mut boxes: Query<(Entity, &mut Floating, &mut Node, &mut Visibility, &Children)>,
+    mut texts: Query<(&mut TextColor, &mut TextShadow)>,
+) {
     let dt = time.delta_secs();
-    for (parent, mut f, mut node, mut colour, mut shadow) in &mut texts {
+    let cam = camera.single().ok();
+    for (e, mut f, mut node, mut vis, kids) in &mut boxes {
         f.age += dt;
         if f.age >= LIFE {
-            commands.entity(parent.parent()).despawn();
+            commands.entity(e).despawn();
             continue;
         }
+        let first = f.age == dt;
         f.pos = interp_to(f.pos, f.target, dt, DRIFT_SPEED);
-        node.left = Val::Px(f.pos.x);
-        node.top = Val::Px(f.pos.y);
+        let viewport = cam.and_then(|(c, t)| c.world_to_viewport(t, f.at).ok());
+        match screen_spot(viewport, ui_scale.0, f.pos) {
+            Some(p) => {
+                if first && let Some(size) = cam.and_then(|(c, _)| c.logical_viewport_size()) {
+                    let size = size / ui_scale.0.max(1e-3);
+                    info!("damage number placed {:.0} {:.0} of {:.0} {:.0}", p.x, p.y, size.x, size.y);
+                }
+                node.left = Val::Px(p.x);
+                node.top = Val::Px(p.y);
+                vis.set_if_neq(Visibility::Inherited);
+            }
+            None => {
+                vis.set_if_neq(Visibility::Hidden);
+            }
+        }
         let a = opacity(f.age) * f.colour.alpha();
-        colour.0 = f.colour.with_alpha(a);
-        shadow.color = Color::BLACK.with_alpha(a);
+        for &k in kids {
+            if let Ok((mut colour, mut shadow)) = texts.get_mut(k) {
+                colour.0 = f.colour.with_alpha(a);
+                shadow.color = Color::BLACK.with_alpha(a);
+            }
+        }
     }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -170,7 +228,18 @@ mod tests {
 
     #[test]
     fn crits_are_gold() {
-        assert_eq!(DamageNumber::hit(10.0, true).colour, CRIT);
-        assert_eq!(DamageNumber::hit(10.0, false).colour, HIT);
+        assert_eq!(DamageNumber::hit(10.0, true, Vec3::ZERO).colour, CRIT);
+        assert_eq!(DamageNumber::hit(10.0, false, Vec3::ZERO).colour, HIT);
+        assert_eq!(DamageNumber::blast(10.0, Vec3::ZERO).colour, BLAST);
+    }
+
+    #[test]
+    fn numbers_sit_on_what_was_hit() {
+        // A zombie projected at (1200, 400) logical px with UiScale 0.75 is at (1600, 533) UI px,
+        // and the drift moves it from there; behind the camera nothing is drawn.
+        let p = screen_spot(Some(Vec2::new(1200.0, 400.0)), 0.75, Vec2::new(40.0, -30.0)).unwrap();
+        assert!((p - Vec2::new(1640.0, 533.333 - 30.0)).length() < 0.01, "{p}");
+        assert_eq!(screen_spot(None, 1.0, Vec2::ZERO), None);
+        assert_eq!(body(Vec3::new(1.0, 2.0, 3.0), 1.8), Vec3::new(1.0, 2.0 + 1.44, 3.0));
     }
 }

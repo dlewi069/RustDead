@@ -15,9 +15,13 @@
 //!   the class's DT_UniqueLoot sets (`interact::track_corpses`). No hit reactions, shoves or
 //!   stomps (no HitAnimation, `CanStompAI?` false).
 //!
-//! Not ported: `RangedAttack` (BP_ZombieBossRock thrown from ThrowLoc; nothing in the tree calls
-//! it), the map marker (`AddMarker`), the glowing eyes, ACH_ToughGuy / ACH_TheReckoning, the
-//! ragdoll.
+//! - Its tag (GetMarker: the red skull 2.25 m up, AddMarker) is the binoculars'
+//!   (`binoculars.rs`); its eyes (M_GlowingEyes_Boss, or the horde bosses' Infected red) are
+//!   `zombie_eyes`'. It doesn't bind the Blood Moon (`world_events::answers_blood_moon`).
+//!
+//! Not ported: `RangedAttack` (BP_ZombieBossRock thrown from ThrowLoc; nothing in the game calls
+//! it: the tree has no task for it and no Blueprint calls the event), ACH_ToughGuy /
+//! ACH_TheReckoning, the ragdoll.
 
 use bevy::prelude::*;
 use rand::Rng;

@@ -2,7 +2,8 @@
 //!
 //! - Needs the Skill_CombatRoll tech, 8 stamina (Svr_ReduceStamina 8), and not: falling, on a
 //!   ladder, seated, in the inventory (any overlay here), already rolling, swimming, fishing
-//!   (CurrentlyFishing?). (Also vehicles, binoculars and photo mode, which don't exist yet.)
+//!   (CurrentlyFishing?), using the binoculars (`binoculars::binocular_input` takes C away while
+//!   they're up). (Also in a vehicle and photo mode.)
 //! - Client_RollRotation turns the survivor to the last movement input (the camera-relative WASD
 //!   direction); with none they keep their facing (Character.RollFollowsPlayer is off: the actor's
 //!   rotation, not the control rotation).

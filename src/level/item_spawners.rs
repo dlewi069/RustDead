@@ -7,6 +7,12 @@
 //!   the Police Generator Key) added to its loot by `GameFunctionLibrary.AddUniqueLoot`.
 //! - `BP_Keycard_Spawner`: a `BP_KeycardBriefcaseContainer` (loot table Keycards) at `Spawn0` or
 //!   `Spawn1` with that component's rotation; tagged `EMS_SkipSave`, so it's rolled again each load.
+//! - `BP_HiddenCache_Spawner` (7): a `Container_HiddenCache` ("Hidden Cache": the water barrel,
+//!   MilitaryHighTier loot, 5 s hold) at `Spawn0` or `Spawn1`, hundreds of metres from the
+//!   spawner, tilted by the point's full rotation (half sunk in the ground); `EMS_SkipSave` too.
+//!   The pick is FinishSpawningActor's own RandomIntegerInRange (the deferred spawn's transform
+//!   is a separate roll that FinishSpawningActor overrides). Its outline and search icon are
+//!   BP_LootContainer's (`gameplay::outline`), its refill timer too (`gameplay::loot_refill`).
 //!
 //! The spawn points are the instances' component overrides (`SdExport levelactors` writes them as
 //! "<Component>.RelativeLocation"/"RelativeRotation", UE cm/degrees); unset ones keep the BP
@@ -60,6 +66,15 @@ pub(crate) fn point(a: &ActorInfo, name: &str, template: Vec3) -> (Vec3, f32) {
     (rel, yaw)
 }
 
+/// A spawn point component's full world transform (its pitch and roll too).
+pub(crate) fn point_tilted(a: &ActorInfo, name: &str) -> Transform {
+    let (rel, _) = point(a, name, Vec3::ZERO);
+    let rot = a.props.as_ref().and_then(|m| m.get(&format!("{name}.RelativeRotation"))).and_then(|j| ue_vec(j, ["Pitch", "Yaw", "Roll"])).unwrap_or(Vec3::ZERO);
+    let mut t = component_world(a, rel, 0.0);
+    t.rotation *= crate::gameplay::traps::ue_rotator(rot.x, rot.y, rot.z);
+    t
+}
+
 /// Roll every spawner's container.
 pub fn roll(actors: &[ActorInfo], rng: &mut impl Rng) -> Vec<SpawnedContainer> {
     let mut out = Vec::new();
@@ -84,6 +99,10 @@ pub fn roll(actors: &[ActorInfo], rng: &mut impl Rng) -> Vec<SpawnedContainer> {
                 let name = ["Spawn0", "Spawn1"][rng.gen_range(0..2)];
                 let (rel, yaw) = point(a, name, Vec3::ZERO);
                 out.push(SpawnedContainer { key: i, class: "BP_KeycardBriefcaseContainer_C", transform: component_world(a, rel, yaw), name: None, unique: Vec::new() });
+            }
+            "BP_HiddenCache_Spawner_C" => {
+                let name = ["Spawn0", "Spawn1"][rng.gen_range(0..2)];
+                out.push(SpawnedContainer { key: i, class: "Container_HiddenCache_C", transform: point_tilted(a, name), name: None, unique: Vec::new() });
             }
             _ => {}
         }
@@ -160,6 +179,35 @@ mod tests {
     }
 
     #[test]
+    fn hidden_cache_spawner_tilts_the_barrel() {
+        let a = actor(
+            "BP_HiddenCache_Spawner_C",
+            &[
+                ("Spawn0.RelativeLocation", r#"{"X":30000.0,"Y":0.0,"Z":-50.0}"#),
+                ("Spawn0.RelativeRotation", r#"{"Pitch":0.0,"Yaw":0.0,"Roll":20.0}"#),
+                ("Spawn1.RelativeLocation", r#"{"X":0.0,"Y":-20000.0,"Z":0.0}"#),
+            ],
+        );
+        let mut rng = rand::rngs::StdRng::seed_from_u64(5);
+        let mut seen = std::collections::HashSet::new();
+        for _ in 0..40 {
+            let s = roll(std::slice::from_ref(&a), &mut rng);
+            assert_eq!(s[0].class, "Container_HiddenCache_C");
+            let t = s[0].transform;
+            seen.insert((t.translation.x.round() as i32, t.translation.z.round() as i32));
+            let up = t.rotation * Vec3::Y;
+            if t.translation.x.round() == 310.0 {
+                // Roll 20: tipped 20 degrees off upright, still pointing along UE X.
+                assert!((up.angle_between(Vec3::Y).to_degrees() - 20.0).abs() < 0.01);
+                assert!((t.rotation * Vec3::X).distance(Vec3::X) < 1e-4);
+            } else {
+                assert!(up.distance(Vec3::Y) < 1e-4);
+            }
+        }
+        assert_eq!(seen, [(310, 20), (10, -180)].into_iter().collect());
+    }
+
+    #[test]
     fn level_spawners_resolve() {
         let Ok(a) = std::fs::read_to_string(format!("{}/actors.json", crate::level::LEVEL_DIR)) else { return };
         let actors: Vec<ActorInfo> = serde_json::from_str(&a).unwrap();
@@ -167,6 +215,10 @@ mod tests {
         // The police station's briefcase and three keycard briefcases.
         assert_eq!(s.iter().filter(|c| c.class == "Container_SpecialItemSpawner_C").count(), 1);
         assert_eq!(s.iter().filter(|c| c.class == "BP_KeycardBriefcaseContainer_C").count(), 3);
+        // The 7 hidden caches, each at one of its two points (up to ~800 m out).
+        let caches: Vec<_> = s.iter().filter(|c| c.class == "Container_HiddenCache_C").collect();
+        assert_eq!(caches.len(), 7);
+        assert!(caches.iter().all(|c| c.transform.translation.distance(actors[c.key].position()) > 1.0));
         let police = s.iter().find(|c| c.name.is_some()).unwrap();
         assert_eq!((police.name.as_deref(), police.unique.as_slice()), (Some("Police Briefcase"), &["PoliceStationKeys".to_string()][..]));
         // Within the station: the points are up to ~16 m from the spawner.

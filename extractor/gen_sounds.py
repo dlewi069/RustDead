@@ -44,6 +44,8 @@ CUES = [
     # Doors (the door BPs' PlaySoundAtLocation), the locked door's crowbar, fires, generators.
     "door_lock_open_02_Cue", "door_lock_close_01_Cue", "metal_gate_automatic_door_squeak_05_Cue", "MetalDoorImpact_Cue",
     "WoodBreak_cue", "SC_CampFire", "engine_generator_loop_01_Cue", "LightHum_Cue",
+    # BP_Siren's Audio, BP_LaboratoryStairwellLight's hum.
+    "Siren_Cue", "light_fluorescent_hum_flicker_loop1_Cue",
     # BP_TurretAIComponent's FireSound on the bandit and survivor turrets.
     "M16_Single_Shot_2_Cue",
     # BP_EventManager's world events: BP_Event_JetActor's Audio, SpawnExplosion's cue.
@@ -71,10 +73,19 @@ CUES = [
     "VehicleCollision_Cue", "Cue_Horn", "MasterVehicle_Audio",
     # BuildingComponent.SpawnBuild's S_Build_Cue; Buildable_HordeBeacon's last-wave sound.
     "S_Build_Cue", "metal_med_impact_01_Cue",
+    # RadiationComponent.DecreaseRadiation's Geiger (SpawnSound2D).
+    "Geiger_Counter_Sound_Cue",
+    # BP_Infestation's DamageComponent DeathSound (its DamageSound is bullet_impact_body_thump_08).
+    "bone_break_neck_snap_crack_01_Cue",
+    # BP_ProjectileRocket's blast (the grenade round's is explosion_large_06_Cue).
+    "explosion_large_07_Cue",
+    # The radios: BP_Radio's Sound, BP_Radio_Text's static and the muffled voice under its text.
+    "Radio_Cue", "RadioStatic_Cue", "RadioMuffled_Cue",
 ]
 
 # Attenuation assets set on audio components rather than on their cues.
-COMPONENT_ATTENUATIONS = {"Aircraft"}
+# PlayerRadio: the music radios' MediaSound (Buildable_Radio, the jukebox, vehicles).
+COMPONENT_ATTENUATIONS = {"Aircraft", "PlayerRadio"}
 
 # The montages behind the survivor's actions (models/anim.rs AnimSet::actions): their PlaySound
 # notifies sound as the action plays.

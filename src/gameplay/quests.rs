@@ -40,8 +40,8 @@
 //!   matches it), Event_RewardGiveItem (one of its ItemSets into the inventory; the laptop quests'
 //!   sets name no item, so only their 400 XP is paid). Forget removes the camp and the volume.
 //!
-//! Not ported: quest givers, the grab montage on opening the crate, the crate's outline and
-//! magnifier, quest givers, the Underground? arrow. On loading a save the events of the states a
+//! The crate's outline and magnifier are `outline.rs`'s. Not ported: quest givers, the grab
+//! montage on opening the crate, the Underground? arrow. On loading a save the events of the states a
 //! quest went through are run again (markers, the crate); which events Narrative refires on load
 //! is a guess. GetTaskProgressText's format "(n/N)" is a guess, as are the TaskBox's fonts (the
 //! RichTextBlocks' style table isn't read).
@@ -621,7 +621,7 @@ pub fn plugin(app: &mut App) {
 /// The crate class searches like a container (`interact::container_def`).
 fn register_crate(qdb: Res<QuestDb>, mut db: ResMut<ItemDb>) {
     let c = &qdb.crate_;
-    db.containers.insert(c.class.clone(), ContainerDef { name: c.name.clone(), table: None, hold: c.hold, lockpick: false, noise: c.noise, mesh: Some(c.mesh.clone()), airdrop: None });
+    db.containers.insert(c.class.clone(), ContainerDef { name: c.name.clone(), table: None, hold: c.hold, lockpick: false, noise: c.noise, mesh: Some(c.mesh.clone()), airdrop: None, tool: None, refills: false, magnifier: [0.0; 3] });
 }
 
 fn reset(mut world: ResMut<QuestWorld>, mut task_box: ResMut<TaskBox>) {

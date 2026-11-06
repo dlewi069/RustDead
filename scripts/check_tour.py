@@ -7,6 +7,7 @@ Every step in src/menus/autoshot.rs's TOUR must have produced a non-blank PNG, t
 panic, and the behaviour each step exercises must show up (shots hit, lockpick opened, night is
 darker than day...). Add a check: a function taking `ctx`, listed in CHECKS.
 """
+import math
 import re
 import sys
 from pathlib import Path
@@ -67,6 +68,183 @@ def shots_kill_the_zombie(ctx):
         ctx.err("08g_armed: the first shot did no damage")
 
 
+def barber_restyles_the_survivor(ctx):
+    """08zzzb_barber / 08zzzc_barber_exit: F at the barber opens CharacterBarberMenu with the view
+    blended onto its Camera, the survivor at its Debug point, the HUD hidden; a switch to Female
+    rebuilds the survivor (one head, the old parts gone); Esc closes it, the view blends back to
+    the spring arm and the HUD returns."""
+    if "autoshot barber: none" in ctx.log:
+        ctx.err("08zzzb_barber: no barber in the level")
+        return
+    o = re.search(r"autoshot barber open (\S+) seat ([\d.]+) camera ([\d.]+|NaN) hud (\w+)", ctx.log)
+    if not o or not o[1].startswith("Barber(") or float(o[2]) > 0.3 or o[3] == "NaN" or float(o[3]) > 0.05 or o[4] != "false":
+        ctx.err(f"08zzzb_barber: open {o.groups() if o else 'not logged'} (want Barber(n), at the seat, the view on its camera, no HUD)")
+    r = re.search(r"autoshot barber restyled heads (\d+) outgoing (\d+) built (\w+) sex (\w+)", ctx.log)
+    if not r or r.groups() != ("1", "0", "true", "Female"):
+        ctx.err(f"08zzzb_barber: restyle {r.groups() if r else 'not logged'} (want one head, nothing left going out, built from the new profile, Female)")
+    e = re.search(r"autoshot barber exit (\S+) camera ([\d.]+|NaN) view (\w+) hud (\w+)", ctx.log)
+    if not e or e[1] != "None" or e[2] == "NaN" or float(e[2]) < 0.5 or e[3] != "false" or e[4] != "true":
+        ctx.err(f"08zzzc_barber_exit: {e.groups() if e else 'not logged'} (want closed, the view back on the spring arm, the HUD back)")
+
+
+def stairwell_and_siren(ctx):
+    """08zzzd_stairwell: F on a BP_LaboratoryStairwellLightSwitch lights its stairwell one light
+    at a time (0.6-1.2 s apart: 3-6 of 6 lit 3.1 s after F, the walk still running), with the hum.
+    08zzze_siren: at 22:00 the flood (4) and pole (2) lights are on and the road lights (7)
+    always; F on a BP_Siren starts it (Siren_Cue fading in over 5 s), F again stops it (re-armed)."""
+    if "autoshot stairwell: none" in ctx.log:
+        ctx.err("08zzzd_stairwell: no stairwell switch in the level")
+    b = re.search(r"autoshot stairwell lit (\d+) hums (\d+)", ctx.log)
+    a = re.search(r"autoshot stairwell after lit (\d+) of (\d+) hums (\d+) busy (\w+)", ctx.log)
+    if not b or not a or b[1] != "0" or not 3 <= int(a[1]) <= 6 or a[4] != "true" or int(a[3]) <= int(b[2]):
+        ctx.err(f"08zzzd_stairwell: before {b.groups() if b else 'not logged'} after {a.groups() if a else 'not logged'} (want dark, then 3-6 lit one by one with their hum)")
+    if "autoshot siren: none" in ctx.log:
+        ctx.err("08zzze_siren: no siren in the level")
+    n = re.search(r"autoshot siren night lights flood (\d+) pole (\d+) road (\d+)", ctx.log)
+    if not n or n.groups() != ("4", "2", "7"):
+        ctx.err(f"08zzze_siren: night lights {n.groups() if n else 'not logged'} (want 4 floods, 2 poles, 7 road lights on)")
+    before = re.search(r"autoshot siren before playing (\w+) starts (\d+)", ctx.log)
+    on = re.search(r"autoshot siren on playing (\w+) gain ([\d.]+) starts (\d+)", ctx.log)
+    off = re.search(r"autoshot siren off playing (\w+) gain ([\d.]+) rearmed (\w+)", ctx.log)
+    if not before or not on or before[1] != "false" or on[1] != "true" or not 0.3 < float(on[2]) < 0.8 or int(on[3]) <= int(before[2]):
+        ctx.err(f"08zzze_siren: F {before.groups() if before else 'not logged'} -> {on.groups() if on else 'not logged'} (want playing, fading in, Siren_Cue started)")
+    if not off or off[1] != "false" or float(off[2]) <= 0.0 or off[3] != "true":
+        ctx.err(f"08zzze_siren: F again {off.groups() if off else 'not logged'} (want stopped, fading out, the random timer re-armed)")
+
+
+def easter_eggs_show_and_the_nuke_blows(ctx):
+    """08zzzf_eggs: hidden until UDS's midnight; then all 7 apparitions show (60 s), the campfire
+    hiding (flames out) with the survivor within 15 m and back from 18 m, the nearest ghost
+    turned to face the survivor (within 10 deg: the Blueprint turns it only on its 0.2 s timer, by
+    RInterpTo with the frame's delta, so at 60 fps a quarter of the gap a tick; 2.3 s after the
+    survivor's last move it was 5.0 deg off on 2026-10-30) and hovering. 08zzzg_nuke: a blast sets the nuke off once; the
+    roamer 20 m from it takes 250-500, the survivor 130 m off nothing."""
+    if "autoshot eggs: no campfire" in ctx.log:
+        ctx.err("08zzzf_eggs: no easter-egg campfire in the level")
+    b = re.search(r"autoshot eggs before shown (\d+) active (\d+) flames (\d+)", ctx.log)
+    if not b or b.groups() != ("0", "0", "0"):
+        ctx.err(f"08zzzf_eggs: before midnight {b.groups() if b else 'not logged'} (want nothing shown, no flames)")
+    n = re.search(r"autoshot eggs near campfire hidden (\w+) flames (\d+)", ctx.log)
+    if not n or n.groups() != ("true", "0"):
+        ctx.err(f"08zzzf_eggs: within 10 m {n.groups() if n else 'not logged'} (want the campfire hidden, its flames out)")
+    m = re.search(r"autoshot eggs midnight shown (\d+) of (\d+) active (\d+) campfire hidden (\w+) flames (\d+) ghost facing off ([\d.-]+) lift ([\d.-]+)", ctx.log)
+    if not m or m[1] != m[2] or m[2] != "7" or m[3] != "7" or m[4] != "false" or m[5] == "0" or not 0.0 <= float(m[6]) < 10.0 or not 0.0 < float(m[7]) <= 0.25:
+        ctx.err(f"08zzzf_eggs: after midnight {m.groups() if m else 'not logged'} (want all 7 shown, the campfire lit from 18 m, the ghost facing within 10 deg and lifted)")
+    if "autoshot nuke: none" in ctx.log:
+        ctx.err("08zzzg_nuke: no nuke in the level")
+    hp = re.search(r"autoshot nuke roamer hp ([\d.-]+)", ctx.log)
+    a = re.search(r"autoshot nuke after exploded (\w+) roamer hp ([\d.-]+) survivor ([\d.-]+) -> ([\d.-]+) away ([\d.]+)", ctx.log)
+    hits = ctx.log.count("nuke exploded at")
+    if not hp or not a or a[1] != "true" or hits != 1 or not 250.0 <= float(hp[1]) - float(a[2]) <= 500.0 or a[3] != a[4]:
+        ctx.err(f"08zzzg_nuke: roamer {hp.groups() if hp else 'not logged'} after {a.groups() if a else 'not logged'}, {hits} explosions (want one, 250-500 off the roamer, the survivor untouched)")
+
+
+def ai_health_bar_follows_the_shot_zombie(ctx):
+    """08g_armed: looking at the zombie brings up the AI health bar (its name, the health a trace
+    later, full), the shots take it down, and it goes when the zombie dies."""
+    seen = re.findall(r'autoshot ai bar (Some\(\("([^"]*)", (\w+)\)\)|None) text (?:Some\("([\d,]+) / ([\d,]+)"\)|None)', ctx.log)
+    texts = [(int(h.replace(",", "")), int(m.replace(",", ""))) for _, _, _, h, m in seen if h]
+    names = {n for _, n, _, _, _ in seen if n}
+    ok = names == {"Undead Shambler"} and texts and texts[0][0] == texts[0][1] and any(h < m for h, m in texts) and seen[-1][0] == "None"
+    if not ok:
+        ctx.err(f"08g_armed: AI health bar {seen[:6]} (want 'Undead Shambler', full, then lower, then hidden once dead)")
+
+
+def binoculars_zoom_and_tag(ctx):
+    """08zzzi_binoculars / 08zzzj_binoculars_down: B raises the military binoculars (12x: the
+    first-person field of view 90 / 12 = 7.5, the HUD and head hidden, the camera at the eyes,
+    the range shown); LMB tags the held roamer 25 m off (live, the skull, 1.3 m up) and the range
+    reads its distance; F lowers them (third person, 90, HUD and head back) and the tag stays."""
+    up = re.search(r"autoshot binoculars up (\w+) zoom ([\d.]+) distance shown (\w+) fov ([\d.-]+) hud hidden (\w+) head hidden (\w+) camera ([\d.-]+) m up", ctx.log)
+    if not up or up.group(1, 2, 3, 5, 6) != ("true", "12", "true", "true", "true") or abs(float(up[4]) - 7.5) > 0.05 or not 1.3 <= float(up[7]) <= 1.9:
+        ctx.err(f"08zzzi_binoculars: raised {up.groups() if up else 'not logged'} (want up, 12x, the range, FOV 7.5, HUD and head hidden, the camera at the eyes)")
+    tag = re.search(r'autoshot binoculars tag Some\(\(true, "T_HumanSkull_256x256", 1\.3\)\) distance (\d+) roamer ([\d.]+) m', ctx.log)
+    if not tag or not (float(tag[2]) - 1.5) * 100 <= int(tag[1]) <= float(tag[2]) * 100:
+        ctx.err(f"08zzzi_binoculars: tag {tag.groups() if tag else 'none'} (want the roamer's skull and the range to it)")
+    down = re.search(r"autoshot binoculars down active (\w+) fov ([\d.-]+) hud hidden (\w+) head hidden (\w+) tag live (\w+)", ctx.log)
+    if not down or down.group(1, 3, 4, 5) != ("false", "false", "false", "true") or abs(float(down[2]) - 90.0) > 0.05:
+        ctx.err(f"08zzzj_binoculars_down: {down.groups() if down else 'not logged'} (want them down, FOV 90, HUD and head back, the tag kept)")
+
+
+def interaction_montages_play(ctx):
+    """08c_loot / 08zzs_shower: opening a container plays Loot_MidShelf_GrabItem_Montage, a
+    buildable's Option1 (the shower's Interact) Loot_TableTop_LeftHand_Montage."""
+    for kind, step in (("Grab", "08c_loot"), ("TableTop", "08zzs_shower")):
+        if f"montage: {kind}" not in ctx.log:
+            ctx.err(f"{step}: no {kind} montage logged")
+
+
+def zombie_eyes_glow(ctx):
+    """08zzda_eyes / 08zzd_blood_moon: a roamer's two eye boxes (3 cm, about 8 cm apart, at head
+    height) in M_GlowingEyes_Roamer (orange x 10); the Blood Moon swaps M_GlowingEyes_BloodMoon
+    (red x 150) on, sunrise the Roamer's back."""
+    pat = r"parts (\d+) colour ([\d.,-]+) gap ([\d.]+) cm up ([\d.-]+) m shown (\w+) size ([\d.]+) cm"
+    e = re.search(r"autoshot eyes roamer " + pat, ctx.log)
+    if not e or e[1] != "2" or e[2] != "10.00,5.03,0.00" or not 6.0 <= float(e[3]) <= 11.0 or not 1.2 <= float(e[4]) <= 1.9 or e[5] != "true" or abs(float(e[6]) - 3.0) > 0.2:
+        ctx.err(f"08zzda_eyes: {e.groups() if e else 'not logged'} (want 2 orange 3 cm eyes ~8 cm apart at head height)")
+    want = {"before": "10.00,5.03,0.00", "moon": "150.00,1.43,0.00", "sunrise": "10.00,5.03,0.00"}
+    for when, colour in want.items():
+        m = re.search(rf"autoshot blood moon eyes {when} " + pat, ctx.log)
+        if not m or m[1] != "2" or m[2] != colour:
+            ctx.err(f"08zzd_blood_moon: eyes {when} {m.groups()[:2] if m else 'not logged'} (want 2 in {colour})")
+
+
+def more_interaction_montages(ctx):
+    """08q_door / 08qa_well / 08zq_drive / 08zzc_turret: the container, warehouse and lab doors
+    play Loot_MidShelf_GrabItem on F; a well's Drink Loot_TableTop_LeftHand (and quenches thirst);
+    the vehicle's storage the grab at 1.5x; the bandit turret's disabling hold the grab."""
+    log = ctx.log
+    d = re.search(r"autoshot door (BP_\w+) at", log)
+    if d and d[1] in ("BP_ContainerDoors_C", "BP_WarehouseDoors_C", "BP_LaboratoryEntranceDoors_C", "BP_LaboratorySecureDoors_C"):
+        span = log[d.end():log.find("autoshot door open", d.end())]
+        if "montage: Grab" not in span:
+            ctx.err(f"08q_door: no Grab montage working the {d[1]}")
+    w = re.search(r"autoshot well \d+ at .* water ([\d.]+)", log)
+    drank = re.search(r"autoshot well drank: thirst ([\d.-]+) water ([\d.]+)", log)
+    if not w or not drank:
+        ctx.err(f"08qa_well: well {'found' if w else 'not found'}, drink {'logged' if drank else 'not logged'}")
+    else:
+        if "montage: TableTop" not in log[w.end():drank.start()]:
+            ctx.err("08qa_well: no TableTop montage on Drink")
+        if float(drank[1]) <= 50 or float(drank[2]) >= float(w[1]):
+            ctx.err(f"08qa_well: thirst {drank[1]} (from 50), water {w[1]} -> {drank[2]} (want thirst up, water down)")
+    v = log.find("vehicles: opened the")
+    if v >= 0 and "montage: Grab at Some(1.5)" not in log[max(0, v - 2000):v + 2000]:
+        ctx.err("08zq_drive: the vehicle's storage played no Grab at 1.5x")
+    t = re.search(r"turret \d+: F \(behind true\)", log)
+    if t and "montage: Grab" not in log[t.end():t.end() + 2000]:
+        ctx.err("08zzc_turret: no Grab montage starting the disabling hold")
+
+
+def infestation_haze_comes_and_goes(ctx):
+    """08zzu_infestation: standing at the primary its PostProcess sphere (PostProcessRadius) is at
+    full weight, the secondary has none; once the primary is destroyed it's gone."""
+    b = re.search(r"autoshot infestation haze before primary ([\d.]+) radius Some\(([\d.]+)\) secondary ([\d.]+)", ctx.log)
+    a = re.search(r"autoshot infestation haze after primary ([\d.]+)", ctx.log)
+    if not b or float(b[1]) != 1.0 or float(b[2]) < 25.0 or float(b[3]) != 0.0 or not a or float(a[1]) != 0.0:
+        ctx.err(f"08zzu_infestation: haze {b.groups() if b else 'not logged'} after {a.groups() if a else 'not logged'} (want 1 at the primary, none for the secondary, none once destroyed)")
+
+
+def head_gear_is_worn(ctx):
+    """08zzzh_head_gear: a hat, mask, glasses and shemagh hang on their sockets and show; the
+    hair under the hat and the beard under the mask are hidden; HIDE PLAYER HEADWEAR? takes the
+    hat off and shows the hair."""
+    m = re.search(r"autoshot head gear worn (\d+) shown \[([\w,]*)\] hair hidden (\d+) of (\d+) beard hidden (\d+) of (\d+)", ctx.log)
+    if not m or m[1] != "4" or m[2] != "Headwear,Facewear,Eyewear,Accessory" or m[3] != m[4] or m[5] != m[6] or m[4] == "0" or m[6] == "0":
+        ctx.err(f"08zzzh_head_gear: {m.groups() if m else 'not logged'} (want 4 pieces shown, the hair and beard hidden)")
+    h = re.search(r"autoshot head gear hide setting hat shown (\w+) hair hidden (\d+) of", ctx.log)
+    if not h or h.groups() != ("false", "0"):
+        ctx.err(f"08zzzh_head_gear: HIDE PLAYER HEADWEAR? {h.groups() if h else 'not logged'} (want the hat hidden, the hair shown)")
+
+
+def hip_fire_raises_the_gun(ctx):
+    """08g_armed: a shot without aiming sets HipFire? (3 s), which Player_AnimBP ORs into its
+    IsADS: the Ironsights pose, facing where the camera looks (Set Aimed Focus)."""
+    m = re.search(r"autoshot hip fire aiming (\w+) hip ([\d.]+) loco Some\((\w+)\) facing off (\d+)", ctx.log)
+    if not m or m[1] != "false" or not 2.0 < float(m[2]) <= 3.0 or not m[3].startswith("Aim") or int(m[4]) > 20:
+        ctx.err(f"08g_armed: hip fire {m.groups() if m else 'not logged'} (want not aiming, HipFire? 2-3 s left, an Aim* pose, facing the camera within 20 deg)")
+
+
 def lockpick_opened(ctx):
     if "autoshot lockpick" not in ctx.log:
         ctx.err("08l_lockpick: no picklock container found")
@@ -83,6 +261,19 @@ def door_opens(ctx):
             ctx.err(f"08q_door: door only {m.group(1)} open after F")
         if int(m.group(2)) == 0:
             ctx.err("08q_door: the door has no collision")
+
+
+def notes_are_read(ctx):
+    if "autoshot letter: no notes" in ctx.log:
+        ctx.err("08sa_letter: the level has no BP_StandardNote")
+        return
+    m = re.search(r'autoshot letter overlay (\S+) shown (\w+) first "(.*)"', ctx.log)
+    if not m:
+        ctx.err("08sa_letter: the note was never checked")
+    elif not m.group(1).startswith("Letter(") or m.group(2) != "true":
+        ctx.err(f"08sa_letter: F didn't show the note (overlay {m.group(1)}, text shown {m.group(2)})")
+    elif not m.group(3).startswith("SUBJECT: KEYCARD CHANGE"):
+        ctx.err(f"08sa_letter: wrong note text: {m.group(3)!r}")
 
 
 def keypad_opens_the_door(ctx):
@@ -214,8 +405,15 @@ def molotov_sets_the_zombie_burning(ctx):
 
 
 def damage_numbers_float(ctx):
-    """FloatingDamageNumbersUI: shots, swings and blasts that hurt a zombie show their damage."""
+    """FloatingDamageNumbersUI: shots, swings and blasts that hurt a zombie show their damage,
+    placed on what was hit (ours, the user's request: the game puts them at the screen centre):
+    on screen, and not all at the centre (the frag's roamer, the swing's zombie are elsewhere)."""
     nums = re.findall(r"damage number (-?\d+)", ctx.log)
+    placed = [tuple(map(float, m)) for m in re.findall(r"damage number placed (-?\d+) (-?\d+) of (\d+) (\d+)", ctx.log)]
+    if not placed:
+        ctx.err("no damage number was placed on screen")
+    elif not any(abs(x - w / 2) > 40 or abs(y - h / 2) > 40 for x, y, w, h in placed):
+        ctx.err(f"every damage number sat at the screen centre ({placed[:5]}...), not on what was hit")
     if not nums:
         ctx.err("no floating damage numbers were shown")
     elif any(int(n) == 0 for n in nums):
@@ -225,7 +423,9 @@ def damage_numbers_float(ctx):
 def recoil_kicks(ctx):
     """StartRecoil: every shot rolls a kick (guns kick up: negative pitch input), and the
     sideways part turns the camera (the tour pins the pitch, so only the yaw shows)."""
-    kicks = [(float(p), float(y)) for p, y in re.findall(r"recoil kick (-?[\d.]+) (-?[\d.]+)", ctx.log)]
+    # Up to 08zzw_launchers: the Flare Gun's RecoilVertical is +0.5, so it kicks down in the game.
+    before = ctx.log.split("autoshot launchers armed at", 1)[0]
+    kicks = [(float(p), float(y)) for p, y in re.findall(r"recoil kick (-?[\d.]+) (-?[\d.]+)", before)]
     shots = len(re.findall(r"autoshot shot \d+:", ctx.log))
     if len(kicks) < shots or not kicks:
         ctx.err(f"08g_armed: {len(kicks)} recoil kicks for {shots} shots")
@@ -243,8 +443,8 @@ def passive_skills_gain_xp(ctx):
     lives through (Toughness 2-4, 08x_fall)."""
     xp = {}
     for step, rest in re.findall(r"autoshot passive (\S+) (.*)", ctx.log):
-        it = rest.split()
-        xp[step] = {it[k]: float(it[k + 1]) for k in range(0, len(it) - 1, 2)}
+        # Only whole "Skill 1.23" pairs: another thread's output can cut a line short.
+        xp[step] = {k: float(v) for k, v in re.findall(r"([A-Za-z]+) (\d+\.\d+)(?=\s|$)", rest)}
     steps = list(xp)
     if not xp:
         ctx.err("passive skill XP not logged")
@@ -315,8 +515,14 @@ def map_shows_discovered_poi(ctx):
         return
     if disc.group(1) != "true" or int(disc.group(3)) < 1:
         ctx.err(f"08zb_map: {poi.group(1)} wasn't discovered with its banner ({disc.group(0)})")
+    # POIDiscoveredUI's FadeStart slides ZoneArea in from -525 px (in by 1.51 s).
+    for age, left, want in re.findall(r"autoshot map banner age ([\d.]+) left (-?[\d.]+|NaN) want (-?[\d.]+)", ctx.log):
+        if left == "NaN" or abs(float(left) - float(want)) > 30.0:
+            ctx.err(f"08zb_map: the banner at {age} s sits at {left} px, FadeStart's slide wants {want}")
     level, xp = int(disc.group(4)), int(disc.group(2))
-    if xp not in (round(level * 50 * 1.05), round(level * 250 * 1.05)) and xp not in (round((level - 1) * 50 * 1.05), round((level - 1) * 250 * 1.05)):
+    # Either rounding of an exact half (level 5: 262.5 -> 263 in f32; Python's round gives 262).
+    want = {f(l * k * 1.05) for l in (level, level - 1) for k in (50, 250) for f in (math.floor, math.ceil)}
+    if xp not in want:
         ctx.err(f"08zb_map: discovery gave {xp} XP at level {level} (want level x 50/250 x 1.05)")
     if int(view.group(1)) != -1 or abs(float(view.group(2)) - 0.7975) > 1e-3:
         ctx.err(f"08zb_map: zoom step {view.group(1)} scale {view.group(2)} (want -1 at 0.7975)")
@@ -421,6 +627,9 @@ def animals_flee_bite_and_die(ctx):
         ctx.err("08zg_deer: not logged")
     elif m[4] != "true" or float(m[3]) < 3.0:
         ctx.err(f"08zg_deer: the deer is {m[1]} / {m[2]}, fled {m[4]}, moved {m[3]} m (want it to have run away)")
+    c = re.search(r"autoshot deer corpse players (\d+) moving clips (\d+)", ctx.log)
+    if not c or int(c[1]) == 0 or c[2] != "0":
+        ctx.err(f"08zg_deer: the corpse {c.groups() if c else 'not logged'} (want its animation held: no clip moving)")
     m = re.search(r"autoshot deer dead (\w+) loco (\w+) up_dot (-?[\d.]+) corpse (\w+) container (.+?) meat (\w+) toast \"(.*?)\"", ctx.log)
     if not m:
         ctx.err("08zg_deer: the kill wasn't logged")
@@ -436,9 +645,10 @@ def animals_flee_bite_and_die(ctx):
     m = re.search(r"autoshot wolf brain (\w+) loco (\w+) moved ([\d.]+) from_player ([\d.]+)", ctx.log)
     if not m or m[1] != "Chase" or m[2] != "Attack" or float(m[4]) > 3.0:
         ctx.err(f"08zh_wolf: wolf {m.groups() if m else 'not logged'} (want it at the survivor, attacking)")
-    # DamageToDo 20, less whatever armour the survivor wears.
-    bite = re.search(r"autoshot wolf bit for (\d+) at", ctx.log)
-    if not bite or not 5 <= int(bite[1]) <= 20:
+    # DamageToDo 20, less whatever armour the survivor wears. The wolf's own hit as zombie_hit
+    # logs it (the step's health drop can catch a hunger or bleed tick: 2 points, 2026-10-30).
+    bite = re.search(r"survivor hit by Wolf for ([\d.]+)", ctx.log)
+    if not bite or not 5.0 <= float(bite[1]) <= 20.0:
         ctx.err(f"08zh_wolf: bite {bite[1] if bite else 'none'} (want DamageToDo 20 less armour)")
     sounds = re.search(r"autoshot sounds 08zh_wolf (.*)", ctx.log)
     if not sounds or "WolfSnarl_Cue=" not in sounds[1]:
@@ -878,6 +1088,677 @@ def elimination_quest_completes(ctx):
         ctx.err(f"08zy_elimination: outcome {o.groups() if o else 'not logged'} (want Succeeded and XP)")
 
 
+def level_traps(ctx):
+    """08zzq_level_traps: an AI on a level landmine sets it off (the mine and its prop gone, the AI
+    hurt by 200-225 or dead); standing in a barbed wire: 8-12 on entry, then 10 every 0.5 s (two
+    in 1.2 s); out of it, its timer on the survivor stops and nothing more."""
+    m = re.search(r"autoshot level traps mine left (\w+) prop gone (\w+) ai (.*)", ctx.log)
+    if not m or m[1] != "false" or m[2] != "true":
+        ctx.err(f"08zzq_level_traps: mine {m.groups() if m else 'not logged'} (want it gone with its prop)")
+    else:
+        a = re.match(r"Some\(\(([\d.]+), (None|Some\(\(([-\d.]+), (\w+)\)\))\)\)", m[3])
+        if not a or (a[2] != "None" and a[4] != "true" and not 195.0 <= float(a[1]) - float(a[3]) <= 230.0):
+            ctx.err(f"08zzq_level_traps: the AI {m[3]} (want hurt by 200-225 or dead)")
+    w = re.search(r"autoshot level traps wire hits \[(.*?)\]", ctx.log)
+    hits = [float(x) for x in w[1].split(", ") if x] if w else []
+    if len(hits) != 3 or not 8.0 <= hits[0] <= 12.0 or hits[1:] != [10.0, 10.0]:
+        ctx.err(f"08zzq_level_traps: wire hits {hits} (want 8-12, 10, 10)")
+    o = re.search(r"autoshot level traps wire after leaving timer (\w+) hits \[(.*?)\]", ctx.log)
+    if not o or o[1] != "false" or o[2] != "":
+        ctx.err(f"08zzq_level_traps: after leaving {o.groups() if o else 'not logged'} (want no timer, no hits)")
+
+
+def presets_change_the_page(ctx):
+    """06a_preset: clicking Nightmare, then Easy, on the New Game page changes the values the
+    General page shows (Easy: XP MULTIPLIER 2.0)."""
+    rows = {k: re.search(rf"autoshot preset {k} (.*)", ctx.log) for k in ("before", "Nightmare", "Easy")}
+    if not all(rows.values()):
+        ctx.err(f"06a_preset: not logged ({[k for k, m in rows.items() if not m]})")
+        return
+    b, n, e = (rows[k][1].split("|") for k in ("before", "Nightmare", "Easy"))
+    if b == n or n == e or "2.0" not in e:
+        ctx.err(f"06a_preset: the shown values didn't follow the presets ({b} / {n} / {e})")
+
+
+def doors_open(ctx):
+    """08zzp_doors: F swings a placed Wooden Door open, 90° away from the survivor (its leaf turned
+    to UE yaw 90 = our +Z: atan2 90); the unpowered Garage Door says "Requires power" and stays
+    shut; powered, it starts moving and is open and still 1.83 s on."""
+    s = re.search(r"autoshot doors swing closed (\w+) moving (\w+) yaw ([-\d.]+) leaf (\S+)", ctx.log)
+    if not s or s.groups()[:3] != ("false", "false", "90.0") or s[4] not in ("Some(90.0)",):
+        ctx.err(f"08zzp_doors: swing {s.groups() if s else 'not logged'} (want open, still, yaw 90, the leaf at 90)")
+    u = re.search(r"autoshot doors garage unpowered toast (\w+) still (\w+)", ctx.log)
+    if not u or u.groups() != ("true", "true"):
+        ctx.err(f"08zzp_doors: unpowered {u.groups() if u else 'not logged'} (want 'Requires power', shut)")
+    m = re.search(r"autoshot doors garage powered moving (\w+)", ctx.log)
+    o = re.search(r"autoshot doors garage open (\w+) still (\w+) t ([\d.]+)", ctx.log)
+    if not m or m[1] != "true" or not o or o.groups() != ("true", "true", "1.83"):
+        ctx.err(f"08zzp_doors: powered {m.groups() if m else None} {o.groups() if o else None} (want moving, then open at 1.83)")
+
+
+def benches_craft(ctx):
+    """08zzo_benches: a placed construction workbench opens its crafting (Lvl1ConstructionWorkbench)
+    under CONSTRUCTION WORKBENCH with STANDARD / MODULAR; MODULAR switches the table (and the
+    bench keeps it); a Wooden Foundation is crafted from 4 logs, planks and nails; the placed
+    campfire has its flames and SC_CampFire."""
+    o = re.search(r"autoshot benches open (\w+) station (\S+) title (\w+) tabs (\w+) (\w+) craftable (\w+)", ctx.log)
+    if not o or o.groups() != ("true", 'Some("Lvl1ConstructionWorkbench")', "true", "true", "true", "true"):
+        ctx.err(f"08zzo_benches: open {o.groups() if o else 'not logged'} (want the bench's crafting with both tabs)")
+    m = re.search(r"autoshot benches modular station (\S+) kept (\S+)", ctx.log)
+    if not m or m.groups() != ('Some("Lvl1ConstructionModularWorkbench")', 'Some("Lvl1ConstructionModularWorkbench")'):
+        ctx.err(f"08zzo_benches: MODULAR {m.groups() if m else 'not logged'} (want the modular table, kept by the bench)")
+    c = re.search(r"autoshot craft table Lvl1ConstructionModularWorkbench DA_WoodenFoundation (\d+) -> (\d+)", ctx.log)
+    if not c or int(c[2]) != int(c[1]) + 1:
+        ctx.err(f"08zzo_benches: crafting {c.groups() if c else 'not logged'} (want one Wooden Foundation)")
+    f = re.search(r"autoshot benches campfire flames (\w+) crackle (\w+)", ctx.log)
+    if not f or f.groups() != ("true", "true"):
+        ctx.err(f"08zzo_benches: campfire {f.groups() if f else 'not logged'} (want flames and SC_CampFire)")
+
+
+def traps_catch_and_blow(ctx):
+    """08zzn_traps: three AIs put in a razor wire, a bear trap and a landmine: numbers of 25, 25
+    and 200-225; the wire's and the trap's AI held (the mine's dead or not, unheld), the jaws
+    shutting or shut, the mine gone; past the wire's 3 s its AI walks again (or died of it)."""
+    m = re.search(r"autoshot traps ais (\d+) numbers \[(.*?)\] held \[(.*?)\] jaws (.*?) mine left (\w+)", ctx.log)
+    if not m:
+        ctx.err("08zzn_traps: not logged")
+        return
+    nums = [float(x) for x in m[2].split(", ") if x]
+    held = m[3].split(", ")
+    if m[1] != "3" or nums.count(25.0) < 2 or not any(200.0 <= n <= 225.0 for n in nums) or held[:2] != ["true", "true"] or not ("Shut" in m[4] or "Closing" in m[4]) or m[5] != "false":
+        ctx.err(f"08zzn_traps: {m.groups()} (want 25, 25, 200-225; the first two held; the jaws shut; the mine gone)")
+    w = re.search(r"autoshot traps wire let go (.*)", ctx.log)
+    if not w or not (w[1] == "Some((false, false))" or w[1] == "None" or "true)" in w[1]):
+        ctx.err(f"08zzn_traps: the wire {w.groups() if w else 'not logged'} (want its AI walking again after 3 s)")
+
+
+def explosive_barrel_blows(ctx):
+    """08zzm_barrel: a round into an explosive barrel (25-50 health) blows it: its prop is
+    removed, the zombie beside it is killed or hurt by 75-125 (a dead one leaves the query: hp
+    None) and a white number in that range shows."""
+    a = re.search(r"autoshot barrel (\d+) at .* health ([\d.]+) key (\S+.*?) zombie hp (\S+)", ctx.log)
+    if not a or not 25.0 <= float(a[2]) <= 50.0 or a[3] == "None":
+        ctx.err(f"08zzm_barrel: before {a.groups() if a else 'not logged'} (want a barrel with 25-50 health and its prop)")
+    e = re.search(r"autoshot barrel exploded (\w+) prop removed (\w+) zombie hp (\S+) numbers \[(.*?)\]", ctx.log)
+    nums = [float(x) for x in e[4].split(", ") if x] if e else []
+    if not e or e[1] != "true" or e[2] != "true" or not any(75.0 <= n <= 125.0 for n in nums):
+        ctx.err(f"08zzm_barrel: after {e.groups() if e else 'not logged'} (want it exploded, gone, a 75-125 number)")
+
+
+def generators_power_lights(ctx):
+    """08zzl_power: a Small Generator and a Lamp placed green; Turn On empty says "Empty";
+    Refuel takes the Gas Can and fills it to 200; Turn On; the lamp switched on is powered by
+    the next scan and lit, the fuel going down, the hum playing; Turn Off unpowers it, dark."""
+    for what in ("generator", "lamp"):
+        if f"autoshot genpower {what} can build true" not in ctx.log:
+            ctx.err(f"08zzl_power: the {what}'s ghost wasn't green")
+    r = re.search(r"autoshot genpower refuelled (\S+) cans left (\d+) toasts (.*)", ctx.log)
+    if not r or r[1] != "Some(200.0)" or r[2] != "0" or '"Empty"' not in r[3]:
+        ctx.err(f"08zzl_power: refuelling {r.groups() if r else 'not logged'} (want Empty first, then 200 from the one Gas Can)")
+    m = re.search(r"autoshot genpower running (\w+) fuel ([\d.]+) hum (\w+) lamp powered (\w+) switch (\w+) intensity (\d+)", ctx.log)
+    if not m or m[1] != "true" or not 199.0 < float(m[2]) < 200.0 or m[3] != "true" or (m[4], m[5]) != ("true", "true") or int(m[6]) <= 0:
+        ctx.err(f"08zzl_power: running {m.groups() if m else 'not logged'} (want it burning fuel, humming, the lamp powered, on and lit)")
+    o = re.search(r"autoshot genpower off running (\w+) lamp powered (\w+) switch (\w+) intensity (\d+)", ctx.log)
+    if not o or o.groups() != ("false", "false", "true", "0"):
+        ctx.err(f"08zzl_power: off {o.groups() if o else 'not logged'} (want the lamp unpowered and dark, its switch still on)")
+
+
+def beds_sleep_and_respawn(ctx):
+    """08zzj_sleep / 08zzk_respawn: a Double Bed placed green; Sleep at noon is refused ("It's
+    too early to sleep yet, wait until 19:30"); at 22:00 SleepingUI opens (2 buttons) and Sleep
+    eases the clock to 06:30 the next day, the widget gone; Set Spawn Point stores the bed's
+    RespawnLocation (1.5, 0.85, 0 off the bed) with "Spawn point set". Killed: the respawn screen
+    (5 buttons) at 0.1x time and a level lost; Respawn - Spawn Point: back at the bed, full
+    health, time at 1x."""
+    if "autoshot sleep bed can build true" not in ctx.log:
+        ctx.err("08zzj_sleep: the bed's ghost wasn't green")
+    n = re.search(r"autoshot sleep at noon overlay (\w+) toasts (.*)", ctx.log)
+    if not n or n[1] != "None" or "It's too early to sleep yet, wait until 19:30" not in n[2]:
+        ctx.err(f"08zzj_sleep: at noon {n.groups() if n else 'not logged'} (want refused with the toast)")
+    o = re.search(r"autoshot sleep at night overlay (\w+) buttons (\d+)", ctx.log)
+    if not o or o.groups() != ("Sleep", "2"):
+        ctx.err(f"08zzj_sleep: at 22:00 {o.groups() if o else 'not logged'} (want SleepingUI with 2 buttons)")
+    w = re.search(r"autoshot sleep woke hour ([\d.]+) days (\d+) -> (\d+) overlay (\w+)", ctx.log)
+    if not w or abs(float(w[1]) - 6.5) > 0.05 or int(w[3]) != int(w[2]) + 1 or w[4] != "None":
+        ctx.err(f"08zzj_sleep: woke {w.groups() if w else 'not logged'} (want 06:30 the next day, the widget gone)")
+    p = re.search(r"autoshot sleep spawn point \[([-\d., ]+)\] toasts (.*)", ctx.log)
+    off = [float(x) for x in p[1].split(",")] if p else []
+    if not p or len(off) != 3 or abs(off[0] - 1.5) > 0.02 or abs(off[1] - 0.85) > 0.02 or abs(off[2]) > 0.02 or "Spawn point set" not in p[2]:
+        ctx.err(f"08zzj_sleep: spawn point {p.groups() if p else 'not logged'} (want (1.5, 0.85, 0) off the bed and the toast)")
+    r = re.search(r"autoshot respawn screen (\w+) speed ([\d.]+) buttons (\d+) level (\d+) -> (\d+)", ctx.log)
+    if not r or r[1] != "true" or abs(float(r[2]) - 0.1) > 1e-3 or r[3] != "5" or (int(r[4]) > 1 and int(r[5]) != int(r[4]) - 1):
+        ctx.err(f"08zzk_respawn: {r.groups() if r else 'not logged'} (want the screen, 0.1x, 5 buttons, a level lost)")
+    b = re.search(r"autoshot respawn back (\w+) speed ([\d.]+) health (\d+) from spawn point ([\d.NaN]+)", ctx.log)
+    if not b or b[1] != "true" or float(b[2]) != 1.0 or int(b[3]) < 99 or not float(b[4]) < 0.5:
+        ctx.err(f"08zzk_respawn: {b.groups() if b else 'not logged'} (want back at the spawn point, full health, 1x)")
+
+
+def attachments_work(ctx):
+    """08zzt_attachments: three attachments on the M4CQB; middle mouse while aiming zooms to the
+    ACOG's 25 degrees (about 14.2 vertical at 16:9); the shot is suppressed and heard 10.5 m away
+    (70 x 0.15); letting go of the aim drops the zoom (back to 90 across); the rifle's model
+    carries all four attachments' meshes."""
+    n = re.search(r"autoshot attachments on the rifle (\d+)", ctx.log)
+    if not n or n[1] != "4":
+        ctx.err(f"08zzt_attachments: {n[1] if n else 'no'} attachments (want the mag and 3)")
+    z = re.search(r"autoshot attachments zoom Some\(\(([\d.]+), (Some\(\w+\)|None)\)\) fov ([\d.]+) aiming (\w+) aspect ([\d.]+)", ctx.log)
+    # 25 degrees across is ~14.2 tall at 16:9; Hyprland sometimes tiles the window to another
+    # shape (945x1025 on 2026-10-29: 27 tall), so the window's own aspect sets the height.
+    want = math.degrees(2 * math.atan(math.tan(math.radians(12.5)) / float(z[5]))) if z else 0.0
+    if not z or float(z[1]) != 25.0 or z[2] != "Some(Acog)" or abs(float(z[3]) - want) > 1.5 or z[4] != "true":
+        ctx.err(f"08zzt_attachments: zoom {z.groups() if z else 'not logged'} (want the ACOG's 25 across, {want:.1} tall at that aspect, aiming)")
+    after = ctx.log[n.end():] if n else ""
+    s = re.search(r"attachments: shot suppressed (\w+) noise ([\d.]+) m", after)
+    if not s or s[1] != "true" or abs(float(s[2]) - 10.5) > 0.05:
+        ctx.err(f"08zzt_attachments: shot {s.groups() if s else 'not fired'} (want suppressed, 10.5 m)")
+    a = re.search(r"autoshot attachments after the aim zoom (\S+) fov ([\d.]+)", ctx.log)
+    if not a or a[1] != "None" or float(a[2]) < 40.0:
+        ctx.err(f"08zzt_attachments: after the aim {a.groups() if a else 'not logged'} (want no zoom, the normal view)")
+    m = re.search(r"autoshot attachments on the model (.*)", ctx.log)
+    want = ["DA_556Mag", "DA_MilitarySuppressor", "DA_VerticalForegrip", "DA_Acog4x32Scope"]
+    if not m or not all(w in m[1] for w in want):
+        ctx.err(f"08zzt_attachments: the rifle's model shows {m[1] if m else 'nothing logged'} (want the mag, suppressor, grip and ACOG on their sockets)")
+
+
+def scope_overlay_and_breath(ctx):
+    """08zztb_scope: the ACOG scoped shows the Acog overlay and hides the survivor, the crosshair
+    and the action bar, with a SniperScopeSway playing; holding Left Shift drains 0.3 /
+    Marksmanship stamina every 0.01 s (30 a second; the recovery may add up to 4 a second) and
+    blends the sway out; letting go plays SniperScopeSway_1 and AimingSway_1."""
+    o = re.search(r"autoshot scope overlay (\S+) survivor (\S+) hud (\S+) shakes \[([^\]]*)\] aiming (\w+)", ctx.log)
+    if not o or o[1] != "Some(Acog)" or "Hidden" not in o[2] or o[3] != "Hidden/Hidden" or "SniperScopeSway" not in o[4] or o[5] != "true":
+        ctx.err(f"08zztb_scope: {o.groups() if o else 'not logged'} (want the Acog overlay, survivor and HUD hidden, a scope sway)")
+    b = re.search(r"autoshot scope breath stamina ([\d.]+) -> ([\d.]+) rate (-?[\d.]+) want ([\d.]+) shakes \[([^\]]*)\]", ctx.log)
+    if not b or not 0.75 * float(b[4]) <= float(b[3]) <= 1.1 * float(b[4]):
+        ctx.err(f"08zztb_scope: holding breath {b.groups() if b else 'not logged'} (want stamina falling at about 30 / Marksmanship a second)")
+    elif b[5]:
+        ctx.err(f"08zztb_scope: the sway still plays after 0.5 s of held breath: {b[5]}")
+    g = re.search(r"autoshot scope breath let go shakes \[([^\]]*)\]", ctx.log)
+    if not g or set(g[1].split(",")) != {"CameraShake_SniperScopeSway_1", "CameraShake_AimingSway_1"}:
+        ctx.err(f"08zztb_scope: after letting go {g[1] if g else 'not logged'} (want SniperScopeSway_1 and AimingSway_1)")
+
+
+def placed_turrets_fight(ctx):
+    """08zzv_turrets: a placed small turret shoots roamer A in front of it (white damage numbers);
+    roamer Z behind it goes for the turret, not the survivor, and its swings take the turret's 75
+    health (saved, the bar shows "N/75"); the unpowered big turret's prompt says "Power: Off" and
+    it isn't a zombie target; powered, it hits roamer C; 100 damage destroys the small one (gone
+    from the world and the save) and F picks the big one up."""
+    placed = re.search(r"autoshot turrets placed small Some\((\d+)\) at .* big Some\((\d+)\)", ctx.log)
+    if not placed:
+        ctx.err("08zzv_turrets: the turrets weren't placed")
+        return
+    a = re.search(r'autoshot turrets small Some\("(\d+) health ([\d.]+) ammo \d+"\) roamer A (?:hp (-?[\d.]+)/([\d.]+) dead (\w+)|gone)', ctx.log)
+    if not a or a[2] != "75" or (a[3] is not None and a[5] != "true" and float(a[3]) >= float(a[4])):
+        ctx.err(f"08zzv_turrets: roamer A {a.groups() if a else 'not logged'} (want the small turret at 75 to have shot it)")
+    first = ctx.log.find("autoshot turrets placed")
+    between = ctx.log[first:ctx.log.find("autoshot turrets survivor before", first)]
+    if not re.search(r"damage number \d+", between):
+        ctx.err("08zzv_turrets: no damage number while the small turret fired")
+    z = re.search(r'autoshot turrets small (\d+) after the roamer health ([\d.]+) saved Some\((Some\(([\d.]+)\)|None)\) bar (Some\("([^"]*)"\)|None) roamer Z (?:hp -?[\d.]+/[\d.]+ dead \w+ target (Some\(\d+\)|None)|gone)', ctx.log)
+    if not z:
+        ctx.err("08zzv_turrets: the roamer behind the turret not logged")
+    else:
+        health = float(z[2])
+        if health >= 75:
+            ctx.err(f"08zzv_turrets: the small turret still has {z[2]} after roamer Z's swings")
+        # The save follows the health in placed_sync, which runs before the frame's hits land,
+        # so it can be one zombie hit (up to ~30) behind when the tour reads both.
+        if z[4] is None or not (health <= float(z[4]) <= health + 30.0) or float(z[4]) >= 75:
+            ctx.err(f"08zzv_turrets: saved health {z[3]} (want {z[2]}, or one hit behind it)")
+        if z[6] != f"{int(health)}/75":
+            ctx.err(f"08zzv_turrets: the bar shows {z[5]} (want {int(health)}/75)")
+        if z[7] != f"Some({z[1]})":
+            ctx.err(f"08zzv_turrets: roamer Z's target {z[7]} (want the turret, Some({z[1]}))")
+    u = re.search(r'autoshot turrets big unpowered Some\("\d+ powered (\w+) attackable (\w+) target None"\) prompt (Some\("[^"]*"\)|None)', ctx.log)
+    if not u or (u[1], u[2]) != ("false", "false") or "Power: Off" not in u[3]:
+        ctx.err(f"08zzv_turrets: unpowered big turret {u.groups() if u else 'not logged'} (want unpowered, not a target, the prompt's Power: Off)")
+    c = re.search(r'autoshot turrets big powered Some\("\d+ powered (\w+) attackable (\w+) ammo \d+"\) roamer C (?:hp (-?[\d.]+)/([\d.]+) dead (\w+)|gone)', ctx.log)
+    if not c or (c[1], c[2]) != ("true", "true") or (c[3] is not None and c[5] != "true" and float(c[3]) >= float(c[4])):
+        ctx.err(f"08zzv_turrets: powered big turret {c.groups() if c else 'not logged'} (want powered, a target, roamer C hit)")
+    if "autoshot turrets small destroyed: placed false saved false" not in ctx.log or "buildables: DA_SmallTurret destroyed" not in ctx.log:
+        ctx.err("08zzv_turrets: 100 damage didn't destroy the small turret (want it gone from the world and the save)")
+    if "autoshot turrets big picked up: placed false held or at the feet 1" not in ctx.log:
+        ctx.err("08zzv_turrets: F didn't pick the big turret up")
+
+
+def inspector_frames_the_item(ctx):
+    """08fc_inspect: the context menu's Inspect on the first pocket stack opens the inspector at
+    the item's FOV x 1.5 and frames the model once it's loaded."""
+    m = re.search(r"inspect: (DA_\w+) \(fov ([\d.]+), zoom", ctx.log)
+    if not m or float(m[2]) <= 0:
+        ctx.err("08fc_inspect: the inspector didn't open")
+    if not re.search(r"inspect: window \d+ framed, radius [\d.]+ m at [\d.]+ m", ctx.log):
+        ctx.err("08fc_inspect: the inspected model never framed (its mesh didn't load?)")
+
+
+def bag_windows_open(ctx):
+    """08fcc_bag_window: a double click on a Lunch Box in the inventory opens its window, one on
+    the Wallet inside that window opens a second; the Wallet's beans dropped from its window into
+    the Lunch Box's are in the Lunch Box's contents; both windows were placed inside the screen. 08fd_repair takes
+    the Lunch Box back out."""
+    if "08fcc_bag_window" not in ctx.steps:
+        return
+    opened = re.findall(r"inventory: opened (DA_\w+)'s (SC_\w+) in window (\d+)", ctx.log)
+    if [o[:2] for o in opened[-2:]] != [("DA_LunchBox", "SC_LunchBox"), ("DA_Wallet", "SC_Wallet")]:
+        ctx.err(f"08fcc_bag_window: opened {opened} (want the Lunch Box's, then the Wallet's)")
+    m = re.search(r"autoshot bag window: windows \[([^\]]*)\], the lunch box holds \[([^\]]*)\] \(moved (?:Some\(\"(\w+)\"\)|None)\)", ctx.log)
+    if not m:
+        ctx.err("08fcc_bag_window: no bag window log")
+        return
+    wins = re.findall(r'"(\w+)"', m[1])
+    holds = re.findall(r'"(\w+)"', m[2])
+    if wins != ["DA_LunchBox", "DA_Wallet"]:
+        ctx.err(f"08fcc_bag_window: windows {wins}")
+    if not holds or holds[0] != "DA_Wallet" or m[3] != "DA_CannedBakedBeans" or m[3] not in holds[1:]:
+        ctx.err(f"08fcc_bag_window: the lunch box holds {holds} (want the Wallet, then {m[3]})")
+    placed = re.findall(r"inventory: (DA_LunchBox|DA_Wallet) window \d+ at \[\s*(-?[\d.]+),\s*(-?[\d.]+)\] \(\[\s*([\d.]+),\s*([\d.]+)\]\)", ctx.log)
+    if sorted({p[0] for p in placed}) != ["DA_LunchBox", "DA_Wallet"]:
+        ctx.err(f"08fcc_bag_window: windows placed {placed} (want both laid out)")
+    elif any(float(p[1]) < 0 or float(p[2]) < 0 or float(p[3]) < 100 or float(p[4]) < 100 for p in placed):
+        ctx.err(f"08fcc_bag_window: placed {placed} (want inside the screen and at least 100 px)")
+    if "autoshot bag window: the lunch box taken back out" not in ctx.log:
+        ctx.err("08fd_repair: the Lunch Box wasn't taken back out (later steps need the pocket room)")
+
+
+def inspector_opens_more_windows(ctx):
+    """08fcb_inspect_more: a double click on a pocket item opens a second inspector window (on
+    the one already open: nothing new); on the M4 it's its SC_ window (not ported), and its
+    Inspect opens a third with its 4 attachments on. The windows sit within 50 px of the middle
+    each way, the last opened in front."""
+    clicks = re.findall(r"autoshot double click (DA_\w+): (\w+)(?:\(\"(\w+)\"\))?", ctx.log)
+    if len(clicks) != 3 or [c[1] for c in clicks] != ["Inspect", "Inspect", "Window"] or clicks[2][0] != "DA_M4CQB" or not clicks[2][2].startswith("SC_"):
+        ctx.err(f"08fcb_inspect_more: double clicks {clicks}")
+        return
+    if f"inspect: {clicks[1][0]} already has a window" not in ctx.log:
+        ctx.err("08fcb_inspect_more: the second double click on the inspected item opened another window")
+    wins = re.findall(r"autoshot inspect window (\d+) (DA_\w+) offset \[\s*(-?[\d.]+),\s*(-?[\d.]+)\] active (\w+) attached (\S+)", ctx.log)
+    n = re.search(r"autoshot inspect windows (\d+)", ctx.log)
+    if not n or n[1] != "3" or len(wins) != 3:
+        ctx.err(f"08fcb_inspect_more: {n[1] if n else 'no'} windows ({wins})")
+        return
+    if [w[1] for w in wins] != [clicks[1][0], clicks[0][0], "DA_M4CQB"]:
+        ctx.err(f"08fcb_inspect_more: windows on {[w[1] for w in wins]}")
+    if any(abs(float(w[2])) > 50 or abs(float(w[3])) > 50 for w in wins) or [w[4] for w in wins] != ["false", "false", "true"]:
+        ctx.err(f"08fcb_inspect_more: offsets / front {wins}")
+    if wins[2][5] != "Some(4)":
+        ctx.err(f"08fcb_inspect_more: the M4 has {wins[2][5]} attachments on (want Some(4))")
+
+
+def security_camera_sweeps_and_breaks(ctx):
+    """08zzcb_camera: the 5 security cameras found their heads; one sweeps (its yaw moves over
+    3 s, tipped 20 degrees down) and two 15-point rounds destroy it (25 health), base and all."""
+    if "security cameras: 5" not in ctx.log:
+        ctx.err("08zzcb_camera: not 5 security cameras with their heads")
+    m = re.search(r"autoshot camera yaw from (-?[\d.]+) to (-?[\d.]+) pitch (-?[\d.]+)", ctx.log)
+    if not m or float(m[2]) - float(m[1]) < 10 or abs(float(m[3]) + 20) > 5:
+        ctx.err(f"08zzcb_camera: no sweep ({m.groups() if m else None})")
+    if "autoshot camera dead true health 0" not in ctx.log or not re.search(r"security camera \d+ destroyed \(2 props gone\)", ctx.log):
+        ctx.err("08zzcb_camera: two 15s didn't destroy it with its base and light")
+
+
+def lab_corpses_lie_posed(ctx):
+    """The lab's 28 BP_LaboratoryCorpse (9 guards) are placed, and the ones the tour passes in
+    the lab (08v_lab_power) take their pose: the clip's 70 bones sampled at their AnimFloat."""
+    if "lab corpses: 28 (9 guards)" not in ctx.log:
+        ctx.err("lab corpses: not 28 placed (9 guards)")
+    bones = [int(b) for b in re.findall(r"lab corpse posed at .*?: (\d+) bones", ctx.log)]
+    if not bones or max(bones) < 60:
+        ctx.err(f"lab corpses: none posed in the lab ({bones[:3]})")
+
+
+def gun_locker_needs_cutters(ctx):
+    """08vd_locker: F on a gun locker without Bolt Cutters says "Bolt Cutters not found"; with
+    them a held search opens it ("Locker"), the cutters lose 10 durability and the first loot
+    gives "Container Looted, XP Given"."""
+    if "autoshot locker: none" in ctx.log or "autoshot locker at" not in ctx.log:
+        ctx.err("08vd_locker: no gun locker")
+        return
+    if "Bolt Cutters not found" not in ctx.log:
+        ctx.err("08vd_locker: no \"Bolt Cutters not found\" without them")
+    m = re.search(r'autoshot locker "([^"]*)" opened, (\d+) items, cutters (\S+)', ctx.log)
+    if not m or m[1] != "Locker" or m[3] != "Some(90.0)":
+        ctx.err(f"08vd_locker: {m.groups() if m else 'never opened'} (want Locker, the cutters at 90)")
+    if not re.search(r"Container Looted, XP Given: \d+", ctx.log):
+        ctx.err("08vd_locker: no XP toast")
+    # BP_LootContainerWidget during the Quick Search hold: the name, its loot type, the
+    # "[LShift] Quick Search" line, the square filling, the crosshair hidden.
+    w = re.search(r'autoshot locker widget shown (\w+) name "([^"]*)" type "([^"]*)" looted (\w+) quick (\w+) progress ([\d.]+) crosshair (-?[\d.]+)', ctx.log)
+    if not w or w[1] != "true" or w[2] != "Locker" or not w[3] or w[4] != "false" or w[5] != "true" or not 0.0 < float(w[6]) < 1.0 or float(w[7]) != 0.0:
+        ctx.err(f"08vd_locker: search widget {w.groups() if w else 'not logged'} (want shown, Locker, a loot type, not looted, Quick Search shown, part filled, crosshair hidden)")
+
+
+def hidden_cache_opens(ctx):
+    """08vc_cache: a Hidden Cache spawned at one of its spawner's points, at the ground (its
+    points sit the barrel's foot within ~1 m of the landscape), and F held opens it."""
+    m = re.search(r"autoshot cache at \[([-\d.]+), ([-\d.]+), ([-\d.]+)\] ground ([-\d.]+|NaN) tilt", ctx.log)
+    if not m:
+        ctx.err("08vc_cache: " + ("no cache spawned" if "autoshot cache: none" in ctx.log else "not logged"))
+        return
+    if m[4] == "NaN" or abs(float(m[2]) - float(m[4])) > 1.5:
+        ctx.err(f"08vc_cache: the barrel at y {m[2]} vs the ground at {m[4]}")
+    o = re.search(r'autoshot cache "([^"]*)" opened, (\d+) items', ctx.log)
+    if not o or o[1] != "Hidden Cache":
+        ctx.err(f"08vc_cache: {o.groups() if o else 'never opened'}")
+
+
+def loot_refills(ctx):
+    """08vc_cache / 08vca_refill: the unsearched cache shows its search icon and, with its prompt
+    up, the outline; with LOOT REGENERATION on (DISABLED ON LOAD? ticked) its search arms the
+    refill timer (30 min); the timer
+    brought forward with its loot screen up keeps the items but unsearches it, then with it shut
+    empties it, and the icon is back."""
+    m = re.search(r"autoshot cache icon (\w+) outline (\S+) key (\d+)", ctx.log)
+    if not m or m[1] != "true" or m[2] != f"Some({m[3]})":
+        ctx.err(f"08vc_cache: icon / outline {m.groups() if m else 'not logged'}")
+    elif f"loot refill: {m[3]} armed for 1800 s" not in ctx.log:
+        ctx.err("08vc_cache: the search didn't arm the refill timer")
+    want = ["autoshot refill armed true looted true",
+            "loot refill: {} Kept".format(m[3] if m else "?"),
+            "autoshot refill open: looted false items ",
+            "loot refill: {} Cleared".format(m[3] if m else "?"),
+            "autoshot refill closed: looted false grid false icon true"]
+    for w in want:
+        if w not in ctx.log:
+            got = re.findall(r"autoshot refill .*", ctx.log)
+            ctx.err(f"08vca_refill: missing '{w}' ({got})")
+            break
+    o = re.search(r"autoshot refill open: looted false items (\d+) rearmed (\w+)", ctx.log)
+    if o and (int(o[1]) == 0 or o[2] != "true"):
+        ctx.err(f"08vca_refill: kept {o[1]} items, rearmed {o[2]}")
+
+
+def containers_mark_as_storage(ctx):
+    """08vcb_storage: the cache's prompt offers Search Container and Mark As Storage Container;
+    the wheel selects the second, and F on the unsearched cache says "Container Not Searched".
+    Searched, then marked: "[Storage]" and "Mark As Loot Container"; its refill timer fires to
+    no effect (still looted, items kept) and the save holds it as marked and searched. Unmarked,
+    it reads "[Looted]" and "Mark As Storage Container" again."""
+    opts = '["Search Container", "Mark As Storage Container"]'
+    o = re.search(r'autoshot storage option2 shown (\w+) key Some\((\d+)\) options (\[.*?\]) selected (\d+) additional "([^"]*)"', ctx.log)
+    if not o or o[1] != "true" or o[3] != opts or o[4] != "1" or o[5] != "":
+        ctx.err(f"08vcb_storage: option 2 {o.groups() if o else 'not logged'} (want shown, {opts}, selected 1, no tag)")
+        return
+    key = o[2]
+    after = ctx.log[o.end():]
+    if "toast: Container Not Searched" not in after.split("autoshot storage searched")[0]:
+        ctx.err("08vcb_storage: no \"Container Not Searched\" on the unsearched cache")
+    s = re.search(r"autoshot storage searched: (\d+) items", after)
+    if not s:
+        ctx.err("08vcb_storage: the Quick Search didn't open the cache")
+        return
+    if f"loot: {key} marked as storage container" not in after:
+        ctx.err("08vcb_storage: F on Option2 didn't mark the cache")
+    m = re.search(r'autoshot storage marked (\w+) shown \w+ key \S+ options (\[.*?\]) selected (\d+) additional "([^"]*)"', after)
+    if not m or m[1] != "true" or m[2] != '["Search Container", "Mark As Loot Container"]' or m[4] != "[Storage]":
+        ctx.err(f"08vcb_storage: marked {m.groups() if m else 'not logged'} (want true, Mark As Loot Container, [Storage])")
+    if f"loot refill: {key} marked, no refill" not in after:
+        ctx.err("08vcb_storage: the marked cache's refill timer didn't end without a refill")
+    r = re.search(r"autoshot storage after refill: looted (\w+) items (\d+) saved (.*)", after)
+    if not r or r[1] != "true" or r[2] != s[1] or r[3] != "Some((true, true))":
+        ctx.err(f"08vcb_storage: after the refill {r.groups() if r else 'not logged'} (want looted, {s[1]} items, saved marked + searched)")
+    u = re.search(r'autoshot storage unmarked: marked (\w+) shown \w+ key \S+ options (\[.*?\]) selected \d+ additional "([^"]*)"', after)
+    if not u or u[1] != "false" or u[2] != opts or u[3] != "[Looted]":
+        ctx.err(f"08vcb_storage: unmarked {u.groups() if u else 'not logged'} (want false, {opts}, [Looted])")
+
+
+def repairs_fix_the_rifle(ctx):
+    """08fd_repair: the M4 at 40 repaired from its context menu with a Weapon Cleaning Kit
+    (60 fixed for 30 of the kit: ReduceDurabilityAmount 2), at 50 by dropping the kit onto it
+    (50 for 25), then with no kit: unchanged and the game's notice."""
+    want = ('autoshot repair context rifle 40 -> 100 kit Some(100.0) -> Some(70.0); '
+            'drop rifle 50 -> 100 kit Some(70.0) -> Some(45.0); '
+            'none rifle 40 notice Some("No Weapon Cleaning Kits found in this inventory")')
+    if want not in ctx.log:
+        m = re.search(r"autoshot repair .*", ctx.log)
+        ctx.err(f"08fd_repair: {m[0] if m else 'not logged'}")
+
+
+def drop_selector_shows(ctx):
+    """08fb_drop: DropItemAmountSelector over the first pocket stack ("Drop {name}", the whole
+    stack picked)."""
+    if not re.search(r"autoshot drop selector over .+ x\d+", ctx.log):
+        ctx.err("08fb_drop: the drop amount selector wasn't shown")
+
+
+def permadeath_ends_the_game(ctx):
+    """08zzkb_permadeath: with PERMADEATH a death shows ScreenPermadeath (no respawn buttons, time
+    at 0.1x) and deletes the save ("TourPermadeath Deleted"); turned off again, the survivor
+    respawns for the steps after."""
+    if "autoshot permadeath save written true exists true" not in ctx.log:
+        ctx.err("08zzkb_permadeath: the save wasn't written first")
+        return
+    m = re.search(r"autoshot permadeath screen (\w+) widget (\w+) respawn offered (\w+) speed ([\d.]+) save exists (\w+) toast (\w+) slot (\S+)", ctx.log)
+    if not m or m.groups() != ("true", "true", "false", "0.10", "false", "true", "None"):
+        ctx.err(f"08zzkb_permadeath: {m.groups() if m else 'not logged'} (want the screen, its widget, no respawn, 0.1x, the save gone with its toast)")
+    a = re.search(r"autoshot permadeath after: overlay (\w+) health ([\d.]+) speed ([\d.]+)", ctx.log)
+    if not a or a[1] != "None" or float(a[2]) <= 0 or a[3] != "1.00":
+        ctx.err(f"08zzkb_permadeath: after {a.groups() if a else 'not logged'} (want respawned, the screen gone, time back to 1x)")
+
+
+def power_attack_hits(ctx):
+    """08zzz_power: LMB held past 0.5 s turns the crosshair (PowerAttackAnim); released after
+    0.9 s it's a power swing (a PowerMeleeAttackMontages pick at 0.75) that hits the roamer and
+    costs StaminaDrain x 6-8; a quick click is a normal swing (the Crowbar's Longs_Attack)."""
+    if "autoshot power held from" not in ctx.log:
+        ctx.err("08zzz_power: the step didn't run")
+        return
+    c = re.search(r"autoshot power cue Some\(\((-?[\d.]+), ([\d.]+)\)\) hold Some", ctx.log)
+    if not c or (abs(float(c[1])) < 1.0 and abs(float(c[2]) - 1.0) < 0.01):
+        ctx.err(f"08zzz_power: crosshair {c.groups() if c else 'not logged'} (want PowerAttackAnim turning / growing it mid-hold)")
+    p = re.search(r'autoshot power swing Some\(\(true, "(Attack_0\d_Seq_Montage_RM)", 0\.75\)\) roamer Some\(\(([-\d.]+), ([\d.]+)\)\) stamina used ([\d.]+)', ctx.log)
+    if not p or float(p[2]) >= float(p[3]) or float(p[4]) < 15.0:
+        ctx.err(f"08zzz_power: power swing {p.groups() if p else 'not logged'} (want a power montage at 0.75 that hurt the roamer and cost 6-8x the drain)")
+    if not re.search(r"melee: power hit for [\d.]+", ctx.log):
+        ctx.err("08zzz_power: the power swing hit nothing")
+    n = re.search(r'autoshot power normal swing Some\(\(false, "(Longs_Attack_\w+_Montage)", 1\.0\)\)', ctx.log)
+    if not n:
+        ctx.err("08zzz_power: the click wasn't a normal Longs_Attack swing")
+
+
+def utility_benches_work(ctx):
+    """08zzy_utility: the trash bin opens with its "Destroy Items" and empties; the charger
+    refuses shells, says "Generator needed to charge battery" for a battery put in without power
+    ("[No Power]" in its stat), then charges it 50 -> 52 in its first 5 s; the disassembly
+    workbench turns 5 shells into 5 casings and 5 gunpowder and the M4CQB into parts, its
+    "Disassemble Items" and "DISASSEMBLED" grid on screen."""
+    if "autoshot utility placed" not in ctx.log:
+        ctx.err("08zzy_utility: the step didn't run")
+        return
+    if 'button: Some("Destroy Items"), second: None }) holds Some(3)' not in ctx.log or "autoshot utility bin after destroy Some(0)" not in ctx.log:
+        ctx.err("08zzy_utility: the trash bin didn't open with Destroy Items and empty")
+    if "shells refused Some(true)" not in ctx.log:
+        ctx.err("08zzy_utility: the battery charger took shells (OnlySupportTheseItems is DA_Battery)")
+    if 'charger unpowered toast true stat Some(Some("Battery: 1 Charging [No Power]"))' not in ctx.log:
+        ctx.err("08zzy_utility: no \"Generator needed to charge battery\" / [No Power] stat without power")
+    u = re.search(r'autoshot utility charger battery (.*?) stat (.*?); workbench input (.*?) output Some\(\((\d+), (\d+), \[(.*?)\]\)\) widget (\w+)', ctx.log)
+    if not u:
+        ctx.err("08zzy_utility: the end of the step not logged")
+        return
+    if u[1] != "Some(Some(52.0))" or u[2] != 'Some(Some("Battery: 1 Charging "))':
+        ctx.err(f"08zzy_utility: charger battery {u[1]} stat {u[2]} (want 52 after one 5 s tick, powered)")
+    if u[3] != "Some(0)" or (u[4], u[5]) != ("5", "5") or "DA_HighQualityMetal" not in u[6] or u[7] != "true":
+        ctx.err(f"08zzy_utility: workbench {u.groups()[2:]} (want the input emptied, 5 casings, 5 gunpowder, the rifle's parts, the widget up)")
+
+
+def radios_play(ctx):
+    """08zzx_radio: F switches a BP_Radio's broadcast to 0.5 and back to 0; the CoyoteCall text
+    radio shows its first line under the muffled voice, F again closes it (static); an unpowered
+    jukebox says "Requires power"; a placed radio's RadioUI turns on a song from the Radio folder,
+    NEXT, rate 1.5, pause / play: on, playing, unpaused at 1.5, the voice playing, the widget up."""
+    if "autoshot radio broadcast on" not in ctx.log:
+        ctx.err("08zzx_radio: the step didn't run")
+        return
+    if 'broadcast on: volume Some(0.5) loop Some("Radio_Cue active true")' not in ctx.log or 'broadcast off: volume Some(0.0) loop Some("Radio_Cue active false")' not in ctx.log:
+        ctx.err("08zzx_radio: the broadcast radio didn't switch on (0.5) and off (0)")
+    t = re.search(r'autoshot radio text Some\(\("(\w+)", (\d+), "([^"]*)"\)\) widget (\w+) loop Some\("(\w+) active', ctx.log)
+    if not t or t[1] != "CoyoteCall" or not t[3].startswith("[MILITARY]") or t[4] != "true" or t[5] != "RadioMuffled_Cue":
+        ctx.err(f"08zzx_radio: text radio {t.groups() if t else 'not logged'} (want CoyoteCall's first line shown over RadioMuffled_Cue)")
+    if 'autoshot radio text closed true loop Some("RadioStatic_Cue active true")' not in ctx.log:
+        ctx.err("08zzx_radio: F again didn't close the text and go back to static")
+    if "autoshot radio jukebox unpowered: overlay None toast true" not in ctx.log:
+        ctx.err("08zzx_radio: the unpowered jukebox didn't refuse with \"Requires power\"")
+    u = re.search(r'autoshot radio ui: Some\("on (\w+) paused (\w+) current (.*?) previous (.*?) rate ([\d.]+) playing (Some\(.*?\)|None)"\) voices \[(.*)\] overlay (\S+) widget (\w+)', ctx.log)
+    if not u:
+        ctx.err("08zzx_radio: the radio's state not logged")
+    elif (u[1], u[2], u[5], u[9]) != ("true", "false", "1.5", "true") or not u[3].endswith(".mp3") or not u[4].endswith(".mp3") or "sink true paused false" not in u[7] or not u[8].startswith("Radio(Placed"):
+        ctx.err(f"08zzx_radio: radio {u.groups()} (want on, playing a song after another at 1.5, its voice playing, RadioUI up)")
+
+
+def launchers_fire_projectiles(ctx):
+    """08zzw_launchers: an M32 grenade flies to roamer A and blows up there (7.5 m, A hurt or
+    dead), a rocket does the same to roamer B (12.5 m), and a flare fired into the ground stops
+    and stays; each launcher used one round (M32 5 of 6 left)."""
+    if "autoshot launchers armed at" not in ctx.log:
+        ctx.err("08zzw_launchers: the step didn't arm the survivor")
+        return
+    step = ctx.log[ctx.log.find("autoshot launchers armed at"):]
+    for cls, radius, roamer, after in (("BP_ProjectileGrenade_C", "7.5", "A", "after the grenade A"), ("BP_ProjectileRocket_C", "12.5", "B", "after the rocket B")):
+        b = re.search(rf"projectile: {cls} exploded at .* after ([\d.]+) s \((\w+)\): (\d+) zombies in {re.escape(radius)} m", step)
+        if not b or int(b[3]) < 1:
+            ctx.err(f"08zzw_launchers: {cls} {b.groups() if b else 'never exploded'} (want a blast that catches roamer {roamer})")
+        h = re.search(rf"autoshot launchers {after} (?:hp (-?[\d.]+)/([\d.]+) dead (\w+)|gone)", step)
+        if not h or (h[1] is not None and h[3] != "true" and float(h[1]) >= float(h[2])):
+            ctx.err(f"08zzw_launchers: roamer {roamer} {h.groups() if h else 'not logged'} (want it hurt by the {cls})")
+    if not re.search(r"projectile: BP_FlareRoundProjectile_C stopped at", step):
+        ctx.err("08zzw_launchers: the flare never stopped")
+    p = re.search(r"autoshot launchers projectiles \[(.*)\] rounds left \[(\d+), (\d+), (\d+)\]", step)
+    if not p or "BP_FlareRoundProjectile_C stopped true" not in p[1] or (p[2], p[3], p[4]) != ("5", "0", "0"):
+        ctx.err(f"08zzw_launchers: after the shots {p.groups() if p else 'not logged'} (want the flare lying there, rounds 5 / 0 / 0)")
+
+
+def infestations_fall(ctx):
+    """08zzu_infestation: a primary (2500) refuses a round while its secondary stands; 400 into
+    the secondary (1000) leaves 600, under 1000 / 1.5, so its waves start (horde AIs spawn); 1000
+    more destroys it: XP, InfestationsDestroyed 1, the destroyed mesh, its "Infestation Pile", the
+    primary damageable and bare; 3000 destroys the primary (2 destroyed); F opens its pile."""
+    if "autoshot infestation: no primary with one secondary standing" in ctx.log:
+        ctx.err("08zzu_infestation: no primary with one secondary standing")
+        return
+    b = re.search(r"autoshot infestation before primary health ([\d.]+) can damage (\w+) secondary health ([\d.]+) destroyed (\d+) xp (\d+)", ctx.log)
+    if not b or (b[1], b[2], b[3]) != ("2500", "false", "1000"):
+        ctx.err(f"08zzu_infestation: before {b.groups() if b else 'not logged'} (want 2500, armored, 1000)")
+        return
+    if not re.search(r"infestations: BP_PrimaryInfestation_C_\d+ refused 100", ctx.log):
+        ctx.err("08zzu_infestation: the primary's refusal not logged")
+    h = re.search(r"autoshot infestation hit primary health ([\d.]+) secondary health ([\d.]+) waves (\w+)", ctx.log)
+    if not h or h.groups() != ("2500", "600", "true"):
+        ctx.err(f"08zzu_infestation: after the hits {h.groups() if h else 'not logged'} (want 2500 untouched, 600, waves started)")
+    d = re.search(r'autoshot infestation secondary destroyed (\w+) swapped (\w+) pile Some\(\("([^"]*)", \d+\)\) primary can damage (\w+) bare (\w+) destroyed (\d+) xp (\d+)', ctx.log)
+    if not d or d.groups()[:6] != ("true", "true", "Infestation Pile", "true", "true", str(int(b[4]) + 1)) or int(d[7]) <= int(b[5]):
+        ctx.err(f"08zzu_infestation: the secondary's end {d.groups() if d else 'not logged'} (want destroyed, swapped, its pile, the primary open and bare, one more destroyed, XP)")
+    p = re.search(r"autoshot infestation primary destroyed (\w+) swapped (\w+) destroyed (\d+) xp (\d+) horde AIs (\d+)", ctx.log)
+    if not p or (p[1], p[2], p[3]) != ("true", "true", str(int(b[4]) + 2)) or int(p[5]) < 1:
+        ctx.err(f"08zzu_infestation: the primary's end {p.groups() if p else 'not logged'} (want destroyed, swapped, two destroyed, a horde AI from the waves)")
+    o = re.search(r'autoshot infestation pile opened (\w+) Some\(\("([^"]*)", (\d+)\)\)', ctx.log)
+    if not o or o[1] != "true" or o[2] != "Infestation Pile" or int(o[3]) == 0:
+        ctx.err(f"08zzu_infestation: the pile {o.groups() if o else 'not logged'} (want F to open a filled Infestation Pile)")
+
+
+def tactical_attachments_toggle(ctx):
+    """08zztc_tactical: K lights the Tactical Light's beam (65000, a battery in it) and K again
+    puts it out; the Range Finder with no battery says "No Battery" and stays dark; with one
+    BP_Ingame's RangeFinderDistance shows "{N}m"."""
+    on = re.search(r"autoshot tactical light on Some\((\w+)\) lit Some\(\[([^\]]*)\]\) beams (\d+) intensity ([\d.]+)", ctx.log)
+    if not on or on[1] != "true" or "DA_TacticalLight" not in on[2] or on[3] == "0" or float(on[4]) <= 0:
+        ctx.err(f"08zztc_tactical: light {on.groups() if on else 'not logged'} (want on, lit, a beam shining)")
+    off = re.search(r"autoshot tactical light off Some\((\w+)\) intensity ([\d.]+)", ctx.log)
+    if not off or off[1] != "false" or float(off[2]) != 0:
+        ctx.err(f"08zztc_tactical: off {off.groups() if off else 'not logged'} (want off, dark)")
+    nb = re.search(r"autoshot tactical finder without a battery on Some\((\w+)\) lit Some\(\[\]\)", ctx.log)
+    if not nb or nb[1] != "true" or not re.search(r'tactical: Primary on lit \[\] refused \["No Battery"\]', ctx.log):
+        ctx.err(f"08zztc_tactical: the battery-less range finder {nb.groups() if nb else 'not logged'} (want on, nothing lit, \"No Battery\")")
+    r = re.search(r'autoshot tactical finder reads "(\S*)" (\w+) range Some\(([\d.]+)\)', ctx.log)
+    if not r or not re.fullmatch(r"[\d,]+m", r[1]) or r[2] != "Inherited":
+        ctx.err(f"08zztc_tactical: range finder {r.groups() if r else 'not logged'} (want a shown reading like 123m)")
+
+
+def radiation_zones_and_the_shower(ctx):
+    """08zzr_radiation / 08zzs_shower: in Creek Prison (Level 1) bare-faced the meter climbs
+    (0.75 per 0.2 s tick), the "Now Entering" banner and the zone's notification show and the
+    Geiger plays (one voice: a 2D loop used to outlive its owner and stack a copy per restart);
+    with a filtered respirator (96 %) it barely moves, the HUD box is up and the filter wears.
+    Outside, the Geiger is gone (StopRadiation) and a powered shower cleans the meter; again, the
+    cooldown message."""
+    if "autoshot radiation: no Creek Prison zone" in ctx.log:
+        ctx.err("08zzr_radiation: no Creek Prison zone")
+        return
+    b = re.search(r"autoshot radiation bare meter ([\d.]+) inside (\d+) banner (.*) geiger (\w+) voices (\d+) toasts (.*)", ctx.log)
+    if not b or float(b[1]) < 1.0 or b[2] == "0" or "true Creek Prison" not in b[3] or b[4] != "true" or b[5] != "1" or "Increased Radiation [Level 1]" not in b[6]:
+        ctx.err(f"08zzr_radiation: bare-faced {b.groups() if b else 'not logged'} (want the meter up, inside, the banner, the Geiger with one voice, the notification)")
+    m = re.search(r"autoshot radiation masked meter ([\d.]+) filter ui (\w+) filter Some\(([\d.]+)\)", ctx.log)
+    if not m or float(m[1]) > 0.3 or m[2] != "true" or not float(m[3]) < 100.0:
+        ctx.err(f"08zzr_radiation: masked {m.groups() if m else 'not logged'} (want the meter under 0.3, the HUD box, the filter worn)")
+    z = re.search(r"autoshot shower zone timer (\w+) inside (\d+) geiger voices (\d+)", ctx.log)
+    if not z or z.groups() != ("false", "0", "0"):
+        ctx.err(f"08zzs_shower: {z.groups() if z else 'not logged'} (want out of every zone, the timer stopped, the Geiger silent)")
+    a = re.search(r"autoshot shower meter after ([\d.]+)", ctx.log)
+    if not a or float(a[1]) != 0.0:
+        ctx.err(f"08zzs_shower: meter {a[1] if a else 'not logged'} after the shower (want 0)")
+    g = re.search(r"autoshot shower again toasts (.*)", ctx.log)
+    if not g or "Decontamination shower cooldown in effect..." not in g[1]:
+        ctx.err(f"08zzs_shower: second press {g[1] if g else 'not logged'} (want the cooldown message)")
+    # Light / Light2: green with power, orange (OnRep_CooldownRunning?) once it runs; FX_Water and
+    # FX_Water2 on for its 3 s.
+    lb = re.search(r"autoshot shower lights before (\S+)", ctx.log)
+    la = re.search(r"autoshot shower lights after (\S+) water (\d+)", ctx.log)
+    if not lb or lb[1] != "Some(Green)" or not la or la.groups() != ("Some(Orange)", "2"):
+        ctx.err(f"08zzs_shower: lights {lb[1] if lb else 'not logged'} -> {la.groups() if la else 'not logged'} (want green, then orange with 2 water emitters)")
+
+
+def death_leaves_a_crate(ctx):
+    """08zzka_death_loot: the death left a Container_DeadPlayerLoot holding the 2 beans the
+    survivor carried, settled on the floor with its "Death" marker; F opens it and the marker goes.
+    With KEEP INVENTORY ON DEATH? there is no crate (the game keeps the inventory)."""
+    if re.search(r"autoshot death loot: no crate \(keep inventory true\)", ctx.log):
+        return
+    c = re.search(r"autoshot death loot crate \d+ items (\d+) beans (\d+) settled (\w+) marker (\w+)", ctx.log)
+    if not c or int(c[2]) < 2 or c[3] != "true" or c[4] != "true":
+        ctx.err(f"08zzka_death_loot: crate {c.groups() if c else 'not found'} (want the 2 beans, settled, marked)")
+    o = re.search(r"autoshot death loot opened (\w+) beans (\d+) marker (\w+)", ctx.log)
+    if not o or o[1] != "true" or int(o[2]) < 2 or o[3] != "false":
+        ctx.err(f"08zzka_death_loot: opened {o.groups() if o else 'not logged'} (want its loot screen with the beans, the marker gone)")
+
+
+def storage_stores_renames_and_picks_up(ctx):
+    """08zzh_storage / 08zzi_storage_pickup: a Storage Crate placed green; F opens its 6 x 6 grid
+    titled "Storage Crate"; renamed "Base Stash" by typing, F opens it under that name with the
+    Gas Can, both saved; Pickup asks first, YES drops the Gas Can at the survivor's feet and
+    puts the crate back in the inventory."""
+    if "autoshot storage can build true" not in ctx.log:
+        ctx.err("08zzh_storage: the crate's ghost wasn't green")
+    o = re.search(r'autoshot storage opened (\w+) grid (.*)', ctx.log)
+    if not o or o[1] != "true" or o[2] != 'Some(("Storage Crate", 6, 6))':
+        ctx.err(f"08zzh_storage: opening {o.groups() if o else 'not logged'} (want the 6 x 6 Storage Crate grid open)")
+    r = re.search(r'autoshot storage renamed (.*?) open (\w+) title (.*?) items (\d+) saved (.*)', ctx.log)
+    if not r or r.groups() != ('Some("Base Stash")', "true", 'Some("Base Stash")', "1", 'Some((Some("Base Stash"), 1))'):
+        ctx.err(f"08zzh_storage: renaming {r.groups() if r else 'not logged'} (want Base Stash, open with the Gas Can, saved)")
+    a = re.search(r"autoshot storage asked (\w+) buttons (\d+)", ctx.log)
+    if not a or a.groups() != ("true", "2"):
+        ctx.err(f"08zzi_storage_pickup: {a.groups() if a else 'not logged'} (want the YES/NO question)")
+    p = re.search(r"autoshot storage picked up crates (\d+) dropped \[(.*?)\] in inventory (\d+)", ctx.log)
+    if not p or p[1] != "0" or '"DA_GasCan"' not in p[2] or int(p[3]) < 1:
+        ctx.err(f"08zzi_storage_pickup: {p.groups() if p else 'not logged'} (want the crate gone, the Gas Can dropped, the crate in the inventory)")
+
+
+def buildables_snap(ctx):
+    """08zzg_snap: a Wooden Foundation placed on the ground; the next one's ghost, on it, snaps
+    to a Foundation point 3 m beside it at the same height and is placed; a Wooden Wall's ghost
+    snaps to a Wall point (1.5 m out from a foundation's centre, 1.82 m up) and is placed."""
+    f = re.search(r"autoshot snap first can build (\w+)", ctx.log)
+    if not f or f[1] != "true":
+        ctx.err(f"08zzg_snap: the first foundation {f.groups() if f else 'not logged'} (want green)")
+    s = re.search(r"autoshot snap second can build (\w+) side ([\d.NaN-]+) rise ([\d.NaN-]+)", ctx.log)
+    if not s or s[1] != "true" or abs(float(s[2]) - 3.0) > 0.02 or abs(float(s[3])) > 0.02:
+        ctx.err(f"08zzg_snap: the second foundation {s.groups() if s else 'not logged'} (want green, 3 m beside, level)")
+    w = re.search(r"autoshot snap wall can build (\w+) out ([\d.NaN-]+) up ([\d.NaN-]+)", ctx.log)
+    if not w or w[1] != "true" or abs(float(w[2]) - 1.5) > 0.02 or abs(float(w[3]) - 1.82) > 0.02:
+        ctx.err(f"08zzg_snap: the wall {w.groups() if w else 'not logged'} (want green, 1.5 m out, 1.82 m up)")
+    p = re.search(r"autoshot snap placed foundations (\d+) walls (\d+) building (\w+)", ctx.log)
+    if not p or p.groups() != ("2", "1", "false"):
+        ctx.err(f"08zzg_snap: placed {p.groups() if p else 'not logged'} (want 2 foundations, 1 wall, build mode over)")
+
+
 def horde_beacon_runs(ctx):
     """08zze_horde / 08zzf_horde_end: build mode places a Horde Beacon on the ground by the spawn
     (green ghost; one of two used, build mode carries on; RMB stops it); F starts it ("Horde
@@ -1058,7 +1939,26 @@ def boss_swings_and_dies(ctx):
         ctx.err(f"08zu_boss: toast {m[6]!r}")
 
 
-CHECKS = [horde_beacon_runs, blood_moon_rises_and_settles, turrets_fire_and_go_down, settlement_stands, wandering_traders, elimination_quest_completes, bandits_fight_and_die, prefab_camp_spawns, particles_play, boss_swings_and_dies, workbench_crafts, journal_lists_quests, laptop_quest_completes, journal_info_shows_the_stats, vehicles_drive, fishing_catches_a_fish, trees_fall_and_wrecks_salvage, trash_piles_break, ran_cleanly, every_step_has_a_screenshot, traders_trade, airdrops_fall_and_open, shots_kill_the_zombie, lockpick_opened, door_opens, keypad_opens_the_door, clothing_hides_the_body, ladder_climbs, lab_generator_lights_the_lab, shove_and_stomp, frag_grenade_explodes, molotov_sets_the_zombie_burning, damage_numbers_float, recoil_kicks, passive_skills_gain_xp, journal_unlocks_skills, map_shows_discovered_poi, music_plays, combat_roll_rolls, fence_is_climbed_over, animals_flee_bite_and_die, swimming_floats_dives_and_surfaces, sounds_play, body_parts_move_in_step, police_garage_opens, crouch_is_slow_and_quiet, hard_landing_hurts, flashlight_lights_up, sitting_holds_still, night_is_darker_than_day, frame_rate, level_spawners_wake, hound_has_its_health, corpse_opens_as_loot, medical_icons_show, weather_changes_the_scene]
+def outlines(ctx):
+    """08q_door / 08qa_well / 08zi_trader: with each prompt up, the thing prompted is outlined (the
+    door's moving parts or a lab sliding door's frame; the well's StaticMesh copied from the static
+    props; the trader's skinned mesh on the mask's layer)."""
+    want = {"08q_door": (r"Some\(Door\(\d+\)\)", False), "08qa_well": (r'Some\(Actor \{ class: "BP_WaterWell_C"', True),
+            "08zi_trader": (r"Some\(Key\(\d+\)\)", False)}
+    for step, (target, copies) in want.items():
+        m = re.search(rf"autoshot outline {step} (.*) copies (\d+) meshes (\d+)", ctx.log)
+        if not m:
+            ctx.err(f"{step}: outline not logged")
+        elif not re.match(target, m[1]):
+            ctx.err(f"{step}: outlined {m[1]}")
+        elif copies and int(m[2]) < 1:
+            ctx.err(f"{step}: no copy of the well's mesh drawn ({m[2]})")
+        elif int(m[2]) + int(m[3]) < 1:
+            ctx.err(f"{step}: nothing drawn into the outline (copies {m[2]}, meshes {m[3]})")
+
+
+CHECKS = [outlines, 
+    bag_windows_open, inspector_opens_more_windows, containers_mark_as_storage, loot_refills, zombie_eyes_glow, more_interaction_montages, binoculars_zoom_and_tag, interaction_montages_play, infestation_haze_comes_and_goes, ai_health_bar_follows_the_shot_zombie, head_gear_is_worn, easter_eggs_show_and_the_nuke_blows, stairwell_and_siren, barber_restyles_the_survivor, hip_fire_raises_the_gun, security_camera_sweeps_and_breaks, lab_corpses_lie_posed, gun_locker_needs_cutters, hidden_cache_opens, repairs_fix_the_rifle, inspector_frames_the_item, drop_selector_shows, permadeath_ends_the_game, power_attack_hits, utility_benches_work, radios_play, launchers_fire_projectiles, placed_turrets_fight, infestations_fall, level_traps, presets_change_the_page, doors_open, benches_craft, traps_catch_and_blow, explosive_barrel_blows, generators_power_lights, beds_sleep_and_respawn, death_leaves_a_crate, radiation_zones_and_the_shower, attachments_work, scope_overlay_and_breath, tactical_attachments_toggle, storage_stores_renames_and_picks_up, buildables_snap, horde_beacon_runs, blood_moon_rises_and_settles, turrets_fire_and_go_down, settlement_stands, wandering_traders, elimination_quest_completes, bandits_fight_and_die, prefab_camp_spawns, particles_play, boss_swings_and_dies, workbench_crafts, journal_lists_quests, laptop_quest_completes, journal_info_shows_the_stats, vehicles_drive, fishing_catches_a_fish, trees_fall_and_wrecks_salvage, trash_piles_break, ran_cleanly, every_step_has_a_screenshot, traders_trade, airdrops_fall_and_open, shots_kill_the_zombie, lockpick_opened, door_opens, keypad_opens_the_door, notes_are_read, clothing_hides_the_body, ladder_climbs, lab_generator_lights_the_lab, shove_and_stomp, frag_grenade_explodes, molotov_sets_the_zombie_burning, damage_numbers_float, recoil_kicks, passive_skills_gain_xp, journal_unlocks_skills, map_shows_discovered_poi, music_plays, combat_roll_rolls, fence_is_climbed_over, animals_flee_bite_and_die, swimming_floats_dives_and_surfaces, sounds_play, body_parts_move_in_step, police_garage_opens, crouch_is_slow_and_quiet, hard_landing_hurts, flashlight_lights_up, sitting_holds_still, night_is_darker_than_day, frame_rate, level_spawners_wake, hound_has_its_health, corpse_opens_as_loot, medical_icons_show, weather_changes_the_scene]
 
 
 def main():

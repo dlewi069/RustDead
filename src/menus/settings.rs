@@ -38,7 +38,7 @@ pub enum Value {
 }
 
 /// Every settings / difficulty value, keyed `"<group>/<page>/<row label>"`.
-#[derive(Resource, Serialize, Deserialize, Default)]
+#[derive(Resource, Serialize, Deserialize, Default, Clone)]
 pub struct SettingsStore {
     pub values: HashMap<String, Value>,
     /// The file's format: 2 saves only values that differ from their row's default, so a
@@ -99,8 +99,17 @@ impl SettingsStore {
 
     /// `GameFunctionLibrary.ChangeDifficulty` -> `SetDifficulty`: write a `DT_Difficulty` preset
     /// into the difficulty rows (check rows take 0/1 as false/true). False if there's no such preset.
+    ///
+    /// Ours (the user's call, 2026-10-24): every other difficulty row goes back to its default
+    /// first, so a preset sets the whole page. The game's SetDifficulty writes only the row's 22
+    /// CVars and leaves the rest (loot rarity, durability, day length...) as they were.
     pub fn apply_preset(&mut self, data: &super::MenuData, name: &str) -> bool {
         let Some(preset) = data.difficulty_presets.iter().find(|p| p.name == name) else { return false };
+        for page in &data.difficulty {
+            for row in page.rows.iter().filter(|r| r.section.is_none()) {
+                self.values.insert(row_key("difficulty", &page.name, &row.label), default_value(row));
+            }
+        }
         for v in &preset.values {
             let row = data.difficulty.iter().find(|p| p.name == v.page).and_then(|p| p.rows.iter().find(|r| r.label == v.label));
             let value = match row.map(|r| &r.kind) {
@@ -233,7 +242,7 @@ struct RowInput {
 
 /// Text (or check mark) showing a row's current value.
 #[derive(Component, Clone)]
-struct RowValue {
+pub struct RowValue {
     key: String,
     row: Row,
 }
@@ -621,7 +630,18 @@ mod tests {
         assert!(store.apply_preset(&data, "Peaceful"));
         assert_eq!(num(&store, "AI", "ZOMBIE SPAWN AMOUNT MULTIPLIER"), 0.0);
         assert_eq!(store.find(&row_key("difficulty", "Player", "KEEP INVENTORY ON DEATH?")), Some(Value::Bool(true)));
-        // Loot rarity isn't part of SetDifficulty; unknown presets change nothing.
+        // Rows outside DT_Difficulty go back to their defaults (ours): loot rarity, day length.
+        let day = row_key("difficulty", "General", "DAY LENGTH");
+        let rarity = row_key("difficulty", "Loot / Environment", "AMMO RARITY");
+        let before = (store.find(&day), store.find(&rarity));
+        store.values.insert(day.clone(), Value::Num(90.0));
+        store.values.insert(rarity.clone(), Value::Num(0.1));
+        assert!(store.apply_preset(&data, "Hardened"));
+        assert_eq!((store.find(&day), store.find(&rarity)), before);
+        assert_eq!(num(&store, "AI", "ZOMBIE SPEED MULTIPLIER"), 1.5);
+        // Unknown presets change nothing.
+        store.values.insert(day.clone(), Value::Num(90.0));
         assert!(!store.apply_preset(&data, "Impossible"));
+        assert_eq!(store.find(&day), Some(Value::Num(90.0)));
     }
 }

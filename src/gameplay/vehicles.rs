@@ -33,11 +33,14 @@
 //!   vehicle, which ReceiveAnyDamage takes as damage × DAMAGE DEPLETION MULTIPLIER ÷ 2.5.
 //! - **Fuel** (FuelSpend every WasteTime): WasteOfFuelPerTime × FUEL DEPLETION MULTIPLIER, a tenth of
 //!   it under 2 mph; empty stops the throttle. A Gas Can at the FuelBoxCollision (UseGasCan) adds
-//!   half the tank ("No gas found" without one); ours on F, the game's after its interact timer.
+//!   half the tank ("No gas found" without one; "Gas full" when it's full); ours on F, the game's
+//!   after its interact timer ("Refilling Vehicle"), which starts with Loot_MidShelf_GrabItem.
+//! - **Storage** (Interact_OpenStorage): "Vehicle Storage", the class's grid; it plays
+//!   Loot_MidShelf_GrabItem at 1.5x.
 //! - Parked vehicles are solid (their hit box joins the collision's dynamic sets).
 //!
-//! Not ported yet: storage, push, tow, flip, lights, radio, the engine sound, repairing, water,
-//! smoke/fire, the driver's damage when it's wrecked, saving vehicles.
+//! Not ported yet: push, tow, flip, radio, repairing (its hold also starts with the grab), water,
+//! smoke/fire, the driver's damage when it's wrecked.
 
 use std::collections::HashMap;
 
@@ -676,7 +679,7 @@ fn interact(
     scroll: Res<bevy::input::mouse::AccumulatedMouseScroll>,
     screen: Res<State<MenuScreen>>,
     mut overlay: ResMut<GameOverlay>,
-    (mut containers, mut dirty, mut option): (ResMut<super::interact::Containers>, ResMut<super::inventory_ui::Dirty>, Local<usize>),
+    (mut containers, mut dirty, mut option, mut montage, mut highlight): (ResMut<super::interact::Containers>, ResMut<super::inventory_ui::Dirty>, Local<usize>, MessageWriter<super::interact::PlayerMontage>, ResMut<super::outline::Highlight>),
     db: Res<VehicleDb>,
     mut driving: ResMut<Driving>,
     mut game: ResMut<CurrentGame>,
@@ -738,6 +741,8 @@ fn interact(
         .min_by(|a, b| a.1.translation.distance(p).total_cmp(&b.1.translation.distance(p)));
     let Some((e, t, def)) = near else { return };
     *vis = Visibility::Inherited;
+    // BP_VehicleMaster's mesh (a skeletal one).
+    highlight.claim(super::outline::Highlit::Entities { roots: vec![e], skinned: false });
     if let Ok(mut n) = bar.single_mut() {
         n.width = Val::Percent(0.0);
     }
@@ -763,12 +768,18 @@ fn interact(
         containers.searched.entry(v.storage_key()).or_insert_with(|| super::items::Grid::new("Vehicle Storage", cols, rows));
         *overlay = GameOverlay::Loot(v.storage_key());
         dirty.0 = true;
+        // Then PlayMontage(Loot_MidShelf_GrabItem_Montage, 1.5).
+        montage.write(super::interact::PlayerMontage(crate::models::ActionKind::Grab, Some(1.5)));
         info!("vehicles: opened the {}'s storage ({cols} x {rows})", def.name);
         return;
     }
     if at_tank {
-        // UseGasCan.
-        if player_inv(&mut game).count("DA_GasCan") > 0 {
+        // InRefuellingArea: "Gas full" with a full tank, else the gas can's "Refilling Vehicle"
+        // and PlayMontage(Loot_MidShelf_GrabItem_Montage); ours fills at once (UseGasCan).
+        if v.fuel >= def.fuel.max {
+            notify.write(Notify::new("Gas full"));
+        } else if player_inv(&mut game).count("DA_GasCan") > 0 {
+            montage.write(super::interact::PlayerMontage::new(crate::models::ActionKind::Grab));
             player_inv(&mut game).remove("DA_GasCan", 1);
             v.fuel = refuel(v.fuel, def.fuel.max);
             info!("vehicles: refuelled the {} to {:.0}", def.name, v.fuel);

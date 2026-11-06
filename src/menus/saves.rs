@@ -65,6 +65,13 @@ pub fn load_into(game: &mut CurrentGame, slot: &str) -> bool {
     true
 }
 
+/// Delete a slot's files (the save, its profile and inventory).
+pub fn delete_save(slot: &str) {
+    let _ = std::fs::remove_file(Path::new(SAVE_DIR).join(format!("{slot}.sav.json")));
+    let _ = std::fs::remove_file(profile_path(slot));
+    let _ = std::fs::remove_file(inventory_path(slot));
+}
+
 /// Write the session to `slot` (and make it the current save).
 pub fn write_save(game: &mut CurrentGame, slot: &str, display_name: &str) -> std::io::Result<()> {
     let Some(state) = &game.state else { return Ok(()) };
@@ -237,9 +244,7 @@ fn on_save_action(
         SaveAction::SetCurrent => game.slot = selected.0.clone(),
         SaveAction::Delete => {
             if let Some(slot) = selected.0.take() {
-                let _ = std::fs::remove_file(Path::new(SAVE_DIR).join(format!("{slot}.sav.json")));
-                let _ = std::fs::remove_file(profile_path(&slot));
-                let _ = std::fs::remove_file(inventory_path(&slot));
+                delete_save(&slot);
                 if game.slot.as_deref() == Some(slot.as_str()) {
                     game.slot = None;
                 }

@@ -108,6 +108,11 @@ pub enum ActionKind {
     Cast,
     /// A zombie boss's swing: its AttackMontage on the UpperBody slot (`gameplay::bosses`).
     Attack,
+    /// Loot_MidShelf_GrabItem_Montage (UpperBody): containers opened, doors and switches worked,
+    /// the death crate (BPI_Player.PlayMontage, `gameplay::interact::PlayerMontage`).
+    Grab,
+    /// Loot_TableTop_LeftHand_Montage (UpperBody): the buildables' interactions and pickup.
+    TableTop,
 }
 
 impl ActionKind {
@@ -277,6 +282,7 @@ impl AnimSet {
                     ((Unarmed, Idle), idle, true),
                     ((Unarmed, Walk), zombie_clip(kind, kind.roam_speed()), true),
                     ((Unarmed, Run), zombie_clip(kind, kind.alert_speed()), true),
+                    // Without a death clip the pose is frozen instead (`holds_dead_pose`).
                     ((Unarmed, Dead), a.death.as_deref().unwrap_or(idle), a.death.is_none()),
                 ];
                 if let Some(attack) = a.attacks.first() {
@@ -327,15 +333,10 @@ impl AnimSet {
         use ActionKind::*;
         use Stance::*;
         match self {
-            AnimSet::Survivor => vec![
+            AnimSet::Survivor => MELEE_CLIPS.iter().enumerate().map(|(i, c)| ((Melee, Swing(i as u8)), *c)).chain([
                 ((Rifle, Fire), "Anims/Other/Fire_Rifle_Ironsights"),
                 ((Rifle, Reload), "Anims/Other/Reload_Rifle_Hip"),
                 ((Pistol, Reload), "Anims/Other/Reload_Pistol"),
-                // 1HMeleeAttack1-4_Montage.
-                ((Melee, Swing(0)), "Player/1Handed/Attack_01_Seq"),
-                ((Melee, Swing(1)), "Player/1Handed/Attack_02_Seq"),
-                ((Melee, Swing(2)), "Player/1Handed/Attack_04_Seq"),
-                ((Melee, Swing(3)), "Player/1Handed/Attack_06_Seq"),
                 // Each pickup's BP_WeaponsPickupComponent.ShoveMontage: rifles keep the
                 // component's RiflePush, pistols PistolPush, melee weapons (and no weapon)
                 // SmallMeleePush. (One melee weapon uses LargeMeleePush; not told apart here.)
@@ -358,8 +359,8 @@ impl AnimSet {
                 ((Melee, Roll), ROLL_CLIP),
                 ((Rifle, Roll), ROLL_CLIP),
                 ((Pistol, Roll), ROLL_CLIP),
-            ]
-            .into_iter()
+            ])
+            .chain([Unarmed, Melee, Rifle, Pistol].into_iter().flat_map(|st| [((st, Grab), "Anims/Other/Loot_MidShelf_GrabItem"), ((st, TableTop), "Anims/Other/Loot_TableTop_LeftHand")]))
             .chain([Climb, GetUp, VaultOver, JumpDown].into_iter().flat_map(|k| [Unarmed, Melee, Rifle, Pistol].map(|st| ((st, k), k.parkour_clip().unwrap_or_default()))))
             .collect(),
             // The animals' HitAnimation (the first; wolves pick one of four).
@@ -372,6 +373,28 @@ impl AnimSet {
             AnimSet::Trader => Vec::new(),
         }
     }
+}
+
+/// The melee montages' sequences (items.json `melee_montages`), `ActionKind::Swing(i)` on the
+/// melee stance: 1HMeleeAttack1/4 (animBatonAttack2), 2, 3, Crouch_MeleeAttack, the power
+/// Attack_01/02/04_Seq_Montage_RM, the two-handed Longs_Attack_p_L/LD/R/RU_InPlace.
+pub const MELEE_CLIPS: [&str; 11] = [
+    "Anims/Melee/animBatonAttack2",
+    "Anims/Melee/animBatonAttack3",
+    "Anims/Melee/animBatonAttack4",
+    "Anims/Melee/animBatonAttack1",
+    "Player/1Handed/Attack_01_Seq",
+    "Player/1Handed/Attack_02_Seq",
+    "Player/1Handed/Attack_04_Seq",
+    "Player/2Handed/InPlace/Longs_Attack_p_L_InPlace",
+    "Player/2Handed/InPlace/Longs_Attack_p_LD_InPlace",
+    "Player/2Handed/InPlace/Longs_Attack_p_R_InPlace",
+    "Player/2Handed/InPlace/Longs_Attack_p_RU_InPlace",
+];
+
+/// `ActionKind::Swing`'s index for a montage's sequence.
+pub fn melee_clip(clip: &str) -> Option<u8> {
+    MELEE_CLIPS.iter().position(|c| *c == clip).map(|i| i as u8)
 }
 
 /// The blendspace sample nearest `speed` (the blend between samples isn't reproduced), as a path
@@ -696,6 +719,14 @@ pub struct PartPlayer {
     fading: Vec<(Key, f32)>,
     action: Option<PlayingAction>,
     action_serial: u32,
+    /// Held in the pose it died in (`holds_dead_pose`).
+    frozen: bool,
+}
+
+/// An animal without a death clip ragdolls in the game (AnimBP's corpse: held in its last
+/// pose); ours stops its clips where they are rather than switching to the looping idle.
+pub fn holds_dead_pose(set: AnimSet, state: Locomotion) -> bool {
+    state == Locomotion::Dead && matches!(set, AnimSet::Zombie(k) if k.animal().is_some_and(|a| a.death.is_none()))
 }
 
 #[derive(Clone, Copy)]
@@ -857,9 +888,20 @@ pub fn drive_animation(
         // A part that's already playing, for any that just joined to copy.
         let fresh = |pp: &PartPlayer| pp.current.is_none();
         let leader = targets.iter().find_map(|&e| parts.get(e).ok().filter(|(pp, _)| !fresh(pp)).map(|(pp, player)| Snapshot::of(pp, player, g)));
+        let hold = holds_dead_pose(*set, *state);
         for &e in &targets {
             let Ok((mut pp, mut player)) = parts.get_mut(e) else { continue };
             let pp = &mut *pp;
+            if hold {
+                if !pp.frozen {
+                    pp.frozen = true;
+                    for (_, a) in player.playing_animations_mut() {
+                        a.set_speed(0.0);
+                    }
+                }
+                continue;
+            }
+            pp.frozen = false;
             if fresh(pp)
                 && let Some(snap) = &leader
             {
@@ -954,6 +996,19 @@ mod tests {
     use super::*;
 
     #[test]
+    fn dead_animals_without_a_death_clip_hold_still() {
+        use crate::gameplay::zombies::ZombieKind;
+        let set = |c: &str| AnimSet::Zombie(ZombieKind::from_class(c).unwrap());
+        for c in ["BP_AnimalDeer_C", "BP_AnimalWolf_C", "BP_AnimalBear_C"] {
+            assert!(holds_dead_pose(set(c), Locomotion::Dead), "{c}");
+            assert!(!holds_dead_pose(set(c), Locomotion::Run), "{c}");
+        }
+        // The rabbit has its death montage; zombies their death pose.
+        assert!(!holds_dead_pose(set("BP_AnimalRabbit_C"), Locomotion::Dead));
+        assert!(!holds_dead_pose(set("BP_Zombie_Roamer_C"), Locomotion::Dead));
+    }
+
+    #[test]
     fn every_clip_is_exported_and_masks_split_the_body() {
         if !std::path::Path::new(ANIM_DIR).exists() {
             return;
@@ -977,7 +1032,7 @@ mod tests {
         let g = lib.get(AnimSet::Survivor, &mut clips, &mut graphs);
         let (key, n) = g.find(Stance::Unarmed, Locomotion::Idle).unwrap();
         // The body: 0.7 s into idle, its last action (serial 3) long finished.
-        let mut body = (PartPlayer { current: Some(key), fading: vec![(key, 1.0)], action: None, action_serial: 3 }, AnimationPlayer::default());
+        let mut body = (PartPlayer { current: Some(key), fading: vec![(key, 1.0)], action: None, action_serial: 3, frozen: false }, AnimationPlayer::default());
         for node in std::iter::once(n.lower).chain(n.upper) {
             body.1.start(node).repeat().seek_to(0.7);
         }

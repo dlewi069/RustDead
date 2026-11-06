@@ -183,6 +183,16 @@ pub struct Part {
     pub bone: Option<(&'static str, Transform)>,
     /// Which swappable body part it is (`BODY_PARTS`).
     pub body: Option<&'static str>,
+    /// HairMesh or BeardMesh (head gear hides them).
+    pub face: Option<FaceMesh>,
+}
+
+/// BP_PlayerCharacter's HairMesh / BeardMesh: headwear hides the hair, facewear the beard
+/// (`gameplay::head_gear`).
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FaceMesh {
+    Hair,
+    Beard,
 }
 
 /// The body-part slots BP_PlayerCharacter swaps for clothing (BodyPartVisibility).
@@ -241,7 +251,7 @@ pub fn character_parts(profile: &CharacterProfile, data: &CreatorData) -> Vec<Pa
     let skin = skin_material(profile);
     let hair_mat = |i: usize| format!("MI_CharacterHair_{}", pick(i).replace(' ', "").replace("Gray", "Grey"));
 
-    let part = |path: String, material: Option<String>, bone: Option<(&'static str, Transform)>| Part { path, material, bone, body: None };
+    let part = |path: String, material: Option<String>, bone: Option<(&'static str, Transform)>| Part { path, material, bone, body: None, face: None };
     let mut parts = vec![part(format!("{PLAYER_MODEL}/BodyParts/Head/{sex}/SK_Chr_{sex}_Head.glb"), Some(skin.clone()), None)];
     for (b, mesh) in default_body(sex) {
         if let Some(m) = mesh {
@@ -253,11 +263,11 @@ pub fn character_parts(profile: &CharacterProfile, data: &CreatorData) -> Vec<Pa
     let mesh_name = |option: &str| option.replace(' ', "");
     let hair = pick(2);
     if hair != "Bald" {
-        parts.push(part(format!("{PLAYER_MODEL}/Hair/HairMesh/Chr_{}.glb", mesh_name(hair)), Some(hair_mat(3)), Some(hair_attach())));
+        parts.push(Part { face: Some(FaceMesh::Hair), ..part(format!("{PLAYER_MODEL}/Hair/HairMesh/Chr_{}.glb", mesh_name(hair)), Some(hair_mat(3)), Some(hair_attach())) });
     }
     let beard = pick(5);
     if beard != "None" {
-        parts.push(part(format!("{PLAYER_MODEL}/Hair/Beard/Chr_{}.glb", mesh_name(beard)), Some(hair_mat(6)), Some(hair_attach())));
+        parts.push(Part { face: Some(FaceMesh::Beard), ..part(format!("{PLAYER_MODEL}/Hair/Beard/Chr_{}.glb", mesh_name(beard)), Some(hair_mat(6)), Some(hair_attach())) });
     }
     let brows = pick(7);
     if brows != "None" {
@@ -279,11 +289,11 @@ pub struct CharacterModel;
 
 /// The Head part, whose skeleton carries the `head` / `eyebrows` bones attachments hang from.
 #[derive(Component)]
-struct HeadPart;
+pub struct HeadPart;
 
 /// A part waiting for its bone to exist (the Head scene spawns asynchronously).
 #[derive(Component)]
-struct AttachToBone(&'static str, Transform);
+pub struct AttachToBone(&'static str, Transform);
 
 pub fn spawn_character(commands: &mut Commands, assets: &AssetServer, profile: &CharacterProfile, data: &CreatorData, root: impl Bundle) -> Entity {
     let id = commands.spawn((root, CharacterModel, Visibility::default(), Animated(AnimSet::Survivor), Locomotion::Idle, Stance::Unarmed, UpperAction::default())).id();
@@ -298,6 +308,9 @@ pub fn spawn_character(commands: &mut Commands, assets: &AssetServer, profile: &
         if let Some(b) = p.body {
             part.insert(BodyPart(b));
         }
+        if let Some(f) = p.face {
+            part.insert(f);
+        }
         if let Some((bone, rel)) = p.bone {
             part.insert((AttachToBone(bone, rel), Visibility::Hidden));
         }
@@ -305,6 +318,42 @@ pub fn spawn_character(commands: &mut Commands, assets: &AssetServer, profile: &
         commands.entity(id).add_child(part);
     }
     id
+}
+
+/// Rebuild a survivor for a changed profile (CharacterBarberMenu's live changes): the old Head
+/// (hair, beard, eyebrows and features hang off its bones, so they go with it) and body parts are
+/// swapped out as `Outgoing`; a new Head and its attachments come in (shown once ready, by
+/// `swap_parts`); the body and clothing are left to the owner's dresser, which `BodyMeshes`
+/// emptied and `WornClothing` removed make redo everything (the skin and sex may have changed).
+pub fn restyle(commands: &mut Commands, assets: &AssetServer, character: Entity, old_head: Option<Entity>, old_body: &[Entity], profile: &CharacterProfile, data: &CreatorData) {
+    if let Some(h) = old_head {
+        commands.entity(h).insert(Outgoing).remove::<HeadPart>();
+    }
+    for &b in old_body {
+        commands.entity(b).insert(Outgoing).remove::<BodyPart>();
+    }
+    for (i, p) in character_parts(profile, data).into_iter().enumerate().filter(|(_, p)| p.body.is_none()) {
+        let mut part = commands.spawn((model(assets, p.path), Transform::default()));
+        if let Some(m) = p.material {
+            part.insert(MaterialOverride(m));
+        }
+        if let Some(f) = p.face {
+            part.insert(f);
+        }
+        match p.bone {
+            // Hidden until hung on the new head's bone (inside the head, which is `Incoming`).
+            Some((bone, rel)) => {
+                part.insert((AttachToBone(bone, rel), Visibility::Hidden));
+            }
+            None if i == 0 => {
+                part.insert((HeadPart, Incoming::default(), Visibility::Hidden));
+            }
+            None => {}
+        }
+        let part = part.id();
+        commands.entity(character).add_child(part);
+    }
+    commands.entity(character).insert(BodyMeshes(Vec::new())).remove::<WornClothing>();
 }
 
 /// Hang hair, beard, eyebrows and face features off their Head bone once its skeleton has

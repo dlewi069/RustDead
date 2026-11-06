@@ -18,3 +18,29 @@ assets/SurrounDead/
 /extractor/obj/
 /extractor/mappings/
 /extractor/natives/
+/Radio/
+
+# Game files and anything derived from them. Never commit these.
+# scripts/check_no_game_files.sh enforces this in the git hooks.
+*.uasset
+*.uexp
+*.ubulk
+*.umap
+*.utoc
+*.ucas
+*.pak
+*.ufont
+*.wem
+*.bnk
+/assets/SurrounDead/
+/assets/audio/
+/assets/textures/
+/assets/data/
+/assets/fonts/
+/assets/Engine/
+/assets/models/
+/surroundead_items.json
+/asset_paths.json
+/savegame.json*
+/test_screen*.png
+/notify.log

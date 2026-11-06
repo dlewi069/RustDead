@@ -8,7 +8,7 @@
 //!   collision off, TreeFallingRandomCue, 5 s to tip 90° over) for 8-12 Wooden Logs, and it's gone
 //!   30 s after; a rock's last hit gives 8-12 Rocks and it's gone 0.2 s later. Skill_HarvestMaster
 //!   doubles both. Felled trees and broken rocks stay gone for the session (the instance is removed).
-//!   The power attack's 3-4 hits per swing isn't ported (nor the power attack itself).
+//!   A power attack's swing counts 3-4 hits (`melee.rs`) and doesn't reach trash piles.
 //! - **Burnt-out vehicles** (the level's 78 BP_HarvestableObject_ScrapMetal): "Burnt Out Vehicle:
 //!   [F] Salvage" starts a 10 s "Salvaging" timer (F again or walking away stops it); done, it gives
 //!   12-20 Scrap Metal (×2 with Harvest Master) and HitScrapMetalRandom_Cue, and is then "No more
@@ -43,6 +43,8 @@ pub struct Swing {
     /// HitObjectWorld's Dmg: RandomFloatInRange over FindStat(MeleeDamage)'s Min..Max, which for a
     /// rolled instance stat we take as its roll (a guess).
     pub damage: f32,
+    /// A power attack (`melee.rs`): trees and rocks take 3-4 hits, trash piles none.
+    pub power: bool,
 }
 
 /// How far a swing reaches into a trunk or rock (the weapon sockets' sweep; ours, like
@@ -185,6 +187,10 @@ fn hit_props(
         }
         let Some((_, key, at)) = best else { continue };
         let Some(&kind) = level.harvest.get(&key) else { continue };
+        // Event_OnHitPower has no TrashObject case.
+        if s.power && kind == Harvestable::Trash {
+            continue;
+        }
         if streaming.is_removed(key) || harvest.breaking.iter().any(|b| b.0 == key) {
             continue;
         }
@@ -220,7 +226,9 @@ fn hit_props(
             }
             continue;
         }
-        let last = take_hits(&mut harvest.hits, key, 1, &mut rng);
+        // HitFoliageTree / HitFoliageRock(..., 1), or RandomIntegerInRange(3, 4) from a power swing.
+        let hits = if s.power { rng.gen_range(3..=4) } else { 1 };
+        let last = take_hits(&mut harvest.hits, key, hits, &mut rng);
         info!("harvest: {what} {key:?} hit, {} left", harvest.hits[&key]);
         // The tree plays its chop only while it stands; the rock every hit.
         if !last || kind == Harvestable::Stone {
@@ -327,6 +335,7 @@ pub(crate) fn salvage(
     mut sound: MessageWriter<crate::audio::Sound>,
     level: Option<Res<Level>>,
     driving: Res<super::vehicles::Driving>,
+    mut highlight: ResMut<super::outline::Highlight>,
 ) {
     if driving.active() {
         return;
@@ -348,6 +357,7 @@ pub(crate) fn salvage(
     }
     let Some((wreck, at)) = near else { return };
     *vis = Visibility::Inherited;
+    highlight.claim(super::outline::Highlit::Actor { class: "BP_HarvestableObject_ScrapMetal_C".into(), at });
     let done = harvest.salvaged.contains(&wreck);
     if let Ok(mut t) = text.single_mut() {
         // ShowInteractWidget("Burnt Out Vehicle", Option1 "Salvage"); InteractTimerUI "Salvaging".

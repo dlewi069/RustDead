@@ -12,6 +12,11 @@
 //! gunshot ([`Noise`]). Being hurt makes a zombie chase whoever hurt it. Speeds scale with
 //! ZOMBIE SPEED MULTIPLIER; turning is `RotationRate` 275°/s.
 //!
+//! What a zombie chases (`Zombie_FindPlayerLocation`): the nearest actor it sees tagged
+//! 'ZombieCanAttack', the survivor or a placed turret (`turrets.rs`; a big one only while
+//! powered); its swings then land on the turret (`survival.rs`). The SmartAI humans, animals
+//! and bosses have their own brains and only ever chase the survivor here.
+//!
 //! The bosses (`BT_ZombieBoss`, the same tree) use this brain with their own speeds, 110° sight
 //! cone and waits; they chase to contact and swing on the way (`bosses.rs`).
 
@@ -58,6 +63,11 @@ pub struct Shoved(pub f32);
 #[derive(Component, Clone, Copy, Debug)]
 pub struct HeldStill;
 
+/// Held by a trap (`traps.rs`: DisableMovement until it lets go); apart from `HeldStill`, which
+/// the traders' talk sets and clears.
+#[derive(Component, Clone, Copy, Debug)]
+pub struct Trapped;
+
 /// Zombie_Pushed_Montage's length.
 pub const SHOVED_SECS: f32 = 2.3333333;
 
@@ -76,6 +86,9 @@ pub struct Zombie {
     kind: ZombieKind,
     /// The survivor is in view this frame (a ranged human holds and shoots).
     pub in_sight: bool,
+    /// A placed turret it goes for instead of the survivor (its place in
+    /// `turrets::Turrets::list`).
+    pub target: Option<usize>,
 }
 
 /// A `BP_MasterZombie` child's class defaults, from `assets/data/zombies.json`
@@ -124,6 +137,57 @@ pub struct ZombieClass {
     /// A human AI class's own traits (`gameplay::humans`).
     #[serde(default)]
     pub human: Option<HumanTraits>,
+    /// BPI_AI's GetMarker and CanAddMarkerToAI?: the binoculars' tag (`gameplay::binoculars`).
+    #[serde(default)]
+    pub marker: Option<MarkerDef>,
+    /// EyeLeftMesh / EyeRightMesh (`gameplay::zombie_eyes`); None for the hound (its skeleton
+    /// has no eye sockets), animals and humans.
+    #[serde(default)]
+    pub eyes: Option<EyesDef>,
+}
+
+/// A M_GlowingEyes instance: Colour (linear RGB) and EmissiveStrength.
+#[derive(Deserialize, Clone, Copy, Debug, PartialEq)]
+pub struct EyeLook {
+    pub colour: [f32; 3],
+    pub strength: f32,
+}
+
+/// A class's glowing eyes: their material, whether Event_BloodMoon swaps it (BP_MasterZombie's
+/// children; not the bosses), and each eye's socket and component transform.
+#[derive(Deserialize, Clone, Debug)]
+pub struct EyesDef {
+    #[serde(flatten)]
+    pub look: EyeLook,
+    pub material: String,
+    pub blood_moon: bool,
+    pub parts: Vec<EyePart>,
+}
+
+/// One 1M_Cube eye: on `socket` (its bone and offset), at the component's `local` transform.
+#[derive(Deserialize, Clone, Debug)]
+pub struct EyePart {
+    pub socket: super::items::Socket,
+    pub local: super::items::LocalTransform,
+}
+
+/// GetMarker's Texture (package under Content/), Color (linear), MarkerOffset (m above the
+/// actor) and what CanAddMarkerToAI? answers.
+#[derive(Deserialize, Clone, Debug, PartialEq)]
+pub struct MarkerDef {
+    pub texture: String,
+    pub color: [f32; 4],
+    pub offset: f32,
+    pub can_add: CanAdd,
+}
+
+/// CanAddMarkerToAI?: the CanAddMarker? flag (AddMarker clears it, the marker's end sets it), or
+/// always (the traders).
+#[derive(Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum CanAdd {
+    Flag,
+    Always,
 }
 
 /// What a human AI class (SmartAI's BP_MasterAICharacter through BP_MasterBandit / Military /
@@ -290,6 +354,15 @@ struct ZombieData {
     classes: std::collections::BTreeMap<String, ZombieClass>,
     #[serde(default)]
     weapons: std::collections::BTreeMap<String, AiWeapon>,
+    /// M_GlowingEyes_BloodMoon.
+    #[serde(default)]
+    blood_moon_eyes: Option<EyeLook>,
+}
+
+/// M_GlowingEyes_BloodMoon's look, the eyes Event_BloodMoon(true) puts on.
+pub fn blood_moon_eyes() -> Option<EyeLook> {
+    static LOOK: std::sync::OnceLock<Option<EyeLook>> = std::sync::OnceLock::new();
+    *LOOK.get_or_init(|| std::fs::read_to_string("assets/data/zombies.json").ok().and_then(|t| serde_json::from_str::<ZombieData>(&t).ok()).and_then(|d| d.blood_moon_eyes))
 }
 
 /// Every zombie class, by Blueprint class name (sorted, so indices are stable).
@@ -363,6 +436,8 @@ static FALLBACK: std::sync::LazyLock<ZombieClass> = std::sync::LazyLock::new(|| 
     animal: None,
     boss: None,
     human: None,
+    marker: None,
+    eyes: None,
 });
 
 impl ZombieKind {
@@ -387,6 +462,12 @@ impl ZombieKind {
         self.class().boss.as_ref()
     }
     /// The class's human traits, if it's one of SmartAI's characters.
+    /// BP_ZombieAIController's own (not the humans', animals' or bosses' brains): it goes for
+    /// any seen actor tagged 'ZombieCanAttack', the placed turrets too.
+    pub fn goes_for_turrets(self) -> bool {
+        self.human().is_none() && self.animal().is_none() && self.boss().is_none()
+    }
+
     pub fn human(self) -> Option<&'static HumanTraits> {
         self.class().human.as_ref()
     }
@@ -532,7 +613,7 @@ fn adopt(mut commands: Commands, mut added: Query<(Entity, &LevelZombie, &mut Tr
         }
         // Animals think for themselves (`gameplay::animals`).
         if lz.kind.animal().is_none() {
-            commands.entity(e).insert(Zombie { brain: Brain::Roam { goal: None, wait: rng.gen_range(0.0..10.0) }, last_seen: None, kind: lz.kind, in_sight: false });
+            commands.entity(e).insert(Zombie { brain: Brain::Roam { goal: None, wait: rng.gen_range(0.0..10.0) }, last_seen: None, kind: lz.kind, in_sight: false, target: None });
         }
         commands.entity(e).insert((
             lz.kind.body(),
@@ -581,6 +662,7 @@ fn perceive(
     player: Query<&Transform, (With<CharacterModel>, With<KinematicBody>)>,
     mut zombies: Query<(&Transform, &mut Zombie, Option<Ref<Health>>), Without<Dead>>,
     vitals: Res<super::PlayerVitals>,
+    targets: Res<super::turrets::ZombieTargets>,
 ) {
     let noises: Vec<Noise> = noises.read().copied().collect();
     let Ok(me) = player.single() else { return };
@@ -603,11 +685,50 @@ fn perceive(
         z.in_sight = seen;
         // The friendly scavengers only turn on you once hurt (and while they keep you in view).
         let friendly = kind.human().is_some_and(|h| h.faction == "Scavenger") && !chasing;
-        if !vitals.is_dead() && (hurt || (seen && !friendly)) {
+        // Zombie_FindPlayerLocation: the nearest seen actor tagged 'ZombieCanAttack' (the
+        // survivor or a placed turret; the props in the way block the view of a turret too,
+        // unless the first one met is the turret's own).
+        let turret = kind
+            .goes_for_turrets()
+            .then(|| {
+                targets
+                    .0
+                    .iter()
+                    .filter(|a| {
+                        sees_within(terrain.as_deref(), t.translation, forward, a.at, chasing, kind.peripheral(), kind.sight()) && {
+                            let eye = t.translation + Vec3::Y * EYE;
+                            let d = a.centre - eye;
+                            let (dir, len) = (d.normalize_or_zero(), d.length());
+                            props.cast(eye, dir, len).is_none_or(|hit| props.cast_dynamic(a.collide, eye, dir, len).is_some_and(|own| own <= hit + 0.01))
+                        }
+                    })
+                    .min_by(|a, b| a.at.distance(t.translation).total_cmp(&b.at.distance(t.translation)))
+                    .copied()
+            })
+            .flatten()
+            .filter(|a| !(seen && !friendly) || a.at.distance(t.translation) < me.translation.distance(t.translation));
+        if !vitals.is_dead() && hurt {
             z.brain = Brain::Chase;
+            z.target = None;
             z.last_seen = Some(me.translation);
             continue;
         }
+        if let Some(a) = turret {
+            if z.target != Some(a.turret) {
+                debug!("zombie goes for turret {}", a.turret);
+            }
+            z.brain = Brain::Chase;
+            z.target = Some(a.turret);
+            z.last_seen = Some(a.at);
+            continue;
+        }
+        if !vitals.is_dead() && seen && !friendly {
+            z.brain = Brain::Chase;
+            z.target = None;
+            z.last_seen = Some(me.translation);
+            continue;
+        }
+        z.target = None;
         if chasing {
             // Lost sight: go to where it was last seen.
             let at = z.last_seen.unwrap_or(t.translation);
@@ -628,13 +749,15 @@ fn act(
     store: Res<SettingsStore>,
     vitals: Res<super::PlayerVitals>,
     player: Query<&Transform, (With<CharacterModel>, With<KinematicBody>, Without<Zombie>)>,
-    mut zombies: Query<(&mut Transform, &mut Zombie, &mut Locomotion, Option<&mut Shoved>, Option<&super::burning::Burning>, Option<&super::humans::HumanArms>, (Has<HeldStill>, Has<super::world_events::BloodMoonBoost>)), Without<Dead>>,
+    mut zombies: Query<(&mut Transform, &mut Zombie, &mut Locomotion, Option<&mut Shoved>, Option<&super::burning::Burning>, Option<&super::humans::HumanArms>, (Has<HeldStill>, Has<super::world_events::BloodMoonBoost>, Has<Trapped>)), Without<Dead>>,
+    targets: Res<super::turrets::ZombieTargets>,
 ) {
     let dt = time.delta_secs();
     let speed_mult = difficulty(&store, "AI", "ZOMBIE SPEED MULTIPLIER");
     let me = player.single().ok().map(|p| p.translation);
     let mut rng = rand::thread_rng();
-    for (mut t, mut z, mut loco, shoved, burning, arms, (held, roused)) in &mut zombies {
+    for (mut t, mut z, mut loco, shoved, burning, arms, (held, roused, trapped)) in &mut zombies {
+        let held = held || trapped;
         // The Blood Moon's Alert Speed x1.5.
         let alert = z.kind.alert_speed() * if roused { super::world_events::BloodMoonBoost::ALERT_SPEED } else { 1.0 };
         if held {
@@ -653,8 +776,9 @@ fn act(
         // (where to go, how fast, animation)
         let mut walk: Option<(Vec3, f32, Locomotion)> = None;
         match z.brain {
-            Brain::Chase => match me {
-                Some(p) if !vitals.is_dead() => {
+            // The survivor, or the placed turret it goes for.
+            Brain::Chase => match z.target.map_or(me.filter(|_| !vitals.is_dead()), |i| targets.get(i).map(|a| a.at)) {
+                Some(p) => {
                     let flat = (p - pos) * Vec3::new(1.0, 0.0, 1.0);
                     if let Some(h) = z.kind.human() {
                         // SmartAI: a ranged weapon holds and fires (`humans.rs`) once the target
@@ -685,7 +809,10 @@ fn act(
                         loco.set_if_neq(Locomotion::Attack);
                     }
                 }
-                _ => z.brain = Brain::Roam { goal: None, wait: z.kind.wait(false, &mut rng) },
+                None => {
+                    z.target = None;
+                    z.brain = Brain::Roam { goal: None, wait: z.kind.wait(false, &mut rng) };
+                }
             },
             Brain::Investigate { at, wait } => match wait {
                 None if (at - pos).xz().length() > ARRIVE * 2.0 => walk = Some((at, alert, Locomotion::Run)),
@@ -761,6 +888,11 @@ mod tests {
         assert_eq!((radiated.health().0, radiated.class().damage, radiated.class().rad_chance), (200.0, 18.0, 1.0));
         assert_eq!(k("BP_Zombie_Infected_C").class().loot_table.as_deref(), Some("ZombieInfected"));
         assert_eq!(ZombieKind::hound().shape(), Shape::Hound);
+        // BP_ZombieAIController's brain goes for placed turrets; the SmartAI, animals and bosses don't.
+        assert!(roamer.goes_for_turrets() && radiated.goes_for_turrets());
+        for other in ["BP_Bandit_Melee_C", "BP_AnimalWolf_C", "BP_ZombieBossHorde_Military_C"] {
+            assert!(!k(other).goes_for_turrets(), "{other}");
+        }
         // Every class has meshes and a look to pick.
         for (name, c) in zombie_classes() {
             assert!(!c.meshes.is_empty(), "{name}");

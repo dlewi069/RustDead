@@ -54,15 +54,16 @@ pub enum Toggle {
     Refused(&'static str),
 }
 
-/// The battery in a flashlight's container (its default attachment).
+/// The battery in a flashlight's (or tactical light's) container: its default attachment or
+/// what its SC_Battery holds.
 pub fn battery<'a>(flashlight: &'a Stack, db: &ItemDb) -> Option<&'a Stack> {
     let def = db.items.get(&flashlight.item)?;
-    flashlight.attachments.iter().find(|a| def.attachments.iter().any(|r| r.item == a.item))
+    flashlight.attachments.iter().find(|a| def.attachments.iter().any(|r| r.item == a.item) || def.holds.contains(&a.item))
 }
 
 fn battery_mut<'a>(flashlight: &'a mut Stack, db: &ItemDb) -> Option<&'a mut Stack> {
     let def = db.items.get(&flashlight.item)?;
-    flashlight.attachments.iter_mut().find(|a| def.attachments.iter().any(|r| r.item == a.item))
+    flashlight.attachments.iter_mut().find(|a| def.attachments.iter().any(|r| r.item == a.item) || def.holds.contains(&a.item))
 }
 
 /// A battery's charge left (durability; `None` is full).

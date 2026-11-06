@@ -6,6 +6,7 @@
 //! - KeypadUI: each digit button appends to the display; once as many digits as the code has are
 //!   in, a match fires CorrectCodeEntered and the pad closes 0.5 s later, anything else fires
 //!   IncorrectCodeEntered and closes it at once. Exit and Esc close it.
+//! - `BP_StandardNote`s (`level::doors::StandardNote`) show their Description on the same LetterUI.
 //! - The door's side of it (opening, XP, the 80 m noise of a wrong code) is in `level::doors`.
 
 use bevy::prelude::*;
@@ -93,6 +94,7 @@ fn open_close(
     overlay: Res<GameOverlay>,
     mut entry: ResMut<KeypadEntry>,
     doors: Option<Res<crate::level::doors::Doors>>,
+    level: Option<Res<crate::level::Level>>,
     assets: Res<AssetServer>,
     pads: Query<Entity, With<KeypadUi>>,
     notes: Query<Entity, With<NoteUi>>,
@@ -111,19 +113,20 @@ fn open_close(
             spawn_keypad(&mut commands, &assets);
         }
     }
-    let note = match *overlay {
-        GameOverlay::Note(d) => Some(d),
+    // LetterUI: a keypad door's code, or a BP_StandardNote's Description.
+    let text = match *overlay {
+        GameOverlay::Note(d) => Some(doors.as_ref().map(|s| s.keypad_code(d)).unwrap_or_default().to_string()),
+        GameOverlay::Letter(i) => Some(level.as_ref().and_then(|l| l.notes.get(i)).map(|n| n.text.clone()).unwrap_or_default()),
         _ => None,
     };
-    if note.is_none() {
+    if text.is_none() {
         for e in &notes {
             commands.entity(e).despawn();
         }
     } else if notes.is_empty()
-        && let Some(d) = note
+        && let Some(text) = text
     {
-        let code = doors.as_ref().map(|s| s.keypad_code(d)).unwrap_or_default();
-        spawn_note(&mut commands, &assets, code);
+        spawn_note(&mut commands, &assets, text);
     }
 }
 
@@ -205,7 +208,7 @@ fn spawn_keypad(commands: &mut Commands, assets: &AssetServer) {
     key(Node { padding: UiRect::all(Val::Px(10.0)), margin: UiRect::ZERO, align_self: AlignSelf::Center, justify_self: JustifySelf::Center, ..cell(4, 1) }, PadKey(None), "Exit", 36.0);
 }
 
-fn spawn_note(commands: &mut Commands, assets: &AssetServer, code: u32) {
+fn spawn_note(commands: &mut Commands, assets: &AssetServer, text: String) {
     let ink = MenuFont(assets.load(NOTE_FONT));
     let ink_label = |s: String, size: f32| (Text::new(s), TextFont { font: ink.0.clone().into(), font_size: pt(size), ..default() }, TextColor(INK));
     commands.spawn((
@@ -228,8 +231,8 @@ fn spawn_note(commands: &mut Commands, assets: &AssetServer, code: u32) {
             },
             ImageNode::new(assets.load(PAPER)),
             children![
-                // SizeBox_0 (563.5 x 935.8) holding Description: the code, no digit grouping.
-                (Node { width: Val::Px(563.5264), height: Val::Px(935.8425), padding: UiRect::bottom(Val::Px(15.0)), ..default() }, children![ink_label(code.to_string(), 20.0)]),
+                // SizeBox_0 (563.5 x 935.8) holding Description (a keypad code: no digit grouping).
+                (Node { width: Val::Px(563.5264), height: Val::Px(935.8425), padding: UiRect::bottom(Val::Px(15.0)), ..default() }, children![ink_label(text, 20.0)]),
                 (button(Node { padding: UiRect::all(Val::Px(5.0)), ..default() }, ButtonPalette::BARE, StopReading), children![ink_label("Stop Reading".into(), 20.0)]),
             ],
         )],

@@ -131,6 +131,9 @@ fn shove(
             shoving.0 = None;
         }
     }
+    if keys.just_pressed(KeyCode::KeyV) && !(shoving.0.is_none() && body.grounded && !body.climbing && !armed.busy()) {
+        info!("shove: V ignored (moving {}, grounded {}, climbing {}, weapon busy {})", shoving.0.is_some(), body.grounded, body.climbing, armed.busy());
+    }
     if keys.just_pressed(KeyCode::KeyV) && shoving.0.is_none() && body.grounded && !body.climbing && !armed.busy() {
         let pitch = camera.single().map_or(0.0, |c| c.forward().y.clamp(-1.0, 1.0).asin().to_degrees());
         let stamina = game.state.as_ref().map_or(0.0, |s| s.survival.stamina);
@@ -142,6 +145,9 @@ fn shove(
             }
             shoving.0 = Some(Move::new(kind, *stance));
             action.start(kind);
+            info!("shove: {kind:?} (pitch {pitch:.0}, stamina {stamina:.0})");
+        } else {
+            info!("shove: no stamina ({stamina:.1})");
         }
     }
     let Some(m) = shoving.0.as_mut().filter(|m| m.tracing()) else { return };

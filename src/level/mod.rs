@@ -14,9 +14,13 @@
 
 pub mod collision;
 pub mod doors;
+pub mod easter_eggs;
 pub mod garage;
+pub mod lab_corpses;
 pub mod ladders;
 pub mod power;
+pub mod sirens;
+pub mod spotlights;
 pub mod prefabs;
 pub mod grass;
 pub mod item_spawners;
@@ -50,9 +54,10 @@ pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(MaterialPlugin::<TerrainMaterial>::default())
-            .add_systems(OnEnter(AppState::InGame), (enter_level, grass::setup_grass, lights::setup_lights, ladders::setup_ladders, power::setup_power, item_spawners::setup_item_spawns, item_spawners::spawn_item_containers, garage::setup_garages).chain())
+            .add_systems(OnEnter(AppState::InGame), (enter_level, grass::setup_grass, lights::setup_lights, ladders::setup_ladders, power::setup_power, sirens::setup_sirens, spotlights::setup_spotlights, item_spawners::setup_item_spawns, item_spawners::spawn_item_containers, garage::setup_garages, lab_corpses::setup_lab_corpses, easter_eggs::reset_eggs).chain())
             .init_resource::<collision::CollisionCache>()
             .init_resource::<doors::Doors>()
+            .init_resource::<easter_eggs::EasterEggs>()
             .init_resource::<garage::Garages>()
             .init_resource::<prefabs::Prefabs>()
             .add_systems(OnEnter(AppState::InGame), prefabs::reset)
@@ -83,7 +88,7 @@ impl Plugin for LevelPlugin {
             .add_systems(
                 Update,
                 (
-                    (doors::load_doors, doors::spawn_doors, doors::move_doors, garage::move_garages, power::status_lamps, power::generator_hum).chain().after(resolve_props),
+                    (doors::load_doors, doors::spawn_doors, doors::move_doors, garage::move_garages, lab_corpses::pose_lab_corpses, power::status_lamps, power::generator_hum, power::run_stairwells, sirens::run_sirens, spotlights::run_spotlights, easter_eggs::collect_eggs, easter_eggs::run_apparitions, easter_eggs::ghost_material, easter_eggs::nuke_damage).chain().after(resolve_props),
                     doors::interact_doors.after(crate::gameplay::interact::search_containers),
                 )
                     .run_if(in_state(AppState::InGame)),
@@ -135,6 +140,8 @@ pub struct Level {
     pub harvest: HashMap<PropKey, Harvestable>,
     /// The prefab spawners, their prefabs' meshes placed in `cells` (hidden until spawned).
     pub prefabs: Vec<prefabs::PrefabSite>,
+    /// Readable notes (BP_StandardNote): where each lies and its text.
+    pub notes: Vec<doors::StandardNote>,
 }
 
 /// A prop's drawn mesh and material.
@@ -186,6 +193,14 @@ fn is_water(path: &str) -> bool {
 }
 
 /// Materials characters walk through: foliage cards and ground clutter.
+/// Meshes placed only by BP_BarbedWire(_Child, _Child1) and BP_Landmine, whose StaticMesh
+/// components don't block pawns (NoCollision / Pawn Ignore): walked into (`gameplay::level_traps`).
+const NO_PAWN_COLLISION: [&str; 3] = ["/BarbedWire_Mesh.glb", "/SM_Prop_Barbed_Wire_03.glb", "/SM_Prop_Mine_01.glb"];
+
+fn no_pawn_collision(path: &str) -> bool {
+    NO_PAWN_COLLISION.iter().any(|m| path.ends_with(m))
+}
+
 fn walk_through(material: &str) -> bool {
     const SOFT: [&str; 12] = ["Leaves", "Leaf", "Plant", "Grass", "Bush", "Seaweed", "Fern", "Flower", "Ivy", "Vine", "Rubbish", "Decal"];
     SOFT.iter().any(|k| material.contains(k)) || (material.contains("Tree") && !material.contains("Trunk"))
@@ -202,6 +217,11 @@ fn cell_of(p: Vec3) -> IVec2 {
 }
 
 impl Level {
+    /// The level's spline meshes (`splines.json`).
+    pub fn splines(&self) -> &[SplineMesh] {
+        &self.splines
+    }
+
     fn load() -> Option<Self> {
         let read = |f: &str| std::fs::read_to_string(format!("{LEVEL_DIR}/{f}")).ok();
         let placements: HashMap<String, Vec<[f32; 12]>> = serde_json::from_str(&read("placements.json")?).ok()?;
@@ -250,8 +270,9 @@ impl Level {
         }
         // Each prefab spawner's prefab, its meshes in the cells like the level's own.
         let mut prefab_sites = Vec::new();
-        for (i, a) in actors.iter().enumerate() {
-            let Some(mut site) = prefabs::PrefabSite::from_actor(i, a) else { continue };
+        // BP_AlternatePOI's two prefabs are sites too.
+        let sites = actors.iter().enumerate().flat_map(|(i, a)| prefabs::PrefabSite::from_actor(i, a).into_iter().chain(prefabs::PrefabSite::alternates(i, a)));
+        for mut site in sites {
             let Some(def) = site.def() else { continue };
             let base = site.transform.to_matrix();
             for (mesh, m) in &def.meshes {
@@ -274,7 +295,8 @@ impl Level {
             })
             .collect::<Vec<_>>();
         info!("level: {} meshes, {} cells, {} actors, {} doors, {} harvestable, {} prefab sites", meshes.len(), cells.len(), actors.len(), doors.len(), harvest.len(), prefab_sites.len());
-        Some(Self { actors, meshes, splines, cells, doors, harvest, prefabs: prefab_sites })
+        let notes = doors::standard_notes(&actors);
+        Some(Self { actors, meshes, splines, cells, doors, harvest, prefabs: prefab_sites, notes })
     }
 
     /// Harvestable props of `kind` within `r` of `p` (horizontally): key and position, nearest first.
@@ -296,9 +318,14 @@ impl Level {
     /// The placed static prop nearest `at` (within `within` m) whose mesh file is `stem`: its key,
     /// transform and glb path.
     pub fn prop_near(&self, at: Vec3, stem: &str, within: f32) -> Option<(PropKey, Transform, String)> {
+        self.props_near(at, stem, within).into_iter().next()
+    }
+
+    /// Every placed static prop within `within` m of `at` whose mesh file is `stem`, nearest first.
+    pub fn props_near(&self, at: Vec3, stem: &str, within: f32) -> Vec<(PropKey, Transform, String)> {
         let c = cell_of(at);
         let suffix = format!("/{stem}.glb");
-        (-1..=1)
+        let mut out: Vec<_> = (-1..=1)
             .flat_map(|dx| (-1..=1).map(move |dz| c + IVec2::new(dx, dz)))
             .filter_map(|cell| self.cells.get(&cell).map(|items| (cell, items)))
             .flat_map(|(cell, items)| items.iter().enumerate().map(move |(i, it)| (cell, i, it)))
@@ -307,7 +334,33 @@ impl Level {
                 _ => None,
             })
             .filter(|(_, t, _)| t.translation.distance(at) <= within)
-            .min_by(|a, b| a.1.translation.distance(at).total_cmp(&b.1.translation.distance(at)))
+            .collect();
+        out.sort_by(|a, b| a.1.translation.distance(at).total_cmp(&b.1.translation.distance(at)));
+        out
+    }
+
+    /// The spline mesh segments whose component sits at `at` (within `within` m) and whose mesh
+    /// file is `stem`: one spline actor's pieces (a BP_InfestationSpline's vines).
+    pub fn splines_at(&self, at: Vec3, stem: &str, within: f32) -> Vec<PropKey> {
+        let c = cell_of(at);
+        let suffix = format!("/{stem}.glb");
+        (-1..=1)
+            .flat_map(|dx| (-1..=1).map(move |dz| c + IVec2::new(dx, dz)))
+            .filter_map(|cell| self.cells.get(&cell).map(|items| (cell, items)))
+            .flat_map(|(cell, items)| items.iter().enumerate().map(move |(i, it)| (cell, i, it)))
+            .filter_map(|(cell, i, it)| match *it {
+                Item::Spline { index, mesh } if self.meshes[mesh as usize].path.ends_with(&suffix) => {
+                    let t = &self.splines[index as usize].transform;
+                    (Vec3::new(t[9], t[10], t[11]).distance(at) <= within).then_some((cell, i as u32))
+                }
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// A mesh's file stem (`SM_Bld_Door_01`), by its index.
+    pub fn mesh_stem(&self, mesh: u32) -> &str {
+        self.meshes.get(mesh as usize).map_or("", |m| m.path.rsplit('/').next().unwrap_or("").trim_end_matches(".glb"))
     }
 
     /// A placed static prop's draw parts (once loaded) and transform.
@@ -506,7 +559,7 @@ fn resolve_props(
                 {
                     mesh.remove_attribute(Mesh::ATTRIBUTE_COLOR);
                 }
-                parts.push(Part { mesh: p.mesh.clone(), material: mat, collide: !walk_through(name), lamp: power::LampKind::of(&m.path, name), water: false });
+                parts.push(Part { mesh: p.mesh.clone(), material: mat, collide: !walk_through(name) && !no_pawn_collision(&m.path), lamp: power::LampKind::of(&m.path, name), water: false });
             }
         }
         if ready {

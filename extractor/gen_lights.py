@@ -49,19 +49,34 @@ def main():
     classes = sorted({l["owner"] for l in lights})
     tmp = tempfile.mkdtemp()
     templates = {}
+
+    def lights_of(pkg):
+        """A Blueprint package's point-light templates by component, the parent class's first: a
+        child's template holds only what it changes (BP_Infestation_Floor's PurpleLight moves it;
+        the colour and radius are BP_Infestation's)."""
+        subprocess.run([SDX, "json", tmp, pkg], capture_output=True)
+        f = Path(tmp) / (pkg.removeprefix("SurrounDead/Content/") + ".json")
+        if not f.exists():
+            return {}
+        exports = json.loads(f.read_text())
+        found = {}
+        cls = next((e for e in exports if e.get("Type") == "BlueprintGeneratedClass"), {})
+        parent = (cls.get("SuperStruct") or {}).get("ObjectPath", "")
+        if parent.startswith("SurrounDead/"):
+            found = {k: dict(v) for k, v in lights_of(parent.rsplit(".", 1)[0]).items()}
+        for e in exports:
+            if e["Name"].endswith("_GEN_VARIABLE") and e["Type"] == "PointLightComponent":
+                found.setdefault(e["Name"].removesuffix("_GEN_VARIABLE"), {}).update(e.get("Properties") or {})
+        return found
+
     for cls in classes:
         name = cls.removesuffix("_C")
         listed = subprocess.run([SDX, "list", f"/{name}.uasset"], capture_output=True, text=True).stdout.split()
         pkg = next((p[: -len(".uasset")] for p in listed if p.endswith(f"/{name}.uasset")), None)
         if not pkg:
             continue
-        subprocess.run([SDX, "json", tmp, pkg], capture_output=True)
-        f = Path(tmp) / (pkg.removeprefix("SurrounDead/Content/") + ".json")
-        if not f.exists():
-            continue
-        for e in json.loads(f.read_text()):
-            if e["Name"].endswith("_GEN_VARIABLE") and e["Type"] == "PointLightComponent":
-                templates[(cls, e["Name"].removesuffix("_GEN_VARIABLE"))] = e.get("Properties") or {}
+        for comp, props in lights_of(pkg).items():
+            templates[(cls, comp)] = props
     # The map's own values for overridden properties.
     out = []
     for l in lights:

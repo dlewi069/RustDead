@@ -17,8 +17,8 @@
 //! Ours: UE's swimming physics (BrakingDecelerationSwimming 100, buoyancy) isn't simulated: the
 //! body moves at the input speed and stops without input; under water it stays put unless
 //! Space or the camera's pitch moves it (neutral buoyancy, as CharMoveComp's default Buoyancy 1).
-//! Not ported: radiated water (BP_WaterBox Radiated?: UpdateRadiation 0.15), the water sounds
-//! (WaterAudioCheck), the camera's underwater effect, Fitness XP from swimming.
+//! Radiated water (BP_WaterBox Radiated?: UpdateRadiation 0.15) is `radiation`'s. Not ported: the
+//! water sounds (WaterAudioCheck), the camera's underwater effect, Fitness XP from swimming.
 
 use bevy::prelude::*;
 use rand::Rng;
